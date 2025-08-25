@@ -182,9 +182,6 @@
             const submitQuizBtn = document.getElementById('submit-quiz-btn');
             const resultMessage = document.getElementById('result-message');
             
-            // Xóa biến API_URL và sử dụng đường dẫn tương đối để tương thích cả trên cục bộ và khi triển khai
-            // const API_URL = 'http://127.0.0.1:5000'; 
-
             function showPage(pageId) {
                 pages.forEach(page => page.classList.add('hidden'));
                 document.getElementById(pageId).classList.remove('hidden');
@@ -221,7 +218,8 @@
                         loginMessage.classList.remove('hidden');
                     }
                 } catch (error) {
-                    loginMessage.textContent = 'Lỗi kết nối. Vui lòng thử lại sau.';
+                    // Cải thiện thông báo lỗi để hiển thị lỗi chi tiết hơn
+                    loginMessage.textContent = `Lỗi kết nối đến máy chủ: ${error.message}. Vui lòng kiểm tra xem máy chủ đã chạy chưa.`;
                     loginMessage.classList.remove('hidden');
                     console.error('Lỗi khi đăng nhập:', error);
                 }
@@ -283,10 +281,16 @@
             window.deleteUser = async (userId) => {
                 if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
                     try {
-                        await fetch(`/users/${userId}`, { method: 'DELETE' });
-                        fetchUsers(); // Refresh the list
+                        const response = await fetch(`/users/${userId}`, { method: 'DELETE' });
+                        if (response.ok) {
+                            fetchUsers(); // Refresh the list
+                        } else {
+                            const result = await response.json();
+                            alert(result.message);
+                        }
                     } catch (error) {
                         console.error('Lỗi khi xóa người dùng:', error);
+                        alert(`Lỗi kết nối khi xóa người dùng: ${error.message}`);
                     }
                 }
             };
@@ -327,6 +331,7 @@
                     }
                 } catch (error) {
                     console.error('Lỗi khi thêm/cập nhật người dùng:', error);
+                    alert(`Lỗi kết nối khi thêm/cập nhật người dùng: ${error.message}`);
                 }
             });
 
@@ -382,7 +387,7 @@
                         uploadMessage.classList.remove('hidden');
                     } catch (error) {
                         console.error('Lỗi khi xử lý file Excel:', error);
-                        uploadMessage.textContent = 'Lỗi khi xử lý file. Vui lòng kiểm tra định dạng file.';
+                        uploadMessage.textContent = `Lỗi khi xử lý file hoặc kết nối: ${error.message}. Vui lòng kiểm tra định dạng file và máy chủ.`;
                         uploadMessage.className = 'text-red-500 mt-4';
                         uploadMessage.classList.remove('hidden');
                     }
@@ -406,6 +411,7 @@
                     }
                 } catch (error) {
                     console.error('Lỗi khi lấy danh sách môn học:', error);
+                    alert(`Lỗi kết nối khi lấy danh sách môn học: ${error.message}`);
                 }
             }
 
@@ -438,6 +444,7 @@
                     }
                 } catch (error) {
                     console.error('Lỗi khi lấy câu hỏi:', error);
+                    alert(`Lỗi kết nối khi lấy câu hỏi: ${error.message}`);
                 }
             }
 
