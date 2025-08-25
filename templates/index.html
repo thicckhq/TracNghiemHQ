@@ -1,25 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Đăng nhập</title>
+    <title>Trang chủ</title>
 </head>
 <body>
-    <h2>Đăng nhập</h2>
-    <form method="POST">
-        <label>Tên đăng nhập:</label>
-        <input type="text" name="username" required><br>
-        <label>Mật khẩu:</label>
-        <input type="password" name="password" required><br>
-        <button type="submit">Đăng nhập</button>
-    </form>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-          {% for msg in messages %}
-            <li style="color:red;">{{ msg }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+    <h2>Xin chào, {{ ten_thuc }}!</h2>
+    <p><a href="{{ url_for('thi_thu') }}">Thi thử</a></p>
+    <p><a href="{{ url_for('nhap_bodethi') }}">Nhập bộ đề thi</a></p>
+    
+    {% if is_admin %}
+    <p><a href="{{ url_for('quan_tri') }}">Quản trị người dùng</a></p>
+    {% endif %}
+
+    <p><a href="{{ url_for('logout') }}">Đăng xuất</a></p>
 </body>
 </html>
