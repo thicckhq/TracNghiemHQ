@@ -210,18 +210,42 @@
                 const username = e.target.username.value;
                 const password = e.target.password.value;
 
+                loginMessage.textContent = 'Đang đăng nhập...';
+                loginMessage.classList.remove('hidden');
+                
                 try {
                     const response = await fetch('/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username, password })
                     });
-                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        // Handle server-side errors (e.g., 404 Not Found, 500 Internal Server Error)
+                        loginMessage.textContent = `Lỗi máy chủ: ${response.status} ${response.statusText}. Vui lòng kiểm tra lại đường dẫn API.`;
+                        return;
+                    }
+
+                    // Attempt to parse the response as JSON.
+                    // This is where the error you reported occurs.
+                    let result;
+                    try {
+                        result = await response.json();
+                    } catch (jsonError) {
+                        // Custom error message for when the server sends HTML instead of JSON
+                        loginMessage.textContent = `Lỗi dữ liệu: Máy chủ trả về trang web HTML thay vì dữ liệu JSON. Vui lòng kiểm tra lại mã máy chủ của bạn.`;
+                        console.error('Lỗi phân tích JSON:', jsonError);
+                        return;
+                    }
+                    
+                    if (result.message) {
+                        loginMessage.textContent = result.message;
+                        loginMessage.classList.remove('hidden');
+                    }
                     
                     if (response.ok) {
                         state.isAuthenticated = true;
                         state.isAdmin = result.is_admin;
-                        loginMessage.classList.add('hidden');
                         if (state.isAdmin) {
                             userManagementBtn.classList.remove('hidden');
                             uploadQuestionsBtn.classList.remove('hidden');
@@ -235,9 +259,8 @@
                         loginMessage.classList.remove('hidden');
                     }
                 } catch (error) {
-                    // Cải thiện thông báo lỗi để hiển thị lỗi chi tiết hơn
-                    loginMessage.textContent = `Lỗi kết nối đến máy chủ: ${error.message}. Vui lòng kiểm tra xem máy chủ đã chạy chưa.`;
-                    loginMessage.classList.remove('hidden');
+                    // Lỗi kết nối mạng, máy chủ không hoạt động, v.v.
+                    loginMessage.textContent = `Lỗi kết nối: Không thể kết nối đến máy chủ. Vui lòng kiểm tra xem máy chủ đã chạy chưa.`;
                     console.error('Lỗi khi đăng nhập:', error);
                 }
             });
@@ -296,6 +319,7 @@
             };
 
             window.deleteUser = async (userId) => {
+                // Use a custom modal or message box instead of alert/confirm
                 if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
                     try {
                         const response = await fetch(`/users/${userId}`, { method: 'DELETE' });
@@ -447,7 +471,8 @@
                 try {
                     const response = await fetch(`/questions/${subject}`);
                     if (response.ok) {
-                        state.currentQuestions = await response.json();
+                        const data = await response.json();
+                        state.currentQuestions = data;
                         state.currentAnswers = {};
                         state.correctAnswers = 0;
                         document.getElementById('subject-selection').classList.add('hidden');
