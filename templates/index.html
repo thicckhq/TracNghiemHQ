@@ -181,7 +181,9 @@
             const questionArea = document.getElementById('question-area');
             const submitQuizBtn = document.getElementById('submit-quiz-btn');
             const resultMessage = document.getElementById('result-message');
-            const API_URL = 'http://127.0.0.1:5000'; // Đổi sang URL của Render khi deploy
+            
+            // Xóa biến API_URL và sử dụng đường dẫn tương đối để tương thích cả trên cục bộ và khi triển khai
+            // const API_URL = 'http://127.0.0.1:5000'; 
 
             function showPage(pageId) {
                 pages.forEach(page => page.classList.add('hidden'));
@@ -195,7 +197,7 @@
                 const password = e.target.password.value;
 
                 try {
-                    const response = await fetch(`${API_URL}/login`, {
+                    const response = await fetch('/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username, password })
@@ -227,7 +229,7 @@
 
             logoutBtn.addEventListener('click', async () => {
                 try {
-                    await fetch(`${API_URL}/logout`, { method: 'POST' });
+                    await fetch('/logout', { method: 'POST' });
                     state.isAuthenticated = false;
                     state.isAdmin = false;
                     showPage('login-page');
@@ -243,7 +245,7 @@
             
             async function fetchUsers() {
                 try {
-                    const response = await fetch(`${API_URL}/users`);
+                    const response = await fetch('/users');
                     if (response.ok) {
                         const users = await response.json();
                         renderUsers(users);
@@ -281,7 +283,7 @@
             window.deleteUser = async (userId) => {
                 if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
                     try {
-                        await fetch(`${API_URL}/users/${userId}`, { method: 'DELETE' });
+                        await fetch(`/users/${userId}`, { method: 'DELETE' });
                         fetchUsers(); // Refresh the list
                     } catch (error) {
                         console.error('Lỗi khi xóa người dùng:', error);
@@ -296,12 +298,12 @@
                 const password = e.target['new-password'].value;
                 
                 let method = 'POST';
-                let url = `${API_URL}/users`;
+                let url = '/users';
                 let body = { username, password };
 
                 if (userId) {
                     method = 'PUT';
-                    url = `${API_URL}/users/${userId}`;
+                    url = `/users/${userId}`;
                     if (!password) {
                         delete body.password; // Không gửi password nếu rỗng
                     }
@@ -362,7 +364,7 @@
                             answer: row['Đáp án đúng']
                         }));
 
-                        const response = await fetch(`${API_URL}/upload_questions`, {
+                        const response = await fetch('/upload_questions', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(questions)
@@ -395,7 +397,7 @@
 
             async function fetchSubjects() {
                 try {
-                    const response = await fetch(`${API_URL}/subjects`);
+                    const response = await fetch('/subjects');
                     if (response.ok) {
                         const subjects = await response.json();
                         renderSubjects(subjects);
@@ -420,7 +422,7 @@
 
             async function startQuiz(subject) {
                 try {
-                    const response = await fetch(`${API_URL}/questions/${subject}`);
+                    const response = await fetch(`/questions/${subject}`);
                     if (response.ok) {
                         state.currentQuestions = await response.json();
                         state.currentAnswers = {};
