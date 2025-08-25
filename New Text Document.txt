@@ -6,3 +6,8 @@ git remote add origin https://github.com/thicckhq/TracNghiemHQ.git
 git push -u origin main
 
 postgresql://vinhnguyen:uDpQGHxIAMFtuWlXztNE86cDAXmNF4VH@dpg-d2m1nljuibrs73fo7dig-a/db_tracnghiemhq
+cập nhật
+git add .
+git commit -m "Updated the home page content"
+git push origin main
+
