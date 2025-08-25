@@ -4,3 +4,5 @@ git commit -m "Initial commit for Render"
 git branch -M main
 git remote add origin https://github.com/thicckhq/TracNghiemHQ.git
 git push -u origin main
+
+postgresql://vinhnguyen:uDpQGHxIAMFtuWlXztNE86cDAXmNF4VH@dpg-d2m1nljuibrs73fo7dig-a/db_tracnghiemhq
