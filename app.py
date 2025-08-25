@@ -65,17 +65,17 @@ def upload_bodethi():
                 # Ghi dữ liệu mới
                 for _, row in df.iterrows():
                     conn.execute(text("""
-                        INSERT INTO Bodethi (mamon, cauhoi, dapan_a, dapan_b, dapan_c, dapan_d, dapan_dung, ghichu)
+                        INSERT INTO Bodethi (ma_mon_thi, cau_hoi, dap_an_a, dap_an_b, dap_an_c, dap_an_d, dap_an_dung, ghi_chu)
                         VALUES (:m, :c, :a, :b, :c1, :d, :dd, :g)
                     """), {
-                        "m": row["mamon"],
-                        "c": row["cauhoi"],
-                        "a": row["dapan_a"],
-                        "b": row["dapan_b"],
-                        "c1": row["dapan_c"],
-                        "d": row["dapan_d"],
-                        "dd": row["dapan_dung"],
-                        "g": row.get("ghichu", "")
+                        "m": row["ma_mon_thi"],
+                        "c": row["cau_hoi"],
+                        "a": row["dap_an_a"],
+                        "b": row["dap_an_b"],
+                        "c1": row["dap_an_c"],
+                        "d": row["dap_an_d"],
+                        "dd": row["dap_an_dung"],
+                        "g": row.get("ghi_chu", "")
                     })
             flash("Đã nhập bộ đề thi thành công!")
             return redirect(url_for("dashboard"))
@@ -88,12 +88,12 @@ def thithu():
         return redirect(url_for("index"))
 
     with engine.connect() as conn:
-        monthi = conn.execute(text("SELECT mamon, tenmon FROM Monthi")).fetchall()
+        monthi = conn.execute(text("SELECT ma_mon_thi, tenmon FROM Monthi")).fetchall()
 
     if request.method == "POST":
-        mamon = request.form["mamon"]
+        ma_mon_thi = request.form["ma_mon_thi"]
         with engine.connect() as conn:
-            questions = conn.execute(text("SELECT * FROM Bodethi WHERE mamon=:m"), {"m": mamon}).fetchall()
+            questions = conn.execute(text("SELECT * FROM Bodethi WHERE ma_mon_thi=:m"), {"m": ma_mon_thi}).fetchall()
         return render_template("thi.html", questions=questions)
 
     return render_template("chon_monthi.html", monthi=monthi)
