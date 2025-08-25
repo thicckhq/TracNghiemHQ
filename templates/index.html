@@ -187,6 +187,23 @@
                 document.getElementById(pageId).classList.remove('hidden');
             }
 
+            // Function to send a periodic request to keep the server awake
+            function keepServerAwake() {
+                setInterval(async () => {
+                    try {
+                        // Send a simple, lightweight request to the server
+                        // For example, to a public endpoint or a non-critical one
+                        await fetch('/', { method: 'HEAD' });
+                        console.log('Server pinged to stay awake.');
+                    } catch (error) {
+                        console.error('Error pinging server:', error);
+                    }
+                }, 600000); // Ping every 10 minutes (600,000 milliseconds)
+            }
+            
+            // Start the pinging when the page loads
+            keepServerAwake();
+
             // 1. Login Functionality
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
