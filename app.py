@@ -103,14 +103,14 @@ def nhap_bodethi():
                         INSERT INTO Bodethi (ma_mon_thi, cau_hoi, dap_an_a, dap_an_b, dap_an_c, dap_an_d, dap_an_dung, ghi_chu)
                         VALUES (:ma_mon, :cau_hoi, :a, :b, :c, :d, :dung, :ghichu)
                     """), {
-                        "ma_mon": row["Mã môn thi"],
-                        "cau_hoi": row["Câu hỏi"],
-                        "a": row["Đáp án A"],
-                        "b": row["Đáp án B"],
-                        "c": row["Đáp án C"],
-                        "d": row["Đáp án D"],
-                        "dung": row["Đáp án đúng"],
-                        "ghichu": row.get("Ghi chú", "")
+                        "ma_mon": row["Ma_mon_thi"],
+                        "cau_hoi": row["CAU_HOI"],
+                        "a": row["DAP_AN_A"],
+                        "b": row["DAP_AN_B"],
+                        "c": row["DAP_AN_C"],
+                        "d": row["DAP_AN_D"],
+                        "dung": row["DAP_AN_DUNG"],
+                        "ghichu": row.get("GHI_CHU", "")
                     })
             return "Đã nhập bộ đề thi thành công!"
         else:
