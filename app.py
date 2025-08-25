@@ -100,7 +100,7 @@ def nhap_bodethi():
                 conn.execute(text("DELETE FROM Bodethi"))  # xoá dữ liệu cũ
                 for _, row in df.iterrows():
                     conn.execute(text("""
-                        INSERT INTO Bodethi (ma_mon, cau_hoi, dap_an_a, dap_an_b, dap_an_c, dap_an_d, dap_an_dung, ghi_chu)
+                        INSERT INTO Bodethi (ma_mon_thi, cau_hoi, dap_an_a, dap_an_b, dap_an_c, dap_an_d, dap_an_dung, ghi_chu)
                         VALUES (:ma_mon, :cau_hoi, :a, :b, :c, :d, :dung, :ghichu)
                     """), {
                         "ma_mon": row["Mã môn thi"],
@@ -126,10 +126,10 @@ def thi_thu():
         monthi = conn.execute(text("SELECT * FROM Monthi")).mappings().all()
 
     if request.method == 'POST':
-        ma_mon = request.form.get('ma_mon')
+        ma_mon = request.form.get('ten_mon_thi')
         with engine.connect() as conn:
             cauhoi = conn.execute(
-                text("SELECT * FROM Bodethi WHERE ma_mon = :m"),
+                text("SELECT * FROM Bodethi WHERE ma_mon_thi = :m"),
                 {"m": ma_mon}
             ).mappings().all()
         return render_template('lam_bai.html', cauhoi=cauhoi)
