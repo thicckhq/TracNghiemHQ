@@ -1,200 +1,126 @@
-import os
-from flask import Flask, jsonify, request, render_template, redirect, url_for, session
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
-from functools import wraps
+import threading
+import time
+import requests
 import pandas as pd
-import json
+from flask import Flask, render_template, request, redirect, session, url_for, flash
+from werkzeug.security import check_password_hash
+from sqlalchemy import create_engine, text
 
 app = Flask(__name__)
-# Thiết lập secret key để sử dụng session
-app.secret_key = os.environ.get('SECRET_KEY', 'a_very_secret_key_that_you_should_change')
+app.secret_key = "supersecret"
 
-# Lấy chuỗi kết nối từ biến môi trường của Render
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# ---------- Database config ----------
+DATABASE_URL = "postgresql+psycopg2://vinhnguyen:uDpQGHxIAMFtuWlXztNE86cDAXmNF4VH@dpg-d2m1nljuibrs73fo7dig-a.oregon-postgres.render.com/db_tracnghiemhq"
+engine = create_engine(DATABASE_URL, echo=False)
 
-db = SQLAlchemy(app)
-
-# =========================================================================
-# === Các mô hình (Models) cho cơ sở dữ liệu
-# =========================================================================
-
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(120), nullable=False)
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-class Question(db.Model):
-    __tablename__ = 'questions'
-    id = db.Column(db.Integer, primary_key=True)
-    subject = db.Column(db.String(100), nullable=False)
-    text = db.Column(db.String(500), nullable=False)
-    options = db.Column(db.String(500), nullable=False) # Lưu dưới dạng JSON string
-    answer = db.Column(db.String(100), nullable=False)
-
-# =========================================================================
-# === Các route (API endpoints) cho ứng dụng
-# =========================================================================
-
-# Decorator để kiểm tra trạng thái đăng nhập
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'logged_in' not in session:
-            return jsonify({'message': 'Unauthorized, login required'}), 401
-        return f(*args, **kwargs)
-    return decorated_function
-
-@app.route('/')
+# ---------- Trang đăng nhập ----------
+@app.route("/", methods=["GET", "POST"])
 def index():
-    # Hiển thị file HTML tĩnh của ứng dụng
-    return render_template('index.html')
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
 
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT * FROM Nguoidung WHERE username=:u"), {"u": username}).fetchone()
 
-    user = User.query.filter_by(username=username).first()
-    
-    # Kiểm tra user admin đặc biệt
-    if username == 'vinhnguyen' and password == 'vinh123':
-        session['logged_in'] = True
-        session['username'] = username
-        return jsonify({'message': 'Đăng nhập thành công', 'is_admin': True}), 200
+        if result and check_password_hash(result.password, password):
+            session["user"] = result.username
+            session["role"] = result.role
+            return redirect(url_for("dashboard"))
+        else:
+            flash("Sai tài khoản hoặc mật khẩu!")
 
-    # Kiểm tra user từ database
-    if user and user.check_password(password):
-        session['logged_in'] = True
-        session['username'] = username
-        return jsonify({'message': 'Đăng nhập thành công', 'is_admin': False}), 200
-    
-    return jsonify({'message': 'Tên người dùng hoặc mật khẩu không đúng'}), 401
+    return render_template("index.html")
 
-@app.route('/logout', methods=['POST'])
+# ---------- Trang dashboard ----------
+@app.route("/dashboard")
+def dashboard():
+    if "user" not in session:
+        return redirect(url_for("index"))
+    return render_template("dashboard.html", user=session["user"], role=session["role"])
+
+# ---------- Admin: Quản trị người dùng ----------
+@app.route("/admin/users")
+def admin_users():
+    if session.get("role") != "admin":
+        return "Không có quyền!"
+    with engine.connect() as conn:
+        users = conn.execute(text("SELECT id, username, role FROM Nguoidung")).fetchall()
+    return render_template("admin_users.html", users=users)
+
+# ---------- Nhập bộ đề thi từ Excel ----------
+@app.route("/upload_bodethi", methods=["GET", "POST"])
+def upload_bodethi():
+    if "user" not in session:
+        return redirect(url_for("index"))
+    if request.method == "POST":
+        file = request.files["file"]
+        if file:
+            df = pd.read_excel(file)
+
+            with engine.begin() as conn:
+                # Xóa dữ liệu cũ
+                conn.execute(text("DELETE FROM Bodethi"))
+
+                # Ghi dữ liệu mới
+                for _, row in df.iterrows():
+                    conn.execute(text("""
+                        INSERT INTO Bodethi (mamon, cauhoi, dapan_a, dapan_b, dapan_c, dapan_d, dapan_dung, ghichu)
+                        VALUES (:m, :c, :a, :b, :c1, :d, :dd, :g)
+                    """), {
+                        "m": row["mamon"],
+                        "c": row["cauhoi"],
+                        "a": row["dapan_a"],
+                        "b": row["dapan_b"],
+                        "c1": row["dapan_c"],
+                        "d": row["dapan_d"],
+                        "dd": row["dapan_dung"],
+                        "g": row.get("ghichu", "")
+                    })
+            flash("Đã nhập bộ đề thi thành công!")
+            return redirect(url_for("dashboard"))
+    return render_template("upload_bodethi.html")
+
+# ---------- Thi thử ----------
+@app.route("/thithu", methods=["GET", "POST"])
+def thithu():
+    if "user" not in session:
+        return redirect(url_for("index"))
+
+    with engine.connect() as conn:
+        monthi = conn.execute(text("SELECT mamon, tenmon FROM Monthi")).fetchall()
+
+    if request.method == "POST":
+        mamon = request.form["mamon"]
+        with engine.connect() as conn:
+            questions = conn.execute(text("SELECT * FROM Bodethi WHERE mamon=:m"), {"m": mamon}).fetchall()
+        return render_template("thi.html", questions=questions)
+
+    return render_template("chon_monthi.html", monthi=monthi)
+
+# ---------- Ping endpoint ----------
+@app.route("/ping")
+def ping():
+    return "ok", 200
+
+# ---------- Đăng xuất ----------
+@app.route("/logout")
 def logout():
-    session.pop('logged_in', None)
-    session.pop('username', None)
-    return jsonify({'message': 'Đăng xuất thành công'}), 200
+    session.clear()
+    return redirect(url_for("index"))
 
-@app.route('/users', methods=['GET', 'POST'])
-@login_required
-def manage_users():
-    """Quản lý người dùng."""
-    if request.method == 'POST':
-        data = request.get_json()
-        username = data.get('username')
-        password = data.get('password')
+# ---------- Keep-alive thread ----------
+def keep_alive():
+    while True:
+        try:
+            url = "https://your-app-name.onrender.com/ping"  # đổi thành URL thật của app Render
+            requests.get(url, timeout=10)
+            print("Ping thành công:", url)
+        except Exception as e:
+            print("Ping lỗi:", e)
+        time.sleep(600)  # 600 giây = 10 phút
 
-        if not username or not password:
-            return jsonify({'message': 'Thiếu tên người dùng hoặc mật khẩu'}), 400
-
-        # Kiểm tra nếu người dùng đã tồn tại
-        if User.query.filter_by(username=username).first():
-            return jsonify({'message': 'Tên người dùng đã tồn tại'}), 409
-
-        new_user = User(username=username)
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
-        return jsonify({'message': 'Thêm người dùng thành công'}), 201
-    
-    # GET request: Lấy danh sách người dùng
-    users = User.query.all()
-    user_list = [{'id': user.id, 'username': user.username} for user in users]
-    return jsonify(user_list)
-
-@app.route('/users/<int:user_id>', methods=['PUT'])
-@login_required
-def update_user(user_id):
-    """Cập nhật người dùng."""
-    user_to_update = User.query.get_or_404(user_id)
-    data = request.get_json()
-    new_username = data.get('username')
-    new_password = data.get('password')
-
-    if new_username:
-        user_to_update.username = new_username
-    if new_password:
-        user_to_update.set_password(new_password)
-    
-    db.session.commit()
-    return jsonify({'message': 'Cập nhật người dùng thành công'}), 200
-
-@app.route('/users/<int:user_id>', methods=['DELETE'])
-@login_required
-def delete_user(user_id):
-    """Xóa một người dùng."""
-    user_to_delete = User.query.get_or_404(user_id)
-    db.session.delete(user_to_delete)
-    db.session.commit()
-    return jsonify({'message': 'Người dùng đã được xóa thành công'}), 200
-
-@app.route('/upload_questions', methods=['POST'])
-@login_required
-def upload_questions():
-    """Tải lên câu hỏi từ file Excel."""
-    try:
-        questions_data = request.get_json()
-        if not questions_data:
-            return jsonify({'message': 'Dữ liệu không hợp lệ.'}), 400
-
-        for q_data in questions_data:
-            new_question = Question(
-                subject=q_data['subject'],
-                text=q_data['text'],
-                options=json.dumps(q_data['options']),
-                answer=q_data['answer']
-            )
-            db.session.add(new_question)
-        
-        db.session.commit()
-        return jsonify({'message': 'Đã tải lên câu hỏi thành công'}), 200
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'message': f'Lỗi khi xử lý file Excel: {str(e)}'}), 500
-
-@app.route('/subjects', methods=['GET'])
-@login_required
-def get_subjects():
-    """Lấy danh sách các môn học có trong database."""
-    subjects = db.session.query(Question.subject).distinct().all()
-    subject_list = [s[0] for s in subjects]
-    return jsonify(subject_list)
-
-@app.route('/questions/<string:subject>', methods=['GET'])
-@login_required
-def get_questions(subject):
-    """Lấy tất cả câu hỏi theo môn học."""
-    questions = Question.query.filter_by(subject=subject).all()
-    question_list = [{
-        'id': q.id,
-        'subject': q.subject,
-        'text': q.text,
-        'options': json.loads(q.options),
-        'answer': q.answer
-    } for q in questions]
-    return jsonify(question_list)
-
-if __name__ == '__main__':
-    with app.app_context():
-        # Tạo bảng nếu chưa có và thêm admin user
-        db.create_all()
-        # Thêm admin user nếu chưa tồn tại
-        admin_user = User.query.filter_by(username='vinhnguyen').first()
-        if not admin_user:
-            admin_user = User(username='vinhnguyen')
-            admin_user.set_password('vinh123')
-            db.session.add(admin_user)
-            db.session.commit()
-    app.run(debug=True)
+# ---------- Run ----------
+if __name__ == "__main__":
+    threading.Thread(target=keep_alive, daemon=True).start()
+    app.run(host="0.0.0.0", port=5000, debug=True)

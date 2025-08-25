@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chọn môn thi</title>
+</head>
+<body>
+    <h2>Chọn môn thi để làm thử</h2>
+    <form method="POST">
+        <select name="mamon" required>
+            {% for m in monthi %}
+            <option value="{{ m.mamon }}">{{ m.tenmon }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Bắt đầu thi</button>
+    </form>
+    <p><a href="{{ url_for('dashboard') }}">← Quay lại</a></p>
+</body>
+</html>

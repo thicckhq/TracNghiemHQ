@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bảng điều khiển</title>
+</head>
+<body>
+    <h2>Xin chào {{ user }}!</h2>
+    <p>Vai trò: {{ role }}</p>
+
+    <ul>
+        {% if role == "admin" %}
+        <li><a href="{{ url_for('admin_users') }}">Quản trị người dùng</a></li>
+        {% endif %}
+        <li><a href="{{ url_for('upload_bodethi') }}">Nhập bộ đề thi (Excel)</a></li>
+        <li><a href="{{ url_for('thithu') }}">Thi thử</a></li>
+        <li><a href="{{ url_for('logout') }}">Đăng xuất</a></li>
+    </ul>
+</body>
+</html>
