@@ -122,6 +122,10 @@ def logout():
 
 # ---------- Trang chính ----------
 @app.route('/')
+def home():
+    return redirect(url_for('login'))
+
+@app.route('/index')
 def index():
     if 'username' not in session:
         return redirect(url_for('login'))
