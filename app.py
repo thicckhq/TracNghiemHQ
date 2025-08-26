@@ -216,6 +216,16 @@ def tai_khoan():
         is_admin=session.get("is_admin")
     )
 
+# ---------- Tác giả ----------
+@app.route('/tac-gia')
+def tac_gia():
+    tac_gia_info = {
+        "ten": "Nguyễn Doãn Vinh",
+        "mo_ta": "Tác giả ứng dụng luyện thi trắc nghiệm hải quan.",
+        "anh_qr": url_for('static', filename='images/qr.png')
+    }
+    return render_template('tac_gia.html', tac_gia=tac_gia_info)
+
 # ---------- Run ----------
 if __name__ == "__main__":
     app.run(debug=True)
