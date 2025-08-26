@@ -6,20 +6,19 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from sqlalchemy import create_engine, text
 from werkzeug.security import check_password_hash, generate_password_hash
 import pandas as pd
-import smtplib
-from email.mime.text import MIMEText
 
 # ---------- Flask config ----------
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "secret123")
 
 # ---------- Database config ----------
-DATABASE_URL = os.getenv("DATABASE_URL",
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
     "postgresql://vinhnguyen:uDpQGHxIAMFtuWlXztNE86cDAXmNF4VH@dpg-d2m1nljuibrs73fo7dig-a.oregon-postgres.render.com/db_tracnghiemhq"
 )
 engine = create_engine(DATABASE_URL, echo=False)
 
-# ---------- Ping thread tránh ngủ đông ----------
+# ---------- Ping thread tránh Render ngủ đông ----------
 def ping_server():
     while True:
         try:
@@ -34,7 +33,6 @@ threading.Thread(target=ping_server, daemon=True).start()
 # ---------- Trang mặc định ----------
 @app.route('/')
 def home():
-    # Khi mở app sẽ vào login trước
     return redirect(url_for('login'))
 
 # ---------- Đăng nhập ----------
@@ -55,28 +53,13 @@ def login():
                 session['username'] = user["username"]
                 session['ten_thuc'] = user.get("ten_thuc", "Người dùng")
                 session['is_admin'] = user.get("is_admin", False)
-                return redirect(url_for('index'))  # chuyển về giao diện chính
+                return redirect(url_for('index'))
             else:
                 flash("Sai mật khẩu!")
         else:
             flash("Không tìm thấy người dùng!")
 
     return render_template('login.html')
-
-# ---------- Kiểm tra username tồn tại ----------
-@app.route('/check-username', methods=['POST'])
-def check_username():
-    username = request.form.get('username')
-    if not username:
-        return jsonify({"exists": False})
-    
-    with engine.connect() as conn:
-        user = conn.execute(
-            text("SELECT 1 FROM Nguoidung WHERE username=:u"),
-            {"u": username}
-        ).first()
-    
-    return jsonify({"exists": True if user else False})
 
 # ---------- Đăng ký ----------
 @app.route('/register', methods=['POST'])
@@ -131,12 +114,59 @@ def logout():
 def index():
     if 'username' not in session:
         return redirect(url_for('login'))
-
     return render_template(
         'index.html',
         ten_thuc=session.get("ten_thuc", "Người dùng"),
         is_admin=session.get("is_admin") or False
     )
+
+# ---------- Trang Tài khoản ----------
+@app.route('/tai-khoan', methods=['GET', 'POST'])
+def tai_khoan():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    username = session['username']
+
+    if request.method == 'POST':
+        new_pw = request.form.get('password')
+        ten_thuc = request.form.get('ten_thuc')
+        so_dien_thoai = request.form.get('so_dien_thoai')
+        email = request.form.get('email')
+
+        with engine.begin() as conn:
+            if new_pw:
+                pw_hash = generate_password_hash(new_pw)
+                conn.execute(text("""
+                    UPDATE Nguoidung 
+                    SET password_hash=:pw, ten_thuc=:t, so_dien_thoai=:sdt, email=:e 
+                    WHERE username=:u
+                """), {"pw": pw_hash, "t": ten_thuc, "sdt": so_dien_thoai, "e": email, "u": username})
+            else:
+                conn.execute(text("""
+                    UPDATE Nguoidung 
+                    SET ten_thuc=:t, so_dien_thoai=:sdt, email=:e 
+                    WHERE username=:u
+                """), {"t": ten_thuc, "sdt": so_dien_thoai, "e": email, "u": username})
+
+        flash("Cập nhật thông tin thành công!")
+        return redirect(url_for('tai_khoan'))
+
+    # Lấy lại thông tin user
+    with engine.connect() as conn:
+        user = conn.execute(
+            text("SELECT username, ten_thuc, so_dien_thoai, email, mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
+            {"u": username}
+        ).mappings().first()
+
+    mon_map = {
+        1: "Pháp luật hải quan",
+        2: "Kỹ thuật nghiệp vụ ngoại thương",
+        3: "Kỹ thuật nghiệp vụ hải quan"
+    }
+    mon_dk = mon_map.get(user.get("mon_dang_ky"), "Chưa đăng ký môn học")
+
+    return render_template("tai_khoan.html", user=user, mon_dk=mon_dk)
 
 # ---------- Quản trị ----------
 @app.route('/quan-tri')
@@ -145,7 +175,9 @@ def quan_tri():
         return "Bạn không có quyền truy cập!"
 
     with engine.connect() as conn:
-        users = conn.execute(text("SELECT username, ten_thuc, email, cong_ty, is_admin FROM Nguoidung")).mappings().all()
+        users = conn.execute(text(
+            "SELECT username, ten_thuc, email, cong_ty, is_admin FROM Nguoidung"
+        )).mappings().all()
 
     return render_template('quan_tri.html', users=users)
 
@@ -191,6 +223,8 @@ def thi_thu():
             ).mappings().all()
         return render_template('lam_bai.html', cauhoi=cauhoi)
     return render_template('thi_thu.html', monthi=monthi)
+
+# ---------- Dummy route để tránh lỗi (nếu template gọi tới) ----------
 @app.route('/tong-hop-kien-thuc')
 def tong_hop_kien_thuc():
     return "Trang Tổng hợp kiến thức (đang phát triển)"
