@@ -123,7 +123,7 @@ def index():
 # ---------- Trang Tài khoản ----------
 @app.route('/tai-khoan', methods=['GET', 'POST'])
 def tai_khoan():
-    print("DEBUG SESSION:", dict(session))
+    
     if 'username' not in session:
         return redirect(url_for('login'))
 
