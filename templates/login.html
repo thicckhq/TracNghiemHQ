@@ -216,11 +216,11 @@
       if(pw!==pw2){ document.getElementById('err_pw2').style.display='block'; ok=false; }
       else document.getElementById('err_pw2').style.display='none';
 
-      const emailPattern=/^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$/i;
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
       if(email && !emailPattern.test(email)){ document.getElementById('err_email').style.display='block'; ok=false; }
       else document.getElementById('err_email').style.display='none';
 
-      const phonePattern=/^[0-9]{9,11}$/;
+      const phonePattern = /^[0-9]{9,11}$/;
       if(phone && !phonePattern.test(phone)){ document.getElementById('err_phone').style.display='block'; ok=false; }
       else document.getElementById('err_phone').style.display='none';
 
