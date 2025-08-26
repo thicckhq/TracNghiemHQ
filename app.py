@@ -27,10 +27,9 @@ def ping_server():
             requests.get(url)
         except Exception as e:
             print("Ping error:", e)
-        time.sleep(600)  # 10 phút
+        time.sleep(600)
 
 threading.Thread(target=ping_server, daemon=True).start()
-
 
 # ---------- Đăng nhập ----------
 @app.route('/login', methods=['GET', 'POST'])
@@ -58,7 +57,6 @@ def login():
 
     return render_template('login.html')
 
-
 # ---------- Kiểm tra username tồn tại ----------
 @app.route('/check-username', methods=['POST'])
 def check_username():
@@ -74,7 +72,6 @@ def check_username():
     
     return jsonify({"exists": True if user else False})
 
-
 # ---------- Đăng ký ----------
 @app.route('/register', methods=['POST'])
 def register():
@@ -84,6 +81,8 @@ def register():
     phone = request.form.get('phone')
     email = request.form.get('email')
     company = request.form.get('company')
+    mon_dang_ky = request.form.get('mon_dang_ky')
+    ngay_het_han = request.form.get('ngay_het_han')
 
     if not username or not password:
         flash("Thiếu thông tin bắt buộc!")
@@ -100,8 +99,9 @@ def register():
 
         pw_hash = generate_password_hash(password)
         conn.execute(text("""
-            INSERT INTO Nguoidung (username, password_hash, ten_thuc, phone, email, cong_ty, is_admin)
-            VALUES (:u, :p, :t, :ph, :e, :c, false)
+            INSERT INTO Nguoidung 
+            (username, password_hash, ten_thuc, so_dien_thoai, email, cong_ty)
+            VALUES (:u, :p, :t, :ph, :e, :c)
         """), {
             "u": username, "p": pw_hash, "t": display_name,
             "ph": phone, "e": email, "c": company
@@ -109,7 +109,6 @@ def register():
 
     flash("Đăng ký thành công, vui lòng đăng nhập!")
     return redirect(url_for('login'))
-
 
 # ---------- Quên mật khẩu ----------
 @app.route('/forgot-password', methods=['POST'])
@@ -141,28 +140,24 @@ def forgot_password():
 
     return redirect(url_for('login'))
 
-
 # ---------- Đăng xuất ----------
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
 
-
 # ---------- Trang chính ----------
 @app.route('/')
 def index():
     if 'username' not in session:
         return redirect(url_for('login'))
-
     return render_template(
         'index.html',
         ten_thuc=session.get("ten_thuc"),
         is_admin=session.get("is_admin")
     )
 
-
-# ---------- Quản trị người dùng ----------
+# ---------- Quản trị ----------
 @app.route('/quan-tri')
 def quan_tri():
     if not session.get("is_admin"):
@@ -173,7 +168,6 @@ def quan_tri():
 
     return render_template('quan_tri.html', users=users)
 
-
 # ---------- Nhập bộ đề thi ----------
 @app.route('/nhap-bodethi', methods=['GET', 'POST'])
 def nhap_bodethi():
@@ -181,7 +175,6 @@ def nhap_bodethi():
         file = request.files['file']
         if file.filename.endswith('.xlsx'):
             df = pd.read_excel(file)
-
             with engine.begin() as conn:
                 conn.execute(text("DELETE FROM Bodethi"))
                 for _, row in df.iterrows():
@@ -201,16 +194,13 @@ def nhap_bodethi():
             return "Đã nhập bộ đề thi thành công!"
         else:
             return "Chỉ chấp nhận file Excel .xlsx"
-
     return render_template('nhap_bodethi.html')
-
 
 # ---------- Thi thử ----------
 @app.route('/thi-thu', methods=['GET', 'POST'])
 def thi_thu():
     with engine.connect() as conn:
         monthi = conn.execute(text("SELECT * FROM Monthi")).mappings().all()
-
     if request.method == 'POST':
         ma_mon = request.form.get('ten_mon_thi')
         with engine.connect() as conn:
@@ -219,9 +209,7 @@ def thi_thu():
                 {"m": ma_mon}
             ).mappings().all()
         return render_template('lam_bai.html', cauhoi=cauhoi)
-
     return render_template('thi_thu.html', monthi=monthi)
-
 
 # ---------- Run ----------
 if __name__ == "__main__":
