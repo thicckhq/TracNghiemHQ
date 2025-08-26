@@ -31,6 +31,12 @@ def ping_server():
 
 threading.Thread(target=ping_server, daemon=True).start()
 
+# ---------- Trang mặc định ----------
+@app.route('/')
+def home():
+    # Khi mở app sẽ vào login trước
+    return redirect(url_for('login'))
+
 # ---------- Đăng nhập ----------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -49,7 +55,7 @@ def login():
                 session['username'] = user["username"]
                 session['ten_thuc'] = user["ten_thuc"]
                 session['is_admin'] = user["is_admin"]
-                return redirect(url_for('index'))
+                return redirect(url_for('index'))  # chuyển về giao diện chính
             else:
                 flash("Sai mật khẩu!")
         else:
@@ -121,11 +127,15 @@ def logout():
     return redirect(url_for('login'))
 
 # ---------- Trang chính ----------
-@app.route('/')
-def home():
-    return redirect(url_for('login'))
-
-
+@app.route('/index')
+def index():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template(
+        'index.html',
+        ten_thuc=session.get("ten_thuc"),
+        is_admin=session.get("is_admin")
+    )
 
 # ---------- Quản trị ----------
 @app.route('/quan-tri')
