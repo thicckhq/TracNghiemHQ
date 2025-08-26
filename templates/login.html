@@ -88,7 +88,8 @@
       <h2>Đăng ký tài khoản</h2>
       <form id="regForm" method="POST" action="/register">
         <label>Tên người dùng *</label>
-        <input type="text" name="username" required />
+        <input type="text" id="reg_username" name="username" required />
+        <div id="err_username" class="error">Tên đăng nhập đã tồn tại.</div>
 
         <label>Mật khẩu *</label>
         <div class="pw-wrap">
@@ -148,8 +149,10 @@
   <div id="qrOverlay" class="overlay" role="dialog" aria-modal="true">
     <div class="close" onclick="closeQR()">×</div>
     <div class="overlay-content">
-      <div style="margin-bottom:10px;">Hãy kết bạn để tôi có thể hỗ trợ bạn</div>
+      <div style="margin-bottom:10px;">Liên hệ Admin: <b>Nguyễn Doãn Vinh</b></div>
       <img id="qrImg" src="edc8b33d-bcb5-45bc-b678-e83d326ebc69.png" alt="QR Zalo Nguyễn Doãn Vinh" />
+      <div class="actions">
+        <a class="open-zalo" href="https://zalo.me/" target="_blank" rel="noopener">Mở Zalo trực tiếp</a>
       </div>
     </div>
   </div>
@@ -174,12 +177,38 @@
       if(e.target.id==='qrOverlay') closeQR();
     });
 
+    // Kiểm tra username tồn tại
+    document.getElementById('reg_username').addEventListener('blur', function(){
+      const username = this.value.trim();
+      if(username){
+        fetch('/check-username', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'username=' + encodeURIComponent(username)
+        })
+        .then(res => res.json())
+        .then(data => {
+          if(data.exists){
+            document.getElementById('err_username').style.display = 'block';
+          }else{
+            document.getElementById('err_username').style.display = 'none';
+          }
+        });
+      }
+    });
+
+    // Kiểm tra validate khi submit
     document.getElementById('regForm').addEventListener('submit', function(e){
       let ok=true;
       const pw = document.getElementById('reg_pw').value.trim();
       const pw2 = document.getElementById('reg_pw2').value.trim();
       const email = document.getElementById('reg_email').value.trim();
       const phone = document.getElementById('reg_phone').value.trim();
+
+      if(document.getElementById('err_username').style.display==='block'){
+        alert("Tên đăng nhập đã tồn tại, vui lòng chọn tên khác!");
+        ok=false;
+      }
 
       if(pw.length<6){ document.getElementById('err_pw').style.display='block'; ok=false; }
       else document.getElementById('err_pw').style.display='none';

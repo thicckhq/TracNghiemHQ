@@ -2,7 +2,7 @@ import os
 import threading
 import time
 import requests
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from sqlalchemy import create_engine, text
 from werkzeug.security import check_password_hash, generate_password_hash
 import pandas as pd
@@ -57,6 +57,22 @@ def login():
             flash("Không tìm thấy người dùng!")
 
     return render_template('login.html')
+
+
+# ---------- Kiểm tra username tồn tại ----------
+@app.route('/check-username', methods=['POST'])
+def check_username():
+    username = request.form.get('username')
+    if not username:
+        return jsonify({"exists": False})
+    
+    with engine.connect() as conn:
+        user = conn.execute(
+            text("SELECT 1 FROM Nguoidung WHERE username=:u"),
+            {"u": username}
+        ).first()
+    
+    return jsonify({"exists": True if user else False})
 
 
 # ---------- Đăng ký ----------
