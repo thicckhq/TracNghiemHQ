@@ -1,112 +1,213 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Đăng nhập</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .login-container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 350px;
-            text-align: center;
-        }
-
-        h2 {
-            color: #1a1a1a;
-            margin-bottom: 30px;
-            font-size: 24px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: bold;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box; /* Ensures padding doesn't affect total width */
-            font-size: 16px;
-        }
-
-        .login-button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .login-button:hover {
-            background-color: #0056b3;
-        }
-
-        .links-container {
-            margin-top: 20px;
-            font-size: 14px;
-        }
-
-        .links-container a {
-            color: #007bff;
-            text-decoration: none;
-            margin: 0 10px;
-            transition: color 0.3s ease;
-        }
-
-        .links-container a:hover {
-            color: #0056b3;
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Hệ thống tài khoản</title>
+  <style>
+    :root { --primary:#4facfe; --primary2:#00f2fe; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Times New Roman", serif;
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; margin: 0;
+    }
+    .container {
+      background:#fff; width:420px; padding:32px; border-radius:16px;
+      box-shadow:0 8px 20px rgba(0,0,0,.2);
+    }
+    h2 { margin:0 0 20px; text-align:center; color:#333; }
+    label { display:block; font-weight:bold; margin:10px 0 6px; }
+    input[type="text"],input[type="password"],input[type="email"],input[type="tel"]{
+      width:100%; padding:12px; border:1px solid #ccc; border-radius:10px;
+      font-family:"Times New Roman", serif;
+    }
+    input:focus{ border-color:var(--primary); outline:none; box-shadow:0 0 5px rgba(79,172,254,.5); }
+    button{
+      width:100%; padding:12px; border:none; border-radius:10px;
+      background:var(--primary); color:#fff; font-size:16px; cursor:pointer;
+      font-family:"Times New Roman", serif;
+    }
+    button:hover{ background:#00c6ff; }
+    .links{ text-align:center; margin-top:14px; font-size:14px; }
+    .links a{ color:var(--primary); text-decoration:none; margin:0 6px; cursor:pointer; }
+    .links a:hover{ text-decoration:underline; }
+    .hidden{ display:none; }
+    .pw-wrap{ position:relative; }
+    .pw-wrap input{ padding-right:42px; }
+    .toggle-eye{
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      cursor:pointer; user-select:none; font-size:14px; color:var(--primary);
+    }
+    .error{ color:#d00000; font-size:13px; display:none; margin-top:4px; }
+    .overlay{
+      position:fixed; inset:0; display:none; justify-content:center; align-items:center;
+      background:rgba(0,0,0,.92); z-index:9999; padding:24px;
+    }
+    .overlay.show{ display:flex; }
+    .overlay-content{ text-align:center; color:#fff; max-width:95vw; }
+    .overlay img{ max-width:92vw; max-height:80vh; border-radius:12px; }
+    .overlay .actions{ margin-top:14px; }
+    .overlay .open-zalo{
+      display:inline-block; padding:10px 14px; background:#2b7cff; color:#fff;
+      border-radius:10px; text-decoration:none;
+    }
+    .overlay .close{
+      position:absolute; top:12px; right:16px; font-size:28px; line-height:28px;
+      color:#fff; cursor:pointer; user-select:none;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
 
-    <div class="login-container">
-        <h2>Đăng nhập hệ thống</h2>
-        <form method="POST">
-            <div class="input-group">
-                <label for="username">Tên đăng nhập:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
+    <!-- ===== ĐĂNG NHẬP ===== -->
+    <div id="loginForm">
+      <h2>Đăng nhập hệ thống</h2>
+      <form method="POST" action="/login">
+        <label>Tên đăng nhập</label>
+        <input type="text" name="username" required />
 
-            <div class="input-group">
-                <label for="password">Mật khẩu:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-
-            <button type="submit" class="login-button">Đăng nhập</button>
-        </form>
-
-        <div class="links-container">
-            <a href="#">Đăng ký mới</a> |
-            <a href="#">Quên mật khẩu?</a>
+        <label>Mật khẩu</label>
+        <div class="pw-wrap">
+          <input type="password" id="login_pw" name="password" required />
+          <span class="toggle-eye" onclick="togglePw('login_pw')">👁</span>
         </div>
+
+        <button type="submit">Đăng nhập</button>
+      </form>
+      <div class="links">
+        <a href="javascript:void(0)" onclick="showForm('registerForm')">Đăng ký mới</a> |
+        <a href="javascript:void(0)" onclick="showForm('forgotForm')">Quên mật khẩu</a> |
+        <a href="javascript:void(0)" onclick="openQR()">Liên hệ Admin</a>
+      </div>
     </div>
 
+    <!-- ===== ĐĂNG KÝ ===== -->
+    <div id="registerForm" class="hidden">
+      <h2>Đăng ký tài khoản</h2>
+      <form id="regForm" method="POST" action="/register">
+        <label>Tên người dùng *</label>
+        <input type="text" name="username" required />
+
+        <label>Mật khẩu *</label>
+        <div class="pw-wrap">
+          <input type="password" id="reg_pw" name="password" required />
+          <span class="toggle-eye" onclick="togglePw('reg_pw')">👁</span>
+        </div>
+        <div id="err_pw" class="error">Mật khẩu phải từ 6 ký tự trở lên.</div>
+
+        <label>Nhập lại mật khẩu *</label>
+        <div class="pw-wrap">
+          <input type="password" id="reg_pw2" name="password2" required />
+          <span class="toggle-eye" onclick="togglePw('reg_pw2')">👁</span>
+        </div>
+        <div id="err_pw2" class="error">Mật khẩu nhập lại không trùng khớp.</div>
+
+        <label>Tên hiển thị</label>
+        <input type="text" name="display_name" />
+
+        <label>Số điện thoại</label>
+        <input type="tel" id="reg_phone" name="phone" />
+        <div id="err_phone" class="error">Số điện thoại không hợp lệ (9–11 số).</div>
+
+        <label>Email</label>
+        <input type="email" id="reg_email" name="email" />
+        <div id="err_email" class="error">Email không hợp lệ.</div>
+
+        <label>Tên công ty</label>
+        <input type="text" name="company" />
+
+        <button type="submit">Đăng ký</button>
+      </form>
+      <div class="links">
+        <a href="javascript:void(0)" onclick="showForm('loginForm')">Quay lại đăng nhập</a> |
+        <a href="javascript:void(0)" onclick="openQR()">Liên hệ Admin</a>
+      </div>
+    </div>
+
+    <!-- ===== QUÊN MẬT KHẨU ===== -->
+    <div id="forgotForm" class="hidden">
+      <h2>Quên mật khẩu</h2>
+      <form id="forgotFrm" method="POST" action="/forgot-password">
+        <label>Email đã đăng ký</label>
+        <input type="email" id="forgot_email" name="email" required />
+        <div id="err_forgot_email" class="error">Email không hợp lệ.</div>
+
+        <button type="submit">Gửi yêu cầu</button>
+      </form>
+      <div class="links">
+        <a href="javascript:void(0)" onclick="showForm('loginForm')">Quay lại đăng nhập</a> |
+        <a href="javascript:void(0)" onclick="openQR()">Liên hệ Admin</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== FULLSCREEN QR ===== -->
+  <div id="qrOverlay" class="overlay" role="dialog" aria-modal="true">
+    <div class="close" onclick="closeQR()">×</div>
+    <div class="overlay-content">
+      <div style="margin-bottom:10px;">Hãy kết bạn để tôi có thể hỗ trợ bạn</div>
+      <img id="qrImg" src="edc8b33d-bcb5-45bc-b678-e83d326ebc69.png" alt="QR Zalo Nguyễn Doãn Vinh" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showForm(id){
+      ['loginForm','registerForm','forgotForm'].forEach(x=>{
+        document.getElementById(x).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    function togglePw(id){
+      const el=document.getElementById(id);
+      el.type = (el.type==='password') ? 'text' : 'password';
+    }
+
+    function openQR(){ document.getElementById('qrOverlay').classList.add('show'); }
+    function closeQR(){ document.getElementById('qrOverlay').classList.remove('show'); }
+    document.getElementById('qrOverlay').addEventListener('click', (e)=>{
+      if(e.target.id==='qrOverlay') closeQR();
+    });
+
+    document.getElementById('regForm').addEventListener('submit', function(e){
+      let ok=true;
+      const pw = document.getElementById('reg_pw').value.trim();
+      const pw2 = document.getElementById('reg_pw2').value.trim();
+      const email = document.getElementById('reg_email').value.trim();
+      const phone = document.getElementById('reg_phone').value.trim();
+
+      if(pw.length<6){ document.getElementById('err_pw').style.display='block'; ok=false; }
+      else document.getElementById('err_pw').style.display='none';
+
+      if(pw!==pw2){ document.getElementById('err_pw2').style.display='block'; ok=false; }
+      else document.getElementById('err_pw2').style.display='none';
+
+      const emailPattern=/^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$/i;
+      if(email && !emailPattern.test(email)){ document.getElementById('err_email').style.display='block'; ok=false; }
+      else document.getElementById('err_email').style.display='none';
+
+      const phonePattern=/^[0-9]{9,11}$/;
+      if(phone && !phonePattern.test(phone)){ document.getElementById('err_phone').style.display='block'; ok=false; }
+      else document.getElementById('err_phone').style.display='none';
+
+      if(!ok) e.preventDefault();
+    });
+
+    document.getElementById('forgotFrm').addEventListener('submit', function(e){
+      const email = document.getElementById('forgot_email').value.trim();
+      const emailPattern=/^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$/i;
+      if(!emailPattern.test(email)){
+        document.getElementById('err_forgot_email').style.display='block';
+        e.preventDefault();
+      }else{
+        document.getElementById('err_forgot_email').style.display='none';
+      }
+    });
+  </script>
 </body>
 </html>

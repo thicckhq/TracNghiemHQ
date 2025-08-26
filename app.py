@@ -2,10 +2,12 @@ import os
 import threading
 import time
 import requests
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from sqlalchemy import create_engine, text
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 import pandas as pd
+import smtplib
+from email.mime.text import MIMEText
 
 # ---------- Flask config ----------
 app = Flask(__name__)
@@ -17,7 +19,7 @@ DATABASE_URL = os.getenv("DATABASE_URL",
 )
 engine = create_engine(DATABASE_URL, echo=False)
 
-# ---------- Ping thread để tránh ngủ đông ----------
+# ---------- Ping thread tránh ngủ đông ----------
 def ping_server():
     while True:
         try:
@@ -30,7 +32,7 @@ def ping_server():
 threading.Thread(target=ping_server, daemon=True).start()
 
 
-# ---------- Auth ----------
+# ---------- Đăng nhập ----------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -50,13 +52,81 @@ def login():
                 session['is_admin'] = user["is_admin"]
                 return redirect(url_for('index'))
             else:
-                return "Sai mật khẩu!"
+                flash("Sai mật khẩu!")
         else:
-            return "Không tìm thấy người dùng!"
+            flash("Không tìm thấy người dùng!")
 
     return render_template('login.html')
 
 
+# ---------- Đăng ký ----------
+@app.route('/register', methods=['POST'])
+def register():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    display_name = request.form.get('display_name')
+    phone = request.form.get('phone')
+    email = request.form.get('email')
+    company = request.form.get('company')
+
+    if not username or not password:
+        flash("Thiếu thông tin bắt buộc!")
+        return redirect(url_for('login'))
+
+    with engine.begin() as conn:
+        exist = conn.execute(
+            text("SELECT 1 FROM Nguoidung WHERE username=:u OR email=:e"),
+            {"u": username, "e": email}
+        ).first()
+        if exist:
+            flash("Tên đăng nhập hoặc Email đã tồn tại!")
+            return redirect(url_for('login'))
+
+        pw_hash = generate_password_hash(password)
+        conn.execute(text("""
+            INSERT INTO Nguoidung (username, password_hash, ten_thuc, phone, email, cong_ty, is_admin)
+            VALUES (:u, :p, :t, :ph, :e, :c, false)
+        """), {
+            "u": username, "p": pw_hash, "t": display_name,
+            "ph": phone, "e": email, "c": company
+        })
+
+    flash("Đăng ký thành công, vui lòng đăng nhập!")
+    return redirect(url_for('login'))
+
+
+# ---------- Quên mật khẩu ----------
+@app.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    email = request.form.get('email')
+
+    with engine.connect() as conn:
+        user = conn.execute(
+            text("SELECT username, password_hash FROM Nguoidung WHERE email=:e"),
+            {"e": email}
+        ).mappings().first()
+
+    if not user:
+        flash("Email không tồn tại trong hệ thống!")
+        return redirect(url_for('login'))
+
+    try:
+        msg = MIMEText(f"Xin chào {user['username']},\n\nYêu cầu khôi phục mật khẩu của bạn đã được ghi nhận. Vui lòng liên hệ admin để được hỗ trợ.")
+        msg["Subject"] = "Khôi phục mật khẩu"
+        msg["From"] = os.getenv("EMAIL_USER")
+        msg["To"] = email
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASS"))
+            server.send_message(msg)
+        flash("Email khôi phục đã được gửi!")
+    except Exception as e:
+        flash(f"Lỗi khi gửi email: {e}")
+
+    return redirect(url_for('login'))
+
+
+# ---------- Đăng xuất ----------
 @app.route('/logout')
 def logout():
     session.clear()
@@ -76,7 +146,7 @@ def index():
     )
 
 
-# ---------- Quản trị người dùng (chỉ Admin) ----------
+# ---------- Quản trị người dùng ----------
 @app.route('/quan-tri')
 def quan_tri():
     if not session.get("is_admin"):
@@ -88,7 +158,7 @@ def quan_tri():
     return render_template('quan_tri.html', users=users)
 
 
-# ---------- Nhập bộ đề thi từ Excel ----------
+# ---------- Nhập bộ đề thi ----------
 @app.route('/nhap-bodethi', methods=['GET', 'POST'])
 def nhap_bodethi():
     if request.method == 'POST':
@@ -97,7 +167,7 @@ def nhap_bodethi():
             df = pd.read_excel(file)
 
             with engine.begin() as conn:
-                conn.execute(text("DELETE FROM Bodethi"))  # xoá dữ liệu cũ
+                conn.execute(text("DELETE FROM Bodethi"))
                 for _, row in df.iterrows():
                     conn.execute(text("""
                         INSERT INTO Bodethi (ma_mon_thi, cau_hoi, dap_an_a, dap_an_b, dap_an_c, dap_an_d, dap_an_dung, ghi_chu)

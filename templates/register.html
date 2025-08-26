@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký tài khoản</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .register-container {
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+            width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            margin: 8px 0 5px;
+            display: block;
+        }
+
+        input[type="text"], input[type="password"], input[type="email"], input[type="tel"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 5px rgba(79,172,254,0.6);
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 14px;
+            color: #4facfe;
+            user-select: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4facfe;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #00c6ff;
+        }
+
+        .extra-links {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .extra-links a {
+            color: #4facfe;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .extra-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Đăng ký tài khoản</h2>
+        <form method="POST">
+            <!-- Thông tin bắt buộc -->
+            <label>Tên người dùng *</label>
+            <input type="text" name="username" required>
+
+            <label>Mật khẩu *</label>
+            <div class="password-wrapper">
+                <input type="password" name="password" id="password" required>
+                <span class="toggle-password" onclick="togglePassword('password')">👁</span>
+            </div>
+
+            <label>Nhập lại mật khẩu *</label>
+            <div class="password-wrapper">
+                <input type="password" name="confirm_password" id="confirm_password" required>
+                <span class="toggle-password" onclick="togglePassword('confirm_password')">👁</span>
+            </div>
+
+            <!-- Thông tin thêm -->
+            <label>Tên hiển thị</label>
+            <input type="text" name="display_name">
+
+            <label>Số điện thoại</label>
+            <input type="tel" name="phone">
+
+            <label>Email</label>
+            <input type="email" name="email">
+
+            <label>Tên công ty</label>
+            <input type="text" name="company">
+
+            <button type="submit">Đăng ký</button>
+        </form>
+
+        <div class="extra-links">
+            <a href="login.html">Quay lại đăng nhập</a>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            input.type = (input.type === "password") ? "text" : "password";
+        }
+    </script>
+</body>
+</html>
