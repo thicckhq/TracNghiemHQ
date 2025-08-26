@@ -53,8 +53,8 @@ def login():
         if user:
             if check_password_hash(user["password_hash"], password):
                 session['username'] = user["username"]
-                session['ten_thuc'] = user["ten_thuc"]
-                session['is_admin'] = user["is_admin"]
+                session['ten_thuc'] = user.get("ten_thuc", "Người dùng")
+                session['is_admin'] = user.get("is_admin", False)
                 return redirect(url_for('index'))  # chuyển về giao diện chính
             else:
                 flash("Sai mật khẩu!")
@@ -131,10 +131,11 @@ def logout():
 def index():
     if 'username' not in session:
         return redirect(url_for('login'))
+
     return render_template(
         'index.html',
-        ten_thuc=session.get("ten_thuc"),
-        is_admin=session.get("is_admin")
+        ten_thuc=session.get("ten_thuc", "Người dùng"),
+        is_admin=session.get("is_admin") or False
     )
 
 # ---------- Quản trị ----------
