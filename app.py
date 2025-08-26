@@ -85,13 +85,24 @@ def register():
         return redirect(url_for('login'))
 
     with engine.begin() as conn:
-        exist = conn.execute(
-            text("SELECT 1 FROM Nguoidung WHERE username=:u OR email=:e"),
-            {"u": username, "e": email}
+        # Kiểm tra sự tồn tại của username
+        exist_username = conn.execute(
+            text("SELECT 1 FROM Nguoidung WHERE username=:u"),
+            {"u": username}
         ).first()
-        if exist:
-            flash("Tên đăng nhập hoặc Email đã tồn tại!")
+        if exist_username:
+            flash("Tên đăng nhập đã tồn tại!")
             return redirect(url_for('login'))
+            
+        # Kiểm tra sự tồn tại của email (nếu email được cung cấp)
+        if email:
+            exist_email = conn.execute(
+                text("SELECT 1 FROM Nguoidung WHERE email=:e"),
+                {"e": email}
+            ).first()
+            if exist_email:
+                flash("Email đã tồn tại!")
+                return redirect(url_for('login'))
 
         pw_hash = generate_password_hash(password)
         conn.execute(text("""
