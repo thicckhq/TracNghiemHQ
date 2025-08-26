@@ -66,23 +66,19 @@
             <button id="practiceBtn" data-modal-target="practiceModal" class="bg-blue-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
                 Ôn tập trắc nghiệm
             </button>
-            <button id="wrongAnswersBtn" data-modal-target="wrongAnswersModal" class="bg-yellow-500 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105">
+            <button id="reviewBtn" data-modal-target="reviewModal" class="bg-green-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105">
                 Câu đã trả lời sai
             </button>
-            <button id="mockExamBtn" data-modal-target="mockExamModal" class="bg-green-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105">
+            <button id="testBtn" data-modal-target="testModal" class="bg-yellow-500 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105">
                 Thi thử
             </button>
-            <button id="accountBtn" data-modal-target="accountModal" class="bg-gray-700 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-gray-800 transition-all duration-300 transform hover:scale-105">
+            <!-- Nút "Tài khoản của tôi" được sửa để chuyển hướng -->
+            <a href="{{ url_for('tai_khoan') }}" class="bg-pink-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-pink-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
                 Tài khoản của tôi
-            </button>
-        </div>
-        
-        <!-- Thông tin tác giả và Liên hệ -->
-        <div class="mt-8 text-right text-gray-600 text-sm">
-            <p>Tác giả: Nguyễn Doãn Vinh</p>
-            <button id="showContactBtn" data-modal-target="contactModal" class="mt-2 text-teal-600 hover:text-teal-800 transition-colors duration-200">
-                Hiện thông tin liên hệ
-            </button>
+            </a>
+            <a href="{{ url_for('logout') }}" class="bg-gray-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+                Đăng xuất
+            </a>
         </div>
     </div>
 
@@ -103,18 +99,104 @@
     
     <!-- Các modal khác (giữ nguyên như cũ) -->
     <!-- Modal: Tổng hợp kiến thức -->
+    <div id="knowledgeModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Tổng hợp kiến thức</h2>
+            <p class="text-gray-600 mb-4 text-center">
+                Đây là nơi tổng hợp các kiến thức phục vụ việc ôn tập.
+            </p>
+            <div class="space-y-4">
+                <a href="{{ url_for('tong_hop_kien_thuc') }}" class="block bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-purple-700 transition-all duration-300 text-center">Xem tổng hợp</a>
+                <button data-modal-close="knowledgeModal" class="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Ôn tập trắc nghiệm -->
+    <div id="practiceModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Ôn tập trắc nghiệm</h2>
+            <p class="text-gray-600 mb-4 text-center">
+                Chọn môn để bắt đầu ôn tập.
+            </p>
+            <div class="space-y-4">
+                <a href="{{ url_for('on_tap') }}" class="block bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition-all duration-300 text-center">Bắt đầu ôn tập</a>
+                <button data-modal-close="practiceModal" class="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Câu đã trả lời sai -->
+    <div id="reviewModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Câu đã trả lời sai</h2>
+            <p class="text-gray-600 mb-4 text-center">
+                Ôn lại các câu hỏi đã trả lời sai để củng cố kiến thức.
+            </p>
+            <div class="space-y-4">
+                <a href="{{ url_for('cau_tra_loi_sai') }}" class="block bg-green-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-green-700 transition-all duration-300 text-center">Xem lại</a>
+                <button data-modal-close="reviewModal" class="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Thi thử -->
-    <!-- Modal: Tài khoản của tôi -->
-    <!-- Modal: Liên hệ Admin -->
-    <!-- Modal: Quiz -->
+    <div id="testModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Thi thử</h2>
+            <p class="text-gray-600 mb-4 text-center">
+                Làm bài thi thử để đánh giá năng lực của bạn.
+            </p>
+            <div class="space-y-4">
+                <a href="{{ url_for('thi_thu') }}" class="block bg-yellow-500 text-white font-semibold py-3 px-8 rounded-lg hover:bg-yellow-600 transition-all duration-300 text-center">Bắt đầu thi</a>
+                <button data-modal-close="testModal" class="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full">Đóng</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Giữ nguyên toàn bộ code modal + script phía dưới -->
-    <!-- (Không thay đổi, chỉ chỉnh phần nút Admin bên trên) -->
-
+    <!-- Javascript cho modals -->
     <script>
-        /* Giữ nguyên toàn bộ JavaScript trong file gốc */
+        const modalButtons = document.querySelectorAll('[data-modal-target]');
+        const modalCloseButtons = document.querySelectorAll('[data-modal-close]');
+
+        modalButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const modalId = button.dataset.modalTarget;
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            });
+        });
+
+        modalCloseButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const modalId = button.dataset.modalClose;
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+
+        // Đóng modal khi click ra ngoài
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-overlay')) {
+                    overlay.classList.add('hidden');
+                }
+            });
+        });
+
+        // Xử lý các thông báo flash
+        window.onload = function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(msg => {
+                setTimeout(() => {
+                    msg.classList.add('hidden');
+                }, 5000);
+            });
+        };
     </script>
 </body>
 </html>
