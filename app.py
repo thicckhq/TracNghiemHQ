@@ -9,6 +9,7 @@ import pandas as pd
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime
+import socket
 
 # ---------- Flask config ----------
 app = Flask(__name__)
@@ -181,17 +182,6 @@ def tai_khoan():
     else:
         flash("Không tìm thấy thông tin tài khoản.")
         return redirect(url_for('index'))
-
-# ---------- Đóng ứng dụng khi phát hiện port bị chiếm dụng ----------
-@app.before_first_request
-def check_port():
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(("127.0.0.1", 5000))
-        s.close()
-    except socket.error:
-        print("Port 5000 is already in use. Exiting.")
-        os._exit(1)
 
 # ---------- Chạy ứng dụng ----------
 if __name__ == '__main__':
