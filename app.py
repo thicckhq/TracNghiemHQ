@@ -187,6 +187,35 @@ def thi_thu():
         return render_template('lam_bai.html', cauhoi=cauhoi)
     return render_template('thi_thu.html', monthi=monthi)
 
+# ---------- New routes for other buttons ----------
+@app.route('/tong-hop-kien-thuc')
+def tong_hop_kien_thuc():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # This route would render a template showing knowledge content.
+    return render_template('tong_hop_kien_thuc.html')
+
+@app.route('/on-tap-trac-nghiem')
+def on_tap_trac_nghiem():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # This route would render a template for multiple-choice practice.
+    return render_template('on_tap_trac_nghiem.html')
+
+@app.route('/cau-tra-loi-sai')
+def cau_tra_loi_sai():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # This route would render a template to show previously answered wrong questions.
+    return render_template('cau_tra_loi_sai.html')
+
+@app.route('/tai-khoan')
+def tai_khoan():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # This route would render a template for the user's account information.
+    return render_template('tai_khoan.html', user=session)
+
 # ---------- Run ----------
 if __name__ == "__main__":
     app.run(debug=True)
