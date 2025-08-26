@@ -129,12 +129,12 @@ def index():
 # ---------- Trang Tài khoản ----------
 @app.route('/tai-khoan', methods=['GET', 'POST'])
 def tai_khoan():
-    print("DEBUG SESSION (tai_khoan):", dict(session))  # debug
     if 'username' not in session:
         return redirect(url_for('login'))
 
     username = session['username']
 
+    # --- Cập nhật thông tin nếu POST ---
     if request.method == 'POST':
         new_pw = request.form.get('password')
         ten_thuc = request.form.get('ten_thuc')
@@ -159,13 +159,19 @@ def tai_khoan():
         flash("Cập nhật thông tin thành công!")
         return redirect(url_for('tai_khoan'))
 
-    # Lấy lại thông tin user
+    # --- Lấy lại thông tin user ---
     with engine.connect() as conn:
         user = conn.execute(
-            text("SELECT username, ten_thuc, so_dien_thoai, email, mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
+            text("""SELECT username, ten_thuc, so_dien_thoai, email, mon_dang_ky, ngay_het_han 
+                    FROM Nguoidung WHERE username=:u"""),
             {"u": username}
         ).mappings().first()
 
+    if not user:
+        flash("Không tìm thấy thông tin người dùng!")
+        return redirect(url_for('index'))
+
+    # --- Xử lý môn đăng ký ---
     mon_map = {
         1: "Pháp luật hải quan",
         2: "Kỹ thuật nghiệp vụ ngoại thương",
@@ -173,7 +179,14 @@ def tai_khoan():
     }
     mon_dk = mon_map.get(user.get("mon_dang_ky"), "Chưa đăng ký môn học")
 
-    return render_template("tai_khoan.html", user=user, mon_dk=mon_dk)
+    # --- Xử lý ngày hết hạn ---
+    ngay_het_han = user.get("ngay_het_han")
+    if ngay_het_han is None:
+        ngay_het_han = "Chưa có"
+    else:
+        ngay_het_han = str(ngay_het_han)  # ép thành string để render
+
+    return render_template("tai_khoan.html", user=user, mon_dk=mon_dk, ngay_het_han=ngay_het_han)
 
 # ---------- Quản trị ----------
 @app.route('/quan-tri')
