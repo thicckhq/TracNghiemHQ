@@ -4,199 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ thống Trắc nghiệm Hải quan</title>
-    <!-- Tải Tailwind CSS từ CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: 'Times New Roman', Times, serif;
-        }
-        /* CSS tùy chỉnh cho pop-up (modal) */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: #ffffff;
-            padding: 2.5rem;
-            border-radius: 2rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-            max-width: 90%;
-            width: 500px;
-            max-height: 90%;
-            overflow-y: auto;
-            position: relative;
-            animation: fadeIn 0.3s ease-out;
-        }
-        .hidden {
-            display: none;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-    </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-500 to-purple-600 min-h-screen flex items-center justify-center p-4">
 
-    <!-- Container chính của ứng dụng -->
     <div class="bg-white bg-opacity-90 p-10 rounded-3xl shadow-2xl w-full max-w-4xl text-center">
-        <!-- Tiêu đề và Mô tả -->
         <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">Hệ thống Ôn thi Hải quan</h1>
         <p class="text-gray-600 mb-10 text-lg">Luyện tập, thi thử và nâng cao kiến thức nghiệp vụ khai báo hải quan.</p>
 
-        <!-- Thanh menu chính -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             {% if is_admin %}
-            <button id="adminBtn" data-modal-target="adminModal" class="bg-red-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105">
+            <a href="{{ url_for('quan_tri') }}" class="bg-red-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-red-700 transition transform hover:scale-105">
                 Quản trị Admin
-            </button>
+            </a>
             {% endif %}
-            <button id="knowledgeBtn" data-modal-target="knowledgeModal" class="bg-purple-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-purple-700 transition-all duration-300 transform hover:scale-105">
+            <a href="{{ url_for('tong_hop_kien_thuc') }}" class="bg-purple-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-purple-700 transition transform hover:scale-105">
                 Tổng hợp kiến thức
-            </button>
-            <button id="practiceBtn" data-modal-target="practiceModal" class="bg-blue-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+            </a>
+            <a href="{{ url_for('on_tap') }}" class="bg-blue-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-blue-700 transition transform hover:scale-105">
                 Ôn tập trắc nghiệm
-            </button>
-            <button id="reviewBtn" data-modal-target="reviewModal" class="bg-green-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105">
+            </a>
+            <a href="{{ url_for('cau_tra_loi_sai') }}" class="bg-green-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-green-700 transition transform hover:scale-105">
                 Câu đã trả lời sai
-            </button>
-            <button id="testBtn" data-modal-target="testModal" class="bg-yellow-500 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105">
+            </a>
+            <a href="{{ url_for('thi_thu') }}" class="bg-yellow-500 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-yellow-600 transition transform hover:scale-105">
                 Thi thử
-            </button>
-            <!-- Nút "Tài khoản của tôi" được sửa để chuyển hướng -->
-            <a href="{{ url_for('tai_khoan') }}" class="bg-pink-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-pink-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+            </a>
+            <a href="{{ url_for('tai_khoan') }}" class="bg-pink-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-pink-700 transition transform hover:scale-105">
                 Tài khoản của tôi
             </a>
-            <a href="{{ url_for('logout') }}" class="bg-gray-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+            <a href="{{ url_for('logout') }}" class="bg-gray-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-gray-700 transition transform hover:scale-105">
                 Đăng xuất
             </a>
         </div>
     </div>
-
-    <!-- Modal: Quản trị Admin -->
-    <div id="adminModal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Quản trị Admin</h2>
-            <p class="text-gray-600 mb-4 text-center">
-                Đây là nội dung dành cho quản trị viên.
-                Để truy cập, bạn cần đăng nhập với quyền admin.
-            </p>
-            <div class="space-y-4">
-                <a href="{{ url_for('quan_tri') }}" class="block bg-red-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-red-700 transition-all duration-300 text-center">Vào trang Quản trị</a>
-                <button data-modal-close="adminModal" class="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full">Đóng</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Các modal khác (giữ nguyên như cũ) -->
-    <!-- Modal: Tổng hợp kiến thức -->
-    <div id="knowledgeModal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Tổng hợp kiến thức</h2>
-            <p class="text-gray-600 mb-4 text-center">
-                Đây là nơi tổng hợp các kiến thức phục vụ việc ôn tập.
-            </p>
-            <div class="space-y-4">
-                <a href="{{ url_for('tong_hop_kien_thuc') }}" class="block bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-purple-700 transition-all duration-300 text-center">Xem tổng hợp</a>
-                <button data-modal-close="knowledgeModal" class="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full">Đóng</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Ôn tập trắc nghiệm -->
-    <div id="practiceModal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Ôn tập trắc nghiệm</h2>
-            <p class="text-gray-600 mb-4 text-center">
-                Chọn môn để bắt đầu ôn tập.
-            </p>
-            <div class="space-y-4">
-                <a href="{{ url_for('on_tap') }}" class="block bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition-all duration-300 text-center">Bắt đầu ôn tập</a>
-                <button data-modal-close="practiceModal" class="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full">Đóng</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Câu đã trả lời sai -->
-    <div id="reviewModal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Câu đã trả lời sai</h2>
-            <p class="text-gray-600 mb-4 text-center">
-                Ôn lại các câu hỏi đã trả lời sai để củng cố kiến thức.
-            </p>
-            <div class="space-y-4">
-                <a href="{{ url_for('cau_tra_loi_sai') }}" class="block bg-green-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-green-700 transition-all duration-300 text-center">Xem lại</a>
-                <button data-modal-close="reviewModal" class="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full">Đóng</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Thi thử -->
-    <div id="testModal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Thi thử</h2>
-            <p class="text-gray-600 mb-4 text-center">
-                Làm bài thi thử để đánh giá năng lực của bạn.
-            </p>
-            <div class="space-y-4">
-                <a href="{{ url_for('thi_thu') }}" class="block bg-yellow-500 text-white font-semibold py-3 px-8 rounded-lg hover:bg-yellow-600 transition-all duration-300 text-center">Bắt đầu thi</a>
-                <button data-modal-close="testModal" class="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full">Đóng</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Javascript cho modals -->
-    <script>
-        const modalButtons = document.querySelectorAll('[data-modal-target]');
-        const modalCloseButtons = document.querySelectorAll('[data-modal-close]');
-
-        modalButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const modalId = button.dataset.modalTarget;
-                const modal = document.getElementById(modalId);
-                if (modal) {
-                    modal.classList.remove('hidden');
-                }
-            });
-        });
-
-        modalCloseButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const modalId = button.dataset.modalClose;
-                const modal = document.getElementById(modalId);
-                if (modal) {
-                    modal.classList.add('hidden');
-                }
-            });
-        });
-
-        // Đóng modal khi click ra ngoài
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            overlay.addEventListener('click', (e) => {
-                if (e.target.classList.contains('modal-overlay')) {
-                    overlay.classList.add('hidden');
-                }
-            });
-        });
-
-        // Xử lý các thông báo flash
-        window.onload = function() {
-            const flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(msg => {
-                setTimeout(() => {
-                    msg.classList.add('hidden');
-                }, 5000);
-            });
-        };
-    </script>
 </body>
 </html>

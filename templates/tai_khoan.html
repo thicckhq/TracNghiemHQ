@@ -5,55 +5,33 @@
     <title>Tài khoản của tôi</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-2xl">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">👤 Tài khoản của tôi</h1>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
 
-        <!-- Phần Thông tin tài khoản -->
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Tài khoản của tôi</h1>
+
+        <!-- Thông tin tài khoản -->
         <div class="mb-8">
-            <div class="flex items-center justify-between mb-4 border-b-2 border-gray-200 pb-2">
-                <h2 class="text-2xl font-semibold text-gray-700">Thông tin tài khoản</h2>
-                <div class="flex items-center space-x-2 text-sm">
-                    <a href="#" class="text-indigo-600 font-semibold hover:underline">Chỉnh sửa</a>
-                    <span class="text-gray-400">|</span>
-                    <a href="{{ url_for('logout') }}" class="text-red-600 font-semibold hover:underline">Đăng xuất</a>
-                </div>
-            </div>
-            <div class="text-gray-700 space-y-3">
-                <p><b>Tên đăng nhập:</b> {{ username }}</p>
-                <p><b>Tên hiển thị:</b> {{ ten_thuc }}</p>
-                <p><b>Số điện thoại:</b> {{ so_dien_thoai }}</p>
-                <p><b>Email:</b> {{ email }}</p>
-                <p><b>Quyền hạn:</b> {% if is_admin %} Admin {% else %} Khách hàng {% endif %}</p>
+            <h2 class="text-xl font-semibold text-indigo-600 mb-4">Thông tin tài khoản</h2>
+            <p><strong>User:</strong> {{ user.username }}</p>
+            <p><strong>Password:</strong> ********</p>
+            <p><strong>Tên hiển thị:</strong> {{ user.ten_thuc }}</p>
+            <p><strong>Số điện thoại:</strong> {{ user.so_dien_thoai }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+
+            <div class="mt-4 flex space-x-4">
+                <a href="#" class="text-blue-600 hover:underline">Chỉnh sửa</a>
+                <a href="{{ url_for('logout') }}" class="text-red-600 hover:underline">Đăng xuất</a>
             </div>
         </div>
 
-        <!-- Phần Thông tin bản quyền -->
+        <!-- Thông tin bản quyền -->
         <div>
-            <div class="flex items-center justify-between mb-4 border-b-2 border-gray-200 pb-2">
-                <h2 class="text-2xl font-semibold text-gray-700">Thông tin bản quyền</h2>
-                <a href="#" class="text-indigo-600 font-semibold hover:underline text-sm">Đăng ký/Gia hạn</a>
-            </div>
-            <div class="text-gray-700 space-y-3">
-                <p><b>Môn đăng ký:</b> 
-                    {% if mon_dang_ky %}
-                        {% for mon in mon_dang_ky %}
-                            {{ mon }}{% if not loop.last %}, {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        Chưa đăng ký môn nào.
-                    {% endif %}
-                </p>
-                <p><b>Thời hạn sử dụng:</b> {{ ngay_het_han }}</p>
-            </div>
-        </div>
-
-        <div class="mt-8 text-center">
-            <a href="{{ url_for('index') }}" 
-               class="bg-indigo-600 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition-colors duration-300">
-               ⬅ Quay lại Trang chủ
-            </a>
+            <h2 class="text-xl font-semibold text-green-600 mb-4">Thông tin bản quyền</h2>
+            <p><strong>Môn đăng ký:</strong> {{ mon_dang_ky }}</p>
+            <p><strong>Thời hạn sử dụng:</strong> {{ user.ngay_het_han }}</p>
         </div>
     </div>
+
 </body>
 </html>

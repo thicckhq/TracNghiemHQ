@@ -100,11 +100,12 @@ def register():
         pw_hash = generate_password_hash(password)
         conn.execute(text("""
             INSERT INTO Nguoidung 
-            (username, password_hash, ten_thuc, so_dien_thoai, email, cong_ty)
-            VALUES (:u, :p, :t, :ph, :e, :c)
+            (username, password_hash, ten_thuc, so_dien_thoai, email, cong_ty, mon_dang_ky, ngay_het_han)
+            VALUES (:u, :p, :t, :ph, :e, :c, :m, :n)
         """), {
             "u": username, "p": pw_hash, "t": display_name,
-            "ph": phone, "e": email, "c": company
+            "ph": phone, "e": email, "c": company,
+            "m": mon_dang_ky, "n": ngay_het_han
         })
 
     flash("Đăng ký thành công, vui lòng đăng nhập!")
@@ -186,6 +187,37 @@ def thi_thu():
             ).mappings().all()
         return render_template('lam_bai.html', cauhoi=cauhoi)
     return render_template('thi_thu.html', monthi=monthi)
+
+# ---------- Tài khoản của tôi ----------
+@app.route('/tai-khoan')
+def tai_khoan():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    username = session['username']
+    with engine.connect() as conn:
+        user = conn.execute(
+            text("SELECT username, ten_thuc, so_dien_thoai, email, mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
+            {"u": username}
+        ).mappings().first()
+
+    if not user:
+        flash("Không tìm thấy thông tin tài khoản!")
+        return redirect(url_for('index'))
+
+    # Mapping môn đăng ký
+    mon_mapping = {
+        1: "Pháp luật hải quan",
+        2: "Kỹ thuật nghiệp vụ ngoại thương",
+        3: "Kỹ thuật nghiệp vụ hải quan"
+    }
+    mon_dang_ky = mon_mapping.get(user["mon_dang_ky"], "Chưa đăng ký")
+
+    return render_template(
+        'tai_khoan.html',
+        user=user,
+        mon_dang_ky=mon_dang_ky
+    )
 
 # ---------- Run ----------
 if __name__ == "__main__":
