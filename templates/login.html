@@ -129,24 +129,6 @@
       </div>
     </div>
 
-    <!-- ===== QUÊN MẬT KHẨU ===== -->
-    <div id="forgotForm" class="hidden">
-      <h2>Quên mật khẩu</h2>
-      <form id="forgotFrm" method="POST" action="/forgot-password">
-        <label>Email đã đăng ký</label>
-        <input type="email" id="forgot_email" name="email" required />
-        <div id="err_forgot_email" class="error">Email không hợp lệ.</div>
-
-        <button type="submit">Gửi yêu cầu</button>
-      </form>
-      <div class="links">
-        <a href="javascript:void(0)" onclick="showForm('loginForm')">Quay lại đăng nhập</a> |
-        <a href="javascript:void(0)" onclick="openQR()">Liên hệ Admin</a>
-      </div>
-    </div>
-
-  </div>
-
   <!-- ===== FULLSCREEN QR ===== -->
   <div id="qrOverlay" class="overlay" role="dialog" aria-modal="true">
     <div class="close" onclick="closeQR()">×</div>
@@ -216,11 +198,11 @@
       if(pw!==pw2){ document.getElementById('err_pw2').style.display='block'; ok=false; }
       else document.getElementById('err_pw2').style.display='none';
 
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+      const emailPattern=/^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$/i;
       if(email && !emailPattern.test(email)){ document.getElementById('err_email').style.display='block'; ok=false; }
       else document.getElementById('err_email').style.display='none';
 
-      const phonePattern = /^[0-9]{9,11}$/;
+      const phonePattern=/^[0-9]{9,11}$/;
       if(phone && !phonePattern.test(phone)){ document.getElementById('err_phone').style.display='block'; ok=false; }
       else document.getElementById('err_phone').style.display='none';
 
