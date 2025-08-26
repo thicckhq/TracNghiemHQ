@@ -125,15 +125,7 @@ def logout():
 def home():
     return redirect(url_for('login'))
 
-@app.route('/index')
-def index():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    return render_template(
-        'index.html',
-        ten_thuc=session.get("ten_thuc"),
-        is_admin=session.get("is_admin")
-    )
+
 
 # ---------- Quản trị ----------
 @app.route('/quan-tri')
