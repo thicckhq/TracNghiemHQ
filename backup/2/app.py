@@ -134,51 +134,29 @@ def tai_khoan():
 
     username = session['username']
 
-    # --- Nếu submit form ---
+    # --- Cập nhật thông tin nếu POST ---
     if request.method == 'POST':
-        new_pw = request.form.get('password', '').strip()
-        ten_thuc = request.form.get('ten_thuc', '').strip()
-        so_dien_thoai = request.form.get('so_dien_thoai', '').strip()
-        email = request.form.get('email', '').strip()
+        new_pw = request.form.get('password')
+        ten_thuc = request.form.get('ten_thuc')
+        so_dien_thoai = request.form.get('so_dien_thoai')
+        email = request.form.get('email')
 
-        # Validate backend (dù đã có JS kiểm tra nhưng nên kiểm tra lại)
-        import re
+        with engine.begin() as conn:
+            if new_pw:
+                pw_hash = generate_password_hash(new_pw)
+                conn.execute(text("""
+                    UPDATE Nguoidung 
+                    SET password_hash=:pw, ten_thuc=:t, so_dien_thoai=:sdt, email=:e 
+                    WHERE username=:u
+                """), {"pw": pw_hash, "t": ten_thuc, "sdt": so_dien_thoai, "e": email, "u": username})
+            else:
+                conn.execute(text("""
+                    UPDATE Nguoidung 
+                    SET ten_thuc=:t, so_dien_thoai=:sdt, email=:e 
+                    WHERE username=:u
+                """), {"t": ten_thuc, "sdt": so_dien_thoai, "e": email, "u": username})
 
-        if new_pw and len(new_pw) < 6:
-            flash("❌ Mật khẩu mới phải có ít nhất 6 ký tự.", "error")
-            return redirect(url_for('tai_khoan'))
-
-        phone_regex = re.compile(r"^[0-9]{9,11}$")
-        if so_dien_thoai and not phone_regex.match(so_dien_thoai):
-            flash("❌ Số điện thoại không hợp lệ (chỉ 9-11 số).", "error")
-            return redirect(url_for('tai_khoan'))
-
-        email_regex = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
-        if email and not email_regex.match(email):
-            flash("❌ Email không hợp lệ.", "error")
-            return redirect(url_for('tai_khoan'))
-
-        try:
-            with engine.begin() as conn:
-                if new_pw:
-                    pw_hash = generate_password_hash(new_pw)
-                    conn.execute(text("""
-                        UPDATE Nguoidung 
-                        SET password_hash=:pw, ten_thuc=:t, so_dien_thoai=:sdt, email=:e 
-                        WHERE username=:u
-                    """), {"pw": pw_hash, "t": ten_thuc, "sdt": so_dien_thoai, "e": email, "u": username})
-                else:
-                    conn.execute(text("""
-                        UPDATE Nguoidung 
-                        SET ten_thuc=:t, so_dien_thoai=:sdt, email=:e 
-                        WHERE username=:u
-                    """), {"t": ten_thuc, "sdt": so_dien_thoai, "e": email, "u": username})
-
-            flash("✅ Cập nhật thông tin thành công!", "success")
-        except Exception as e:
-            print("Lỗi update:", e)
-            flash("❌ Lỗi khi cập nhật thông tin. Vui lòng thử lại.", "error")
-
+        flash("Cập nhật thông tin thành công!")
         return redirect(url_for('tai_khoan'))
 
     # --- Lấy lại thông tin user ---
@@ -190,10 +168,10 @@ def tai_khoan():
         ).mappings().first()
 
     if not user:
-        flash("❌ Không tìm thấy thông tin người dùng.", "error")
+        flash("Không tìm thấy thông tin người dùng!")
         return redirect(url_for('index'))
 
-    # --- Map môn đăng ký ---
+    # --- Xử lý môn đăng ký (có thể nhiều giá trị) ---
     mon_map = {
         "1": "Pháp luật hải quan",
         "2": "Kỹ thuật nghiệp vụ ngoại thương",
@@ -207,8 +185,12 @@ def tai_khoan():
         mon_list = [mon_map.get(x.strip(), f"Không rõ ({x.strip()})") for x in raw_mon.split(",") if x.strip()]
         mon_dk = ", ".join(mon_list) if mon_list else "Chưa đăng ký môn học"
 
+    # --- Xử lý ngày hết hạn ---
     ngay_het_han = user.get("ngay_het_han")
-    ngay_het_han = str(ngay_het_han) if ngay_het_han else "Chưa có"
+    if ngay_het_han is None:
+        ngay_het_han = "Chưa có"
+    else:
+        ngay_het_han = str(ngay_het_han)
 
     return render_template("tai_khoan.html", user=user, mon_dk=mon_dk, ngay_het_han=ngay_het_han)
 
