@@ -2,21 +2,17 @@ import os
 import threading
 import time
 import requests
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from sqlalchemy import create_engine, text
 from werkzeug.security import check_password_hash, generate_password_hash
 import pandas as pd
-from flask_session import Session   # Thêm dòng này
 
 # ---------- Flask config ----------
 app = Flask(__name__)
-app.secret_key = "supersecretkey123"   # đặt cố định, không random
+app.secret_key = "supersecretkey123"   # Cố định key để session không bị reset
 
 # ---------- Session config ----------
-app.config["SESSION_TYPE"] = "filesystem"   # lưu session trên server (thư mục tạm)
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_FILE_DIR"] = "./.flask_session/"
-Session(app)
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # session sống 1 giờ
 
 # ---------- Database config ----------
 DATABASE_URL = os.getenv(
@@ -57,10 +53,11 @@ def login():
 
         if user:
             if check_password_hash(user["password_hash"], password):
+                session.permanent = True  # giữ session sống lâu
                 session['username'] = user["username"]
                 session['ten_thuc'] = user.get("ten_thuc", "Người dùng")
                 session['is_admin'] = user.get("is_admin", False)
-                print("LOGIN OK:", dict(session))   # log debug
+                print("LOGIN OK:", dict(session))  # debug
                 return redirect(url_for('index'))
             else:
                 flash("Sai mật khẩu!")
@@ -122,7 +119,7 @@ def logout():
 def index():
     if 'username' not in session:
         return redirect(url_for('login'))
-    print("DEBUG SESSION (index):", dict(session))   # log debug
+    print("DEBUG SESSION (index):", dict(session))  # debug
     return render_template(
         'index.html',
         ten_thuc=session.get("ten_thuc", "Người dùng"),
@@ -132,7 +129,7 @@ def index():
 # ---------- Trang Tài khoản ----------
 @app.route('/tai-khoan', methods=['GET', 'POST'])
 def tai_khoan():
-    print("DEBUG SESSION (tai_khoan):", dict(session))   # log debug
+    print("DEBUG SESSION (tai_khoan):", dict(session))  # debug
     if 'username' not in session:
         return redirect(url_for('login'))
 
