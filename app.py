@@ -191,6 +191,17 @@ def thi_thu():
             ).mappings().all()
         return render_template('lam_bai.html', cauhoi=cauhoi)
     return render_template('thi_thu.html', monthi=monthi)
+@app.route('/tong-hop-kien-thuc')
+def tong_hop_kien_thuc():
+    return "Trang Tổng hợp kiến thức (đang phát triển)"
+
+@app.route('/on-tap')
+def on_tap():
+    return "Trang Ôn tập (đang phát triển)"
+
+@app.route('/cau-tra-loi-sai')
+def cau_tra_loi_sai():
+    return "Trang Câu trả lời sai (đang phát triển)"
 
 # ---------- Run ----------
 if __name__ == "__main__":
