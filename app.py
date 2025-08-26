@@ -197,7 +197,7 @@ def tai_khoan():
     username = session['username']
     with engine.connect() as conn:
         user = conn.execute(
-            text("SELECT username, ten_thuc, so_dien_thoai, email, mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
+            text("SELECT username, ten_thuc, so_dien_thoai, email FROM Nguoidung WHERE username=:u"),
             {"u": username}
         ).mappings().first()
 
@@ -205,18 +205,15 @@ def tai_khoan():
         flash("Không tìm thấy thông tin tài khoản!")
         return redirect(url_for('index'))
 
-    # Mapping môn đăng ký
-    mon_mapping = {
-        1: "Pháp luật hải quan",
-        2: "Kỹ thuật nghiệp vụ ngoại thương",
-        3: "Kỹ thuật nghiệp vụ hải quan"
-    }
-    mon_dang_ky = mon_mapping.get(user["mon_dang_ky"], "Chưa đăng ký")
+    # Nếu chưa có cột mon_dang_ky và ngay_het_han thì gán tạm
+    mon_dang_ky = "Chưa đăng ký"
+    ngay_het_han = "Không có"
 
     return render_template(
         'tai_khoan.html',
         user=user,
-        mon_dang_ky=mon_dang_ky
+        mon_dang_ky=mon_dang_ky,
+        ngay_het_han=ngay_het_han
     )
 
 # ---------- Run ----------
