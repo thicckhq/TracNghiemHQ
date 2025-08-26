@@ -2,17 +2,14 @@ import os
 import threading
 import time
 import requests
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from sqlalchemy import create_engine, text
 from werkzeug.security import check_password_hash, generate_password_hash
 import pandas as pd
 
 # ---------- Flask config ----------
 app = Flask(__name__)
-app.secret_key = "supersecretkey123"   # Cố định key để session không bị reset
-
-# ---------- Session config ----------
-app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # session sống 1 giờ
+app.secret_key = os.getenv("SECRET_KEY", "secret123")
 
 # ---------- Database config ----------
 DATABASE_URL = os.getenv(
@@ -53,11 +50,9 @@ def login():
 
         if user:
             if check_password_hash(user["password_hash"], password):
-                session.permanent = True  # giữ session sống lâu
                 session['username'] = user["username"]
                 session['ten_thuc'] = user.get("ten_thuc", "Người dùng")
                 session['is_admin'] = user.get("is_admin", False)
-                print("LOGIN OK:", dict(session))  # debug
                 return redirect(url_for('index'))
             else:
                 flash("Sai mật khẩu!")
@@ -119,7 +114,6 @@ def logout():
 def index():
     if 'username' not in session:
         return redirect(url_for('login'))
-    print("DEBUG SESSION (index):", dict(session))  # debug
     return render_template(
         'index.html',
         ten_thuc=session.get("ten_thuc", "Người dùng"),
@@ -129,7 +123,6 @@ def index():
 # ---------- Trang Tài khoản ----------
 @app.route('/tai-khoan', methods=['GET', 'POST'])
 def tai_khoan():
-    print("DEBUG SESSION (tai_khoan):", dict(session))  # debug
     if 'username' not in session:
         return redirect(url_for('login'))
 
@@ -231,7 +224,7 @@ def thi_thu():
         return render_template('lam_bai.html', cauhoi=cauhoi)
     return render_template('thi_thu.html', monthi=monthi)
 
-# ---------- Dummy route để tránh lỗi ----------
+# ---------- Dummy route để tránh lỗi (nếu template gọi tới) ----------
 @app.route('/tong-hop-kien-thuc')
 def tong_hop_kien_thuc():
     return "Trang Tổng hợp kiến thức (đang phát triển)"
