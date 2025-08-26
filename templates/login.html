@@ -2,17 +2,111 @@
 <html>
 <head>
     <title>Đăng nhập</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #1a1a1a;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box; /* Ensures padding doesn't affect total width */
+            font-size: 16px;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-button:hover {
+            background-color: #0056b3;
+        }
+
+        .links-container {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .links-container a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .links-container a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h2>Đăng nhập hệ thống</h2>
-    <form method="POST">
-        <label>Tên đăng nhập:</label><br>
-        <input type="text" name="username" required><br><br>
 
-        <label>Mật khẩu:</label><br>
-        <input type="password" name="password" required><br><br>
+    <div class="login-container">
+        <h2>Đăng nhập hệ thống</h2>
+        <form method="POST">
+            <div class="input-group">
+                <label for="username">Tên đăng nhập:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
 
-        <button type="submit">Đăng nhập</button>
-    </form>
+            <div class="input-group">
+                <label for="password">Mật khẩu:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="login-button">Đăng nhập</button>
+        </form>
+
+        <div class="links-container">
+            <a href="#">Đăng ký mới</a> |
+            <a href="#">Quên mật khẩu?</a>
+        </div>
+    </div>
+
 </body>
 </html>
