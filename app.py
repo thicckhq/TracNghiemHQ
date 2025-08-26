@@ -116,7 +116,6 @@ def forgot_password():
     flash("Chức năng này đang cập nhật, hãy liên hệ Admin để lấy lại mật khẩu.")
     return redirect(url_for('login'))
 
-
 # ---------- Đăng xuất ----------
 @app.route('/logout')
 def logout():
