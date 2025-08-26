@@ -21,12 +21,14 @@
     input[type="text"],input[type="password"],input[type="email"],input[type="tel"]{
       width:100%; padding:12px; border:1px solid #ccc; border-radius:10px;
       font-family:"Times New Roman", serif;
+	margin-top:16px; 
     }
     input:focus{ border-color:var(--primary); outline:none; box-shadow:0 0 5px rgba(79,172,254,.5); }
     button{
       width:100%; padding:12px; border:none; border-radius:10px;
       background:var(--primary); color:#fff; font-size:16px; cursor:pointer;
       font-family:"Times New Roman", serif;
+	margin-top:16px; 
     }
     button:hover{ background:#00c6ff; }
     .links{ text-align:center; margin-top:14px; font-size:14px; }
@@ -59,6 +61,7 @@
   </style>
 </head>
 <body>
+
   <div class="container">
 
     <!-- ===== ĐĂNG NHẬP ===== -->
@@ -78,7 +81,6 @@
       </form>
       <div class="links">
         <a href="javascript:void(0)" onclick="showForm('registerForm')">Đăng ký mới</a> |
-        <a href="javascript:void(0)" onclick="showForm('forgotForm')">Quên mật khẩu</a> |
         <a href="javascript:void(0)" onclick="openQR()">Liên hệ Admin</a>
       </div>
     </div>

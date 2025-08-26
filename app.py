@@ -113,32 +113,9 @@ def register():
 # ---------- Quên mật khẩu ----------
 @app.route('/forgot-password', methods=['POST'])
 def forgot_password():
-    email = request.form.get('email')
-
-    with engine.connect() as conn:
-        user = conn.execute(
-            text("SELECT username, password_hash FROM Nguoidung WHERE email=:e"),
-            {"e": email}
-        ).mappings().first()
-
-    if not user:
-        flash("Email không tồn tại trong hệ thống!")
-        return redirect(url_for('login'))
-
-    try:
-        msg = MIMEText(f"Xin chào {user['username']},\n\nYêu cầu khôi phục mật khẩu của bạn đã được ghi nhận. Vui lòng liên hệ admin để được hỗ trợ.")
-        msg["Subject"] = "Khôi phục mật khẩu"
-        msg["From"] = os.getenv("EMAIL_USER")
-        msg["To"] = email
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASS"))
-            server.send_message(msg)
-        flash("Email khôi phục đã được gửi!")
-    except Exception as e:
-        flash(f"Lỗi khi gửi email: {e}")
-
+    flash("Chức năng này đang cập nhật, hãy liên hệ Admin để lấy lại mật khẩu.")
     return redirect(url_for('login'))
+
 
 # ---------- Đăng xuất ----------
 @app.route('/logout')
