@@ -6,8 +6,6 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from sqlalchemy import create_engine, text
 from werkzeug.security import check_password_hash, generate_password_hash
 import pandas as pd
-import smtplib
-from email.mime.text import MIMEText
 
 # ---------- Flask config ----------
 app = Flask(__name__)
@@ -81,8 +79,6 @@ def register():
     phone = request.form.get('phone')
     email = request.form.get('email')
     company = request.form.get('company')
-    mon_dang_ky = request.form.get('mon_dang_ky')
-    ngay_het_han = request.form.get('ngay_het_han')
 
     if not username or not password:
         flash("Thiếu thông tin bắt buộc!")
@@ -187,34 +183,38 @@ def thi_thu():
         return render_template('lam_bai.html', cauhoi=cauhoi)
     return render_template('thi_thu.html', monthi=monthi)
 
-# ---------- New routes for other buttons ----------
+# ---------- Tổng hợp kiến thức ----------
 @app.route('/tong-hop-kien-thuc')
 def tong_hop_kien_thuc():
     if 'username' not in session:
         return redirect(url_for('login'))
-    # This route would render a template showing knowledge content.
-    return render_template('tong_hop_kien_thuc.html')
+    return render_template('tong_hop.html')
 
+# ---------- Ôn tập trắc nghiệm ----------
 @app.route('/on-tap-trac-nghiem')
 def on_tap_trac_nghiem():
     if 'username' not in session:
         return redirect(url_for('login'))
-    # This route would render a template for multiple-choice practice.
-    return render_template('on_tap_trac_nghiem.html')
+    return render_template('on_tap.html')
 
-@app.route('/cau-tra-loi-sai')
-def cau_tra_loi_sai():
+# ---------- Câu đã trả lời sai ----------
+@app.route('/cau-sai')
+def cau_sai():
     if 'username' not in session:
         return redirect(url_for('login'))
-    # This route would render a template to show previously answered wrong questions.
-    return render_template('cau_tra_loi_sai.html')
+    return render_template('cau_sai.html')
 
+# ---------- Tài khoản ----------
 @app.route('/tai-khoan')
 def tai_khoan():
     if 'username' not in session:
         return redirect(url_for('login'))
-    # This route would render a template for the user's account information.
-    return render_template('tai_khoan.html', user=session)
+    return render_template(
+        'tai_khoan.html',
+        username=session.get("username"),
+        ten_thuc=session.get("ten_thuc"),
+        is_admin=session.get("is_admin")
+    )
 
 # ---------- Run ----------
 if __name__ == "__main__":
