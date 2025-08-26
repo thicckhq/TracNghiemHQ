@@ -81,8 +81,6 @@ def register():
     phone = request.form.get('phone')
     email = request.form.get('email')
     company = request.form.get('company')
-    mon_dang_ky = request.form.get('mon_dang_ky')
-    ngay_het_han = request.form.get('ngay_het_han')
 
     if not username or not password:
         flash("Thiếu thông tin bắt buộc!")
