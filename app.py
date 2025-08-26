@@ -8,8 +8,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import pandas as pd
 import smtplib
 from email.mime.text import MIMEText
-from datetime import datetime
-import socket
 
 # ---------- Flask config ----------
 app = Flask(__name__)
@@ -51,8 +49,6 @@ def login():
                 session['username'] = user["username"]
                 session['ten_thuc'] = user["ten_thuc"]
                 session['is_admin'] = user["is_admin"]
-                session['so_dien_thoai'] = user["so_dien_thoai"]
-                session['email'] = user["email"]
                 return redirect(url_for('index'))
             else:
                 flash("Sai mật khẩu!")
@@ -67,13 +63,13 @@ def check_username():
     username = request.form.get('username')
     if not username:
         return jsonify({"exists": False})
-
+    
     with engine.connect() as conn:
         user = conn.execute(
             text("SELECT 1 FROM Nguoidung WHERE username=:u"),
             {"u": username}
         ).first()
-
+    
     return jsonify({"exists": True if user else False})
 
 # ---------- Đăng ký ----------
@@ -100,18 +96,17 @@ def register():
         if exist:
             flash("Tên đăng nhập hoặc Email đã tồn tại!")
             return redirect(url_for('login'))
+
         pw_hash = generate_password_hash(password)
         conn.execute(text("""
-            INSERT INTO Nguoidung (username, password_hash, ten_thuc, so_dien_thoai, email, cong_ty)
+            INSERT INTO Nguoidung 
+            (username, password_hash, ten_thuc, so_dien_thoai, email, cong_ty)
             VALUES (:u, :p, :t, :ph, :e, :c)
         """), {
-            "u": username,
-            "p": pw_hash,
-            "t": display_name,
-            "ph": phone,
-            "e": email,
-            "c": company
+            "u": username, "p": pw_hash, "t": display_name,
+            "ph": phone, "e": email, "c": company
         })
+
     flash("Đăng ký thành công, vui lòng đăng nhập!")
     return redirect(url_for('login'))
 
@@ -121,112 +116,77 @@ def forgot_password():
     flash("Chức năng này đang cập nhật, hãy liên hệ Admin để lấy lại mật khẩu.")
     return redirect(url_for('login'))
 
-# ---------- Trang chủ ----------
+# ---------- Đăng xuất ----------
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+# ---------- Trang chính ----------
 @app.route('/')
 def index():
     if 'username' not in session:
         return redirect(url_for('login'))
-    return render_template('index.html', username=session['username'], is_admin=session.get('is_admin'))
+    return render_template(
+        'index.html',
+        ten_thuc=session.get("ten_thuc"),
+        is_admin=session.get("is_admin")
+    )
 
-# ---------- Đăng xuất ----------
-@app.route('/logout')
-def logout():
-    session.pop('username', None)
-    session.pop('ten_thuc', None)
-    session.pop('is_admin', None)
-    return redirect(url_for('login'))
+# ---------- Quản trị ----------
+@app.route('/quan-tri')
+def quan_tri():
+    if not session.get("is_admin"):
+        return "Bạn không có quyền truy cập!"
 
-# ---------- Tác giả ----------
-@app.route('/tac-gia')
-def tac_gia():
-    data = {
-        'ten': 'Nguyễn Văn A',
-        'mo_ta': 'Tác giả của bộ đề thi.',
-        'anh_qr': 'https://placehold.co/200x200/png?text=QR+Code'
-    }
-    return render_template('tac_gia.html', tac_gia=data)
-
-# ---------- Tài khoản của tôi ----------
-@app.route('/tai-khoan')
-def tai_khoan():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
-    username = session['username']
     with engine.connect() as conn:
-        user_info = conn.execute(
-            text("SELECT so_dien_thoai, email, mon_dang_ky, ngay_het_han, ten_thuc FROM Nguoidung WHERE username = :u"),
-            {"u": username}
-        ).mappings().first()
+        users = conn.execute(text("SELECT username, ten_thuc, email, cong_ty, is_admin FROM Nguoidung")).mappings().all()
 
-    if user_info:
-        # Chuyển đổi mon_dang_ky
-        mon_dang_ky_raw = user_info['mon_dang_ky']
-        mon_dang_ky_list = []
-        if mon_dang_ky_raw:
-            if '1' in mon_dang_ky_raw:
-                mon_dang_ky_list.append("Pháp luật hải quan")
-            if '2' in mon_dang_ky_raw:
-                mon_dang_ky_list.append("Kỹ thuật nghiệp vụ ngoại thương")
-            if '3' in mon_dang_ky_raw:
-                mon_dang_ky_list.append("Kỹ thuật nghiệp vụ hải quan")
+    return render_template('quan_tri.html', users=users)
 
-        return render_template('tai_khoan.html',
-                               username=username,
-                               ten_thuc=user_info['ten_thuc'],
-                               so_dien_thoai=user_info['so_dien_thoai'],
-                               email=user_info['email'],
-                               mon_dang_ky=mon_dang_ky_list,
-                               ngay_het_han=user_info['ngay_het_han'],
-                               is_admin=session.get('is_admin'))
-    else:
-        flash("Không tìm thấy thông tin tài khoản.")
-        return redirect(url_for('index'))
+# ---------- Nhập bộ đề thi ----------
+@app.route('/nhap-bodethi', methods=['GET', 'POST'])
+def nhap_bodethi():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file.filename.endswith('.xlsx'):
+            df = pd.read_excel(file)
+            with engine.begin() as conn:
+                conn.execute(text("DELETE FROM Bodethi"))
+                for _, row in df.iterrows():
+                    conn.execute(text("""
+                        INSERT INTO Bodethi (ma_mon_thi, cau_hoi, dap_an_a, dap_an_b, dap_an_c, dap_an_d, dap_an_dung, ghi_chu)
+                        VALUES (:ma_mon, :cau_hoi, :a, :b, :c, :d, :dung, :ghichu)
+                    """), {
+                        "ma_mon": row["Ma_mon_thi"],
+                        "cau_hoi": row["CAU_HOI"],
+                        "a": row["DAP_AN_A"],
+                        "b": row["DAP_AN_B"],
+                        "c": row["DAP_AN_C"],
+                        "d": row["DAP_AN_D"],
+                        "dung": row["DAP_AN_DUNG"],
+                        "ghichu": row.get("GHI_CHU", "")
+                    })
+            return "Đã nhập bộ đề thi thành công!"
+        else:
+            return "Chỉ chấp nhận file Excel .xlsx"
+    return render_template('nhap_bodethi.html')
 
-# ---------- Chạy ứng dụng ----------
-if __name__ == '__main__':
-    # Kiểm tra xem có cần tạo bảng không (chỉ chạy 1 lần)
-    with engine.begin() as conn:
-        conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS Nguoidung (
-                username VARCHAR(50) PRIMARY KEY,
-                password_hash VARCHAR(200) NOT NULL,
-                ten_thuc VARCHAR(100),
-                is_admin BOOLEAN DEFAULT FALSE,
-                so_dien_thoai VARCHAR(20),
-                email VARCHAR(100),
-                cong_ty VARCHAR(100),
-                mon_dang_ky VARCHAR(100),
-                ngay_het_han DATE
-            );
-        """))
-        conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS Cauhoi (
-                id SERIAL PRIMARY KEY,
-                ma_mon VARCHAR(50) NOT NULL,
-                cau_hoi TEXT NOT NULL,
-                dap_an_a TEXT,
-                dap_an_b TEXT,
-                dap_an_c TEXT,
-                dap_an_d TEXT,
-                dap_an_dung VARCHAR(1),
-                ghi_chu TEXT
-            );
-        """))
-        conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS Ketqua (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(50) REFERENCES Nguoidung(username),
-                ma_mon VARCHAR(50),
-                cau_tra_loi JSONB,
-                diem INTEGER,
-                ngay_thi DATE DEFAULT CURRENT_DATE
-            );
-        """))
-        conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS Monthi (
-                ma_mon VARCHAR(50) PRIMARY KEY,
-                ten_mon VARCHAR(100)
-            );
-        """))
+# ---------- Thi thử ----------
+@app.route('/thi-thu', methods=['GET', 'POST'])
+def thi_thu():
+    with engine.connect() as conn:
+        monthi = conn.execute(text("SELECT * FROM Monthi")).mappings().all()
+    if request.method == 'POST':
+        ma_mon = request.form.get('ten_mon_thi')
+        with engine.connect() as conn:
+            cauhoi = conn.execute(
+                text("SELECT * FROM Bodethi WHERE ma_mon_thi = :m"),
+                {"m": ma_mon}
+            ).mappings().all()
+        return render_template('lam_bai.html', cauhoi=cauhoi)
+    return render_template('thi_thu.html', monthi=monthi)
+
+# ---------- Run ----------
+if __name__ == "__main__":
     app.run(debug=True)
