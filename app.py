@@ -100,12 +100,11 @@ def register():
         pw_hash = generate_password_hash(password)
         conn.execute(text("""
             INSERT INTO Nguoidung 
-            (username, password_hash, ten_thuc, so_dien_thoai, email, cong_ty, mon_dang_ky, ngay_het_han)
-            VALUES (:u, :p, :t, :ph, :e, :c, :m, :n)
+            (username, password_hash, ten_thuc, so_dien_thoai, email, cong_ty)
+            VALUES (:u, :p, :t, :ph, :e, :c)
         """), {
             "u": username, "p": pw_hash, "t": display_name,
-            "ph": phone, "e": email, "c": company,
-            "m": mon_dang_ky, "n": ngay_het_han
+            "ph": phone, "e": email, "c": company
         })
 
     flash("Đăng ký thành công, vui lòng đăng nhập!")
@@ -187,34 +186,6 @@ def thi_thu():
             ).mappings().all()
         return render_template('lam_bai.html', cauhoi=cauhoi)
     return render_template('thi_thu.html', monthi=monthi)
-
-# ---------- Tài khoản của tôi ----------
-@app.route('/tai-khoan')
-def tai_khoan():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
-    username = session['username']
-    with engine.connect() as conn:
-        user = conn.execute(
-            text("SELECT username, ten_thuc, so_dien_thoai, email FROM Nguoidung WHERE username=:u"),
-            {"u": username}
-        ).mappings().first()
-
-    if not user:
-        flash("Không tìm thấy thông tin tài khoản!")
-        return redirect(url_for('index'))
-
-    # Nếu chưa có cột mon_dang_ky và ngay_het_han thì gán tạm
-    mon_dang_ky = "Chưa đăng ký"
-    ngay_het_han = "Không có"
-
-    return render_template(
-        'tai_khoan.html',
-        user=user,
-        mon_dang_ky=mon_dang_ky,
-        ngay_het_han=ngay_het_han
-    )
 
 # ---------- Run ----------
 if __name__ == "__main__":
