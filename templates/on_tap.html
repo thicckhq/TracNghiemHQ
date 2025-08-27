@@ -454,17 +454,19 @@
 
     	const answersContainer = questionCard.querySelector('#answers-container');
     	currentQuestion.answers.forEach((answer, ansIndex) => {
-        const label = document.createElement('label');
-        label.className = 'answer-label';
+    if (!answer || answer.trim() === "" || answer.toLowerCase() === "nan") return;
 
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.value = ansIndex;
+    const label = document.createElement('label');
+    label.className = 'answer-label';
 
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(answer));
-        answersContainer.appendChild(label);
-    	});
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = ansIndex;
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(answer));
+    answersContainer.appendChild(label);
+});
 
     	// 👇 Mở khóa lại nút Trả lời mỗi khi load câu hỏi mới
     	submitBtn.disabled = false;
@@ -523,16 +525,16 @@ submitBtn.addEventListener('click', () => {
     feedback.textContent = isCorrect ? '🎉 Chính xác! Tuyệt vời!' : '❌ Sai rồi! Cố gắng lần sau nhé!';
     quizQuestionsContainer.appendChild(feedback);
 
-    // 👇 Thêm phần hiển thị ghi chú
-    if (currentQuestion.note && currentQuestion.note.trim() !== "") {
-        const noteBox = document.createElement('div');
-        noteBox.className = 'question-feedback';
-        noteBox.style.backgroundColor = '#fff9c4'; // nền vàng nhạt
-        noteBox.style.color = '#555';
-        noteBox.style.marginTop = '10px';
-        noteBox.textContent = "💡 Ghi chú: " + currentQuestion.note;
-        quizQuestionsContainer.appendChild(noteBox);
-    }
+    // 👇 Thêm phần hiển thị ghi chú (chỉ khi có nội dung)
+if (currentQuestion.note && currentQuestion.note.trim() !== "" && currentQuestion.note.toLowerCase() !== "nan") {
+    const noteBox = document.createElement('div');
+    noteBox.className = 'question-feedback';
+    noteBox.style.backgroundColor = '#fff9c4'; // nền vàng nhạt
+    noteBox.style.color = '#555';
+    noteBox.style.marginTop = '10px';
+    noteBox.textContent = "💡 Ghi chú: " + currentQuestion.note;
+    quizQuestionsContainer.appendChild(noteBox);
+}
 
     submitBtn.disabled = true;
 });

@@ -444,6 +444,7 @@ def upload_bodethi():
 #---- Tạo ôn tập----
 # ---------- API: Lấy câu hỏi ngẫu nhiên theo lĩnh vực ----------
 # ---------- API: Lấy câu hỏi ngẫu nhiên theo lĩnh vực ----------
+# ---------- API: Lấy câu hỏi ngẫu nhiên theo lĩnh vực ----------
 @app.route("/api/get-question", methods=["POST"])
 @require_login
 def api_get_question():
@@ -497,25 +498,38 @@ def api_get_question():
 
         correct_indices = []
         if raw:
-            # Trường hợp nhiều đáp án, ví dụ "A,C"
+            # Trường hợp nhiều đáp án, ví dụ "A,C" hoặc "1,2"
             parts = [x.strip() for x in raw.replace(";", ",").split(",")]
             for p in parts:
                 if p in map_choice:
                     correct_indices.append(map_choice[p])
-                elif p.isdigit() and int(p) in [0,1,2,3]:
+                elif p.isdigit() and int(p) in [0, 1, 2, 3]:
                     correct_indices.append(int(p))
+
+        # ---- Lọc đáp án trống hoặc NaN ----
+        answers_raw = [
+            q.get("dap_an_a"),
+            q.get("dap_an_b"),
+            q.get("dap_an_c"),
+            q.get("dap_an_d"),
+        ]
+        answers = []
+        for ans in answers_raw:
+            if ans and str(ans).strip().lower() not in ["nan", "none", "null", ""]:
+                answers.append(str(ans).strip())
+
+        # ---- Lọc ghi chú ----
+        note = ""
+        ghi_chu = q.get("ghi_chu")
+        if ghi_chu and str(ghi_chu).strip().lower() not in ["nan", "none", "null", ""]:
+            note = str(ghi_chu).strip()
 
         formatted = {
             "id": q.get("id"),
             "question": q.get("cau_hoi", "Không có nội dung"),
-            "answers": [
-                q.get("dap_an_a"),
-                q.get("dap_an_b"),
-                q.get("dap_an_c"),
-                q.get("dap_an_d"),
-            ],
+            "answers": answers,
             "correct_indices": correct_indices,
-            "note": q.get("ghi_chu", "")
+            "note": note
         }
 
         return {"questions": [formatted]}
