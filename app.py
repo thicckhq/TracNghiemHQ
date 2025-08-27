@@ -188,6 +188,13 @@ def quan_tri():
 def tong_hop_kien_thuc():
     return render_template("tong_hop_kien_thuc.html")
 
+#----- Ôn Tập ------
+@app.route("/on-tap")
+@require_login
+def on_tap():
+    return render_template("on_tap.html")
+
+
 # ---------- Nhập bộ đề thi ----------
 @app.route('/nhap-bodethi', methods=['GET', 'POST'])
 @require_login
