@@ -78,14 +78,14 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-
+        
         with engine.connect() as conn:
             user = conn.execute(
                 text("SELECT * FROM Nguoidung WHERE username=:u"),
                 {"u": username}
             ).mappings().first()
 
-        if user and check_password_hash(user["password_hash"], password):
+        if user and user["password_hash"] == password:
             session_id = str(uuid.uuid4())
             session.permanent = True
             session['username'] = user["username"]
@@ -127,7 +127,7 @@ def register():
             flash("Tên đăng nhập hoặc Email đã tồn tại!")
             return redirect(url_for('login'))
 
-        pw_hash = generate_password_hash(password)
+        pw_hash = password
         conn.execute(text("""
             INSERT INTO Nguoidung 
             (username, password_hash, ten_thuc, so_dien_thoai, email, cong_ty)
@@ -167,6 +167,33 @@ def index():
 @require_login
 def tai_khoan():
     username = session['username']
+
+    # --- Cập nhật thông tin nếu POST ---
+    if request.method == 'POST':
+        new_pw = request.form.get('password')
+        ten_thuc = request.form.get('ten_thuc')
+        so_dien_thoai = request.form.get('so_dien_thoai')
+        email = request.form.get('email')
+
+        with engine.begin() as conn:
+            if new_pw:
+                pw_hash = generate_password_hash(new_pw)
+                conn.execute(text("""
+                    UPDATE Nguoidung 
+                    SET password_hash=:pw, ten_thuc=:t, so_dien_thoai=:sdt, email=:e 
+                    WHERE username=:u
+                """), {"pw": pw_hash, "t": ten_thuc, "sdt": so_dien_thoai, "e": email, "u": username})
+            else:
+                conn.execute(text("""
+                    UPDATE Nguoidung 
+                    SET ten_thuc=:t, so_dien_thoai=:sdt, email=:e 
+                    WHERE username=:u
+                """), {"t": ten_thuc, "sdt": so_dien_thoai, "e": email, "u": username})
+
+        flash("Cập nhật thông tin thành công!")
+        return redirect(url_for('tai_khoan'))
+
+    # --- Lấy lại thông tin user ---
     with engine.connect() as conn:
         user = conn.execute(
             text("""SELECT username, ten_thuc, so_dien_thoai, email, mon_dang_ky, ngay_het_han 
