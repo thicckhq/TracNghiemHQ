@@ -270,11 +270,6 @@ def cau_tra_loi_sai():
 
 # ----------Tạo mã thanh toán --------
 
-@app.route("/thanh-toan")
-def thanh_toan_page():
-    if "username" not in session:
-        return redirect(url_for("login"))
-    return render_template("thanh_toan.html", username=session["username"])
 
 
 
@@ -336,6 +331,11 @@ def tao_thanh_toan():
         "qr_base64": qr_base64,
         "noi_dung": noi_dung
     }
+@app.route("/thanh-toan")
+def thanh_toan_page():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    return render_template("thanh_toan.html", username=session["username"])
 
 # ---------- Run ----------
 if __name__ == "__main__":
