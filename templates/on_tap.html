@@ -392,95 +392,39 @@
         let currentQuestionIndex = 0;
 
         function renderTopicCards(subject) {
-    topicSelectionSection.innerHTML = '';
-    const topicList = topics[subject];
-    topicList.forEach(topic => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.topic = topic;
-        card.innerHTML = `<h3>${topic}</h3>`;
-        card.addEventListener('click', () => {
-            document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-
-            // ✅ Lấy tên môn thi cha để gửi cho API
-            const tenMonThi = getSubjectName(subject);  
-            startQuiz(tenMonThi, topic);
-        });
-        topicSelectionSection.appendChild(card);
-    });
-    topicSection.style.display = 'block';
-}
-
-// Map code -> tên môn thi trong DB
-function getSubjectName(subjectCode) {
-    switch (subjectCode) {
-        case 'phap_luat_hai_quan':
-            return 'Pháp luật hải quan';
-        case 'ky_thuat_nghiep_vu_ngoai_thuong':
-            return 'Kỹ thuật nghiệp vụ ngoại thương';
-        case 'ky_thuat_nghiep_vu_hai_quan':
-            return 'Kỹ thuật nghiệp vụ hải quan';
-        default:
-            return '';
-    }
-}
-
-
-
-	let currentQuizQuestions = [];
-let currentQuestionIndex = 0;
-let selectedTenMonThi = null;
-let usedQuestionIds = new Set(); // lưu các id câu hỏi đã dùng
-
-async function startQuiz(tenMonThi, topic) {
-    selectedTenMonThi = tenMonThi; // lưu lại môn thi
-    await loadNewQuestion(topic);
-}
-
-async function loadNewQuestion(topic) {
-    try {
-        const res = await fetch("/api/get-question", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                ten_mon_thi: selectedTenMonThi,
-                exclude_ids: Array.from(usedQuestionIds) // gửi danh sách id đã dùng
-            })
-        });
-
-        const data = await res.json();
-        if (!data.questions || data.questions.length === 0) {
-            quizQuestionsContainer.innerHTML = "<p>Đã hết câu hỏi cho môn này.</p>";
-            quizSection.style.display = 'block';
-            return;
+            topicSelectionSection.innerHTML = '';
+            const topicList = topics[subject];
+            topicList.forEach(topic => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.topic = topic;
+                card.innerHTML = `<h3>${topic}</h3>`;
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    startQuiz(topic);
+                });
+                topicSelectionSection.appendChild(card);
+            });
+            topicSection.style.display = 'block';
         }
 
-        let q = data.questions[0];
-        usedQuestionIds.add(q.id); // lưu lại id đã dùng
+        function startQuiz(topic) {
+            const subjectCode = getSubjectCodeFromTopic(topic);
+            currentQuizQuestions = quizData[subjectCode];
+            currentQuestionIndex = 0;
+            quizSection.style.display = 'block';
+            
+            quizTitle.textContent = topic;
+            
+            displayCurrentQuestion();
+            updateButtonVisibility();
+            closeBtn.style.display = 'block';
 
-        currentQuizQuestions = [q];
-        currentQuestionIndex = 0;
-        quizSection.style.display = 'block';
-
-        quizTitle.textContent = topic;
-        displayCurrentQuestion();
-        updateButtonVisibility();
-        closeBtn.style.display = 'block';
-
-    } catch (err) {
-        console.error("Lỗi khi tải câu hỏi:", err);
-        quizQuestionsContainer.innerHTML = "<p>Lỗi server!</p>";
-    }
-}
-
-// Khi bấm nút Câu tiếp
-nextBtn.addEventListener('click', () => {
-    if (selectedTenMonThi) {
-        loadNewQuestion(quizTitle.textContent);
-    }
-});
-
+            setTimeout(() => {
+                quizSection.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+        }
 
         function getSubjectCodeFromTopic(topic) {
             for (const subject in topics) {
@@ -585,7 +529,6 @@ nextBtn.addEventListener('click', () => {
         }
 
         function updateButtonVisibility() {
-            // Nút "Câu tiếp" luôn hiển thị
             nextBtn.style.display = 'inline-block';
         }
 
