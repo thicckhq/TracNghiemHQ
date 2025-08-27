@@ -254,16 +254,66 @@ def thi_thu():
     # TODO: code thi thử giữ nguyên của bạn
     return render_template("thi_thu.html")
 
-# ---------- Thanh toán ----------
-@app.route('/tao-thanh-toan', methods=['POST'])
-@require_login
-def tao_thanh_toan():
-    # TODO: code xử lý thanh toán bạn đã viết trước đó
-    return {"status": "ok"}
+# ----------Tạo mã thanh toán --------
 
+
+
+import urllib.parse
+
+@app.route('/tao-thanh-toan', methods=['POST'])
+def tao_thanh_toan():
+    if 'username' not in session:
+        return {"error": "Bạn chưa đăng nhập!"}, 403
+
+    username = session['username']
+    mon_selected = request.form.getlist('mon')
+    so_mon = len(mon_selected)
+
+    if so_mon == 0:
+        return {"error": "Vui lòng chọn ít nhất 1 môn!"}, 400
+
+    # Lấy ngày hết hạn từ DB
+    with engine.connect() as conn:
+        user = conn.execute(
+            text("SELECT ngay_het_han FROM Nguoidung WHERE username=:u"),
+            {"u": username}
+        ).mappings().first()
+
+    ngay_het_han = user.get("ngay_het_han") if user else None
+
+    # Tính số tiền
+    if not ngay_het_han:
+        if so_mon == 1:
+            so_tien = 200000
+        elif so_mon == 2:
+            so_tien = 350000
+        else:
+            so_tien = 500000
+    else:
+        so_tien = so_mon * 100000
+
+    noi_dung = f"{username} . Gia han TracNghiemHQ . {so_mon} mon"
+
+    # Dùng VietQR API
+    bank_code = "970415"  # Vietinbank
+    account_no = "109004999631"
+    url_qr = (
+        f"https://img.vietqr.io/image/{bank_code}-{account_no}-qr_only.png"
+        f"?amount={so_tien}&addInfo={urllib.parse.quote(noi_dung)}"
+    )
+
+    return {
+        "amount": so_tien,
+        "noi_dung": noi_dung,
+        "qr_url": url_qr
+    }
+
+
+#----- Hiện Thanh toán -----
 @app.route("/thanh-toan")
-@require_login
 def thanh_toan_page():
+    if "username" not in session:
+        return redirect(url_for("login"))
     return render_template("thanh_toan.html", username=session["username"])
 
 
