@@ -427,7 +427,11 @@ function getSubjectName(subjectCode) {
 }
 
 
-        let selectedTenMonThi = null;
+
+	let currentQuizQuestions = [];
+let currentQuestionIndex = 0;
+let selectedTenMonThi = null;
+let usedQuestionIds = new Set(); // lưu các id câu hỏi đã dùng
 
 async function startQuiz(tenMonThi, topic) {
     selectedTenMonThi = tenMonThi; // lưu lại môn thi
