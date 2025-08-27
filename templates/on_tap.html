@@ -392,22 +392,40 @@
         let currentQuestionIndex = 0;
 
         function renderTopicCards(subject) {
-            topicSelectionSection.innerHTML = '';
-            const topicList = topics[subject];
-            topicList.forEach(topic => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.dataset.topic = topic;
-                card.innerHTML = `<h3>${topic}</h3>`;
-                card.addEventListener('click', () => {
-                    document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
-                    startQuiz(topic);
-                });
-                topicSelectionSection.appendChild(card);
-            });
-            topicSection.style.display = 'block';
-        }
+    topicSelectionSection.innerHTML = '';
+    const topicList = topics[subject];
+    topicList.forEach(topic => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.topic = topic;
+        card.innerHTML = `<h3>${topic}</h3>`;
+        card.addEventListener('click', () => {
+            document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+
+            // ✅ Lấy tên môn thi cha để gửi cho API
+            const tenMonThi = getSubjectName(subject);  
+            startQuiz(tenMonThi, topic);
+        });
+        topicSelectionSection.appendChild(card);
+    });
+    topicSection.style.display = 'block';
+}
+
+// Map code -> tên môn thi trong DB
+function getSubjectName(subjectCode) {
+    switch (subjectCode) {
+        case 'phap_luat_hai_quan':
+            return 'Pháp luật hải quan';
+        case 'ky_thuat_nghiep_vu_ngoai_thuong':
+            return 'Kỹ thuật nghiệp vụ ngoại thương';
+        case 'ky_thuat_nghiep_vu_hai_quan':
+            return 'Kỹ thuật nghiệp vụ hải quan';
+        default:
+            return '';
+    }
+}
+
 
         let selectedTenMonThi = null;
 
