@@ -209,7 +209,61 @@ def tai_khoan():
 def quan_tri():
     if not session.get("is_admin"):
         return "Bạn không có quyền truy cập!"
-    return render_template("admin.html")
+
+    with engine.connect() as conn:
+        users = conn.execute(text("SELECT * FROM Nguoidung ORDER BY thoi_gian_tao DESC")).mappings().all()
+
+    return render_template("admin.html", users=users)
+
+
+@app.route('/edit-user/<username>', methods=['GET', 'POST'])
+@require_login
+def edit_user(username):
+    if not session.get("is_admin"):
+        return "Bạn không có quyền truy cập!"
+
+    if request.method == 'POST':
+        new_password = request.form.get("password_hash")
+        ten_thuc = request.form.get("ten_thuc")
+        so_dien_thoai = request.form.get("so_dien_thoai")
+        email = request.form.get("email")
+        cong_ty = request.form.get("cong_ty")
+        is_admin = True if request.form.get("is_admin") == "on" else False
+        mon_dang_ky = request.form.get("mon_dang_ky")
+        ngay_het_han = request.form.get("ngay_het_han")
+        ten_thiet_bi = request.form.get("ten_thiet_bi")
+
+        with engine.begin() as conn:
+            conn.execute(text("""
+                UPDATE Nguoidung
+                SET password_hash=:p, ten_thuc=:t, so_dien_thoai=:s,
+                    email=:e, cong_ty=:c, is_admin=:a,
+                    mon_dang_ky=:m, ngay_het_han=:n, ten_thiet_bi=:tb
+                WHERE username=:u
+            """), {
+                "p": new_password,   # Lưu plain text
+                "t": ten_thuc,
+                "s": so_dien_thoai,
+                "e": email,
+                "c": cong_ty,
+                "a": is_admin,
+                "m": mon_dang_ky,
+                "n": ngay_het_han,
+                "tb": ten_thiet_bi,
+                "u": username
+            })
+
+        flash("Cập nhật người dùng thành công!", "success")
+        return redirect(url_for("quan_tri"))
+
+    with engine.connect() as conn:
+        user = conn.execute(
+            text("SELECT * FROM Nguoidung WHERE username=:u"),
+            {"u": username}
+        ).mappings().first()
+
+    return render_template("edit_user.html", user=user)
+
 
 #--- Tổng hợp kiến thức -----
 @app.route("/tong-hop-kien-thuc")
