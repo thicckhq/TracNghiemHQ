@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Trắc nghiệm Hải quan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; }
+        /* Overlay QR full màn hình */
+        .overlay {
+            position:fixed; inset:0; display:none; justify-content:center; align-items:center;
+            background:rgba(0,0,0,.92); z-index:9999; padding:24px;
+        }
+        .overlay.show{ display:flex; }
+        .overlay-content{ text-align:center; color:#fff; max-width:95vw; }
+        .overlay img{ max-width:92vw; max-height:90vh; border-radius:12px; }
+        .overlay .close{
+            position:absolute; top:12px; right:16px; font-size:28px; line-height:28px;
+            color:#fff; cursor:pointer; user-select:none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-500 to-purple-600 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Container chính của ứng dụng -->
+    <div class="bg-white bg-opacity-90 p-10 rounded-3xl shadow-2xl w-full max-w-4xl text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">Hệ thống Ôn thi Hải quan</h1>
+        <p class="text-gray-600 mb-10 text-lg">Luyện tập, thi thử và nâng cao kiến thức nghiệp vụ khai báo hải quan.</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+            {% if is_admin %}
+            <a href="{{ url_for('quan_tri') }}" 
+               class="bg-red-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105">
+                Quản trị Admin
+            </a>
+            {% endif %}
+            <a href="{{ url_for('tong_hop_kien_thuc') }}" class="bg-purple-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-purple-700 transition-all duration-300 transform hover:scale-105">Tổng hợp kiến thức</a>
+            <a href="{{ url_for('on_tap') }}" class="bg-blue-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">Ôn tập trắc nghiệm</a>
+            <a href="{{ url_for('cau_tra_loi_sai') }}" class="bg-yellow-500 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105">Câu đã trả lời sai</a>
+            <a href="{{ url_for('thi_thu') }}" class="bg-green-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105">Thi thử</a>
+            <a href="{{ url_for('tai_khoan') }}" class="bg-gray-700 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-gray-800 transition-all duration-300 transform hover:scale-105">Tài khoản của tôi</a>
+        </div>
+        
+        <div class="mt-8 text-right text-gray-600 text-sm">
+            <p class="mt-2 text-teal-600 cursor-pointer hover:underline" onclick="openQR()">Liên hệ tác giả</p>
+        </div>
+    </div>
+
+    <!-- Overlay QR full màn hình -->
+    <div id="qrOverlay" class="overlay" role="dialog" aria-modal="true">
+        <div class="close" onclick="closeQR()">×</div>
+        <div class="overlay-content">
+            <div style="margin-bottom:10px;">Hãy quét QR để liên hệ tác giả</div>
+            <img id="qrImg" src="{{ url_for('static', filename='images/qr.png') }}" alt="QR Liên hệ tác giả" />
+        </div>
+    </div>
+
+    <script>
+      function openQR(){ document.getElementById('qrOverlay').classList.add('show'); }
+      function closeQR(){ document.getElementById('qrOverlay').classList.remove('show'); }
+      document.getElementById('qrOverlay').addEventListener('click', (e)=>{
+        if(e.target.id==='qrOverlay') closeQR();
+      });
+    </script>
+
+</body>
+</html>

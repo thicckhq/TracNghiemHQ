@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tài khoản của tôi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Mở popup
+    function openEditPopup() {
+      document.getElementById("editModal").classList.remove("hidden");
+    }
+
+    // Đóng popup
+    function closeEditPopup() {
+      document.getElementById("editModal").classList.add("hidden");
+    }
+
+    // Validate form chỉnh sửa (mật khẩu 2 ô là text nhưng vẫn kiểm tra)
+    function validateForm() {
+      const pw1 = document.getElementById("newPassword").value;
+      const pw2 = document.getElementById("confirmPassword").value;
+      const phone = document.getElementById("phone").value.trim();
+      const email = document.getElementById("email").value.trim();
+
+      // Nếu nhập mật khẩu thì check confirm và độ dài
+      if (pw1 || pw2) {
+        if (pw1.length < 6) {
+          alert("Mật khẩu mới phải có ít nhất 6 ký tự.");
+          return false;
+        }
+        if (pw1 !== pw2) {
+          alert("Mật khẩu nhập lại không khớp.");
+          return false;
+        }
+      }
+
+      // Validate số điện thoại
+      const phoneRegex = /^[0-9]{9,11}$/;
+      if (phone && !phoneRegex.test(phone)) {
+        alert("Số điện thoại không hợp lệ. Chỉ được chứa 9-11 chữ số.");
+        return false;
+      }
+
+      // Validate email
+      const emailRegex = /^[^@]+@[^@]+\.[^@]+$/;
+      if (email && !emailRegex.test(email)) {
+        alert("Email không hợp lệ.");
+        return false;
+      }
+
+      return true;
+    }
+  </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+
+  <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-3xl">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Tài khoản của tôi</h1>
+      <!-- Nút Đóng quay về trang chính -->
+      <a href="{{ url_for('index') }}" class="px-3 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Đóng</a>
+    </div>
+
+    <!-- Flash messages (có phân loại success/error) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="mb-4 p-3 rounded
+            {% if category == 'success' %} bg-green-100 text-green-800
+            {% elif category == 'error' %} bg-red-100 text-red-800
+            {% else %} bg-gray-100 text-gray-800 {% endif %}">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Thông tin chính -->
+    <div class="mb-8">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-lg font-semibold text-gray-700">Thông tin chính</h2>
+        <div>
+          <a href="javascript:void(0)" onclick="openEditPopup()" class="text-blue-600 hover:underline">Chỉnh sửa</a>
+          <span class="mx-2 text-gray-400">|</span>
+          <a href="{{ url_for('logout') }}" class="text-red-600 hover:underline">Đăng xuất</a>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-gray-700">
+        <p><span class="font-semibold">Tên đăng nhập:</span> {{ user.username }}</p>
+        <p><span class="font-semibold">Tên hiển thị:</span> {{ user.ten_thuc or '' }}</p>
+        <p><span class="font-semibold">Số điện thoại:</span> {{ user.so_dien_thoai or '' }}</p>
+        <p><span class="font-semibold">Email:</span> {{ user.email or '' }}</p>
+      </div>
+    </div>
+
+    <!-- Thông tin bản quyền -->
+    <div>
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-lg font-semibold text-gray-700">Thông tin bản quyền</h2>
+        <a href="{{ url_for('thanh_toan_page') }}" class="text-green-600 hover:underline">Đăng ký / Gia hạn</a>
+
+      </div>
+      <div class="space-y-3 text-gray-700">
+        <p><span class="font-semibold">Môn đăng ký:</span> {{ mon_dk }}</p>
+        <p><span class="font-semibold">Ngày hết hạn bản quyền:</span> {{ ngay_het_han }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup chỉnh sửa -->
+  <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
+    <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md relative">
+      <!-- Nút đóng (X) -->
+      <button onclick="closeEditPopup()" class="absolute top-3 right-3 text-gray-500 hover:text-black">✖</button>
+
+      <h2 class="text-xl font-bold text-gray-800 mb-4">Chỉnh sửa thông tin</h2>
+
+      <form method="POST" action="{{ url_for('tai_khoan') }}" onsubmit="return validateForm()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold mb-1">Nhập mật khẩu mới</label>
+          <!-- HIỂN THỊ DẠNG TEXT (không che) -->
+          <input type="text" id="newPassword" name="password" placeholder="Để trống nếu không đổi" class="w-full border rounded px-3 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1">Nhập lại mật khẩu mới</label>
+          <!-- HIỂN THỊ DẠNG TEXT (không che) -->
+          <input type="text" id="confirmPassword" placeholder="Nhập lại mật khẩu mới" class="w-full border rounded px-3 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1">Tên hiển thị</label>
+          <input type="text" name="ten_thuc" value="{{ user.ten_thuc or '' }}" class="w-full border rounded px-3 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1">Số điện thoại</label>
+          <input type="text" id="phone" name="so_dien_thoai" value="{{ user.so_dien_thoai or '' }}" class="w-full border rounded px-3 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1">Email</label>
+          <input type="text" id="email" name="email" value="{{ user.email or '' }}" class="w-full border rounded px-3 py-2">
+        </div>
+
+        <div class="flex justify-end space-x-3 mt-4">
+          <button type="button" onclick="closeEditPopup()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Hủy</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -316,10 +316,6 @@ def thanh_toan_page():
         return redirect(url_for("login"))
     return render_template("thanh_toan.html", username=session["username"])
 
-@app.route("/upload_exam")
-@require_login
-def upload_exam():
-    return render_template("upload_exam.html")
 
 
 
