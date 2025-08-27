@@ -448,25 +448,30 @@ def upload_bodethi():
 def api_get_question():
     try:
         data = request.get_json()
-        ten_mon_thi = data.get("ten_mon_thi")
+        linh_vuc = data.get("ten_mon_thi")   # thực ra giờ là tên lĩnh vực
         exclude_ids = data.get("exclude_ids", [])
 
-        if not ten_mon_thi:
-            return {"error": "Thiếu tên môn thi!"}, 400
+        # Hardcode mapping lĩnh vực -> ma_mon_thi
+        topic_map = {
+            "Pháp luật hải quan": 11,
+            "Chính sách thuế": 12,
+            "Vi phạm hành chính": 13,
+            "Giao nhận vận tải": 21,
+            "Ngoại thương": 22,
+            "Thanh toán quốc tế": 23,
+            "Thủ tục hải quan": 31,
+            "Chính sách mặt hàng": 32,
+            "Trị giá hải quan": 33,
+            "Xuất xứ hàng hóa": 34,
+            "Sở hữu trí tuệ": 35,
+            "Phân loại hàng hóa": 36,
+        }
+
+        ma_mon_thi = topic_map.get(linh_vuc)
+        if not ma_mon_thi:
+            return {"error": f"Không tìm thấy mã cho lĩnh vực {linh_vuc}"}, 404
 
         with engine.connect() as conn:
-            # Tìm mã môn thi từ bảng Monthi
-            row = conn.execute(
-                text("SELECT ma_mon_thi FROM Monthi WHERE LOWER(ten_mon_thi)=LOWER(:t)"),
-                {"t": ten_mon_thi}
-            ).mappings().first()
-
-            if not row:
-                return {"error": f"Không tìm thấy môn thi: {ten_mon_thi}"}, 404
-
-            ma_mon_thi = row["ma_mon_thi"]
-
-            # Query câu hỏi theo ma_mon_thi, loại bỏ exclude_ids
             if exclude_ids:
                 query = text("""
                     SELECT * FROM bodethi 
@@ -494,7 +499,7 @@ def api_get_question():
                 q.get("dap_an_c"),
                 q.get("dap_an_d"),
             ],
-            "correct_indices": [int(q["dap_an_dung"]) - 1] if q.get("dap_an_dung") else []
+            "correct_indices": [int(q["dapan_dung"]) - 1] if q.get("dapan_dung") else []
         }
 
         return {"questions": [formatted]}
@@ -504,6 +509,7 @@ def api_get_question():
         print("API /api/get-question lỗi:", e)
         traceback.print_exc()
         return {"error": str(e)}, 500
+
 
 
 
