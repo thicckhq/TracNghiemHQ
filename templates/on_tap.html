@@ -500,28 +500,37 @@ submitBtn.addEventListener('click', () => {
 
     labels.forEach((label, idx) => {
         if (correct.includes(idx)) {
-            label.classList.add('correct'); // tô màu xanh
+            label.classList.add('correct'); // tô xanh
         }
         if (selected.includes(idx) && !correct.includes(idx)) {
-            label.classList.add('incorrect'); // tô màu đỏ cho sai
+            label.classList.add('incorrect'); // tô đỏ
             isCorrect = false;
         }
     });
 
-    // Nếu người dùng chọn thiếu đáp án đúng thì coi như sai
     correct.forEach(idx => {
         if (!selected.includes(idx)) {
             isCorrect = false;
         }
     });
 
-    // Thông báo kết quả sinh động
+    // Thông báo kết quả
     const feedback = document.createElement('div');
     feedback.className = 'question-feedback ' + (isCorrect ? 'feedback-correct' : 'feedback-incorrect');
     feedback.textContent = isCorrect ? '🎉 Chính xác! Tuyệt vời!' : '❌ Sai rồi! Cố gắng lần sau nhé!';
     quizQuestionsContainer.appendChild(feedback);
 
-    // Khóa nút trả lời sau khi chọn
+    // 👇 Thêm phần hiển thị ghi chú
+    if (currentQuestion.note && currentQuestion.note.trim() !== "") {
+        const noteBox = document.createElement('div');
+        noteBox.className = 'question-feedback';
+        noteBox.style.backgroundColor = '#fff9c4'; // nền vàng nhạt
+        noteBox.style.color = '#555';
+        noteBox.style.marginTop = '10px';
+        noteBox.textContent = "💡 Ghi chú: " + currentQuestion.note;
+        quizQuestionsContainer.appendChild(noteBox);
+    }
+
     submitBtn.disabled = true;
 });
 
