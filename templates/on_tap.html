@@ -196,9 +196,9 @@
 
         /* Styles for correct/incorrect answers */
         .answer-label.correct {
-            background-color: #dcedc8;
-            border-color: var(--primary-color);
-        }
+    		background-color: #c8e6c9; /* xanh đậm hơn */
+    		border-color: #2e7d32;
+	}
 
         .answer-label.incorrect {
             background-color: #ffebee;
@@ -213,11 +213,12 @@
         }
 
         .answer-label.correct::after {
-            content: '\2713';
-            color: var(--primary-color);
-            font-size: 14px;
-            margin-left: auto;
-        }
+    		content: '\2713'; /* dấu tích */
+    		color: #2e7d32;   /* xanh đậm */
+    		font-size: 16px;
+    		margin-left: auto;
+    		font-weight: bold;
+	}
         
         .question-feedback {
             margin-top: 15px;
@@ -434,37 +435,41 @@
     }
 
     function displayCurrentQuestion() {
-        if (currentQuizQuestions.length === 0) {
-            quizQuestionsContainer.innerHTML = `<p>Không có câu hỏi nào.</p>`;
-            return;
-        }
+    	if (currentQuizQuestions.length === 0) {
+        quizQuestionsContainer.innerHTML = `<p>Không có câu hỏi nào.</p>`;
+        return;
+    	}
 
-        const currentQuestion = currentQuizQuestions[currentQuestionIndex];
-        quizQuestionsContainer.innerHTML = '';
+    	const currentQuestion = currentQuizQuestions[currentQuestionIndex];
+    	quizQuestionsContainer.innerHTML = '';  // reset feedback/ghi chú cũ
 
-        const questionCard = document.createElement('div');
-        questionCard.className = 'question-card';
+    	const questionCard = document.createElement('div');
+    	questionCard.className = 'question-card';
 
-        questionCard.innerHTML = `
-            <p class="question-text">${currentQuestion.question}</p>
-            <div class="answers" id="answers-container"></div>
-        `;
-        quizQuestionsContainer.appendChild(questionCard);
+    	questionCard.innerHTML = `
+        <p class="question-text">${currentQuestion.question}</p>
+        <div class="answers" id="answers-container"></div>
+    	`;
+    	quizQuestionsContainer.appendChild(questionCard);
 
-        const answersContainer = questionCard.querySelector('#answers-container');
-        currentQuestion.answers.forEach((answer, ansIndex) => {
-            const label = document.createElement('label');
-            label.className = 'answer-label';
+    	const answersContainer = questionCard.querySelector('#answers-container');
+    	currentQuestion.answers.forEach((answer, ansIndex) => {
+        const label = document.createElement('label');
+        label.className = 'answer-label';
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.value = ansIndex;
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = ansIndex;
 
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(answer));
-            answersContainer.appendChild(label);
-        });
-    }
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(answer));
+        answersContainer.appendChild(label);
+    	});
+
+    	// 👇 Mở khóa lại nút Trả lời mỗi khi load câu hỏi mới
+    	submitBtn.disabled = false;
+	}
+
 
     function updateButtonVisibility() {
         nextBtn.style.display = 'inline-block';
