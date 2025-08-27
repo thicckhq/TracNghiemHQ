@@ -60,11 +60,15 @@
         </label>
       </div>
 
-      <div class="text-center">
+      <div class="flex flex-col items-center gap-3">
         <button type="submit"
           class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-all">
           Tạo mã thanh toán
         </button>
+        <a href="{{ url_for('tai_khoan') }}"
+          class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-all">
+          Đóng / Quay về Tài khoản
+        </a>
       </div>
     </form>
 
@@ -87,7 +91,6 @@
   </div>
 
   <script>
-  // Submit form tạo QR thanh toán
   document.getElementById("formThanhToan").addEventListener("submit", async function(e){
     e.preventDefault();
     const formData = new FormData(this);
@@ -100,7 +103,7 @@
         <p class="mb-3 text-gray-700"><b>Nội dung CK:</b> ${data.noi_dung}</p>
         <img src="${data.qr_url}" class="mx-auto rounded-xl max-h-72" />
         <p class="mt-3 text-red-600 font-medium">Hãy gửi ảnh thanh toán thành công cho tác giả để hoàn thành nhé</p>
-     
+        <p class="mt-2 text-teal-600 cursor-pointer hover:underline" onclick="openQR()">Liên hệ tác giả</p>
       `;
     }else{
       try {
