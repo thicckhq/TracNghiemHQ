@@ -9,14 +9,15 @@ import pandas as pd
 
 # ---------- Flask config ----------
 app = Flask(__name__)
-app.config.update(
-    SESSION_COOKIE_SECURE=True,
-    SESSION_COOKIE_SAMESITE="None"
-)
 app.secret_key = "supersecretkey123"   # Cố định key để session không bị reset
 
 # ---------- Session config ----------
-app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # session sống 1 giờ
+app.config.update(
+    PERMANENT_SESSION_LIFETIME = 3600,     # session sống 1 giờ
+    SESSION_COOKIE_SECURE = True,          # bắt buộc dùng HTTPS
+    SESSION_COOKIE_SAMESITE = "None",      # cho phép cookie khi redirect cross-site
+    SESSION_COOKIE_HTTPONLY = True         # bảo mật, JS không đọc được cookie
+)
 
 # ---------- Database config ----------
 DATABASE_URL = os.getenv(
@@ -197,7 +198,6 @@ def tai_khoan():
         ngay_het_han = str(ngay_het_han)
 
     return render_template("tai_khoan.html", user=user, mon_dk=mon_dk, ngay_het_han=ngay_het_han)
-
 
 # ---------- Quản trị ----------
 @app.route('/quan-tri')
