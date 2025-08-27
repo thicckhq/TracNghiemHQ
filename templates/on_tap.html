@@ -3,25 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ôn tập Trắc nghiệm Hình khối</title>
+    <title>Ôn tập Trắc nghiệm</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
     <style>
+        /* ==================================== */
+        /* CSS CHUNG CHO GIAO DIỆN */
+        /* ==================================== */
         :root {
-            --primary-color: #4CAF50; /* Green */
-            --secondary-color: #2196F3; /* Blue */
-            --tertiary-color: #FF9800; /* Orange */
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
             --background-light: #e0f2f7;
             --text-dark: #333;
             --card-background: #ffffff;
-            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-light: rgba(0, 0, 0, 0.15);
             --border-light: #e0e0e0;
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Times New Roman', Times, serif;
             background: linear-gradient(135deg, var(--background-light) 0%, #c1dce7 100%);
             margin: 0;
             padding: 20px;
@@ -35,7 +34,7 @@
             background: var(--card-background);
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 10px 30px var(--shadow-light);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             animation: fadeIn 0.8s ease-out;
         }
 
@@ -48,27 +47,30 @@
             text-align: center;
             color: var(--secondary-color);
             margin-bottom: 25px;
-            font-weight: 700;
+            font-weight: normal;
+        }
+        
+        h1 {
+            font-size: 2.5em;
         }
         
         .selection-section {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             margin-top: 30px;
         }
 
         .card {
             background-color: var(--card-background);
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px var(--shadow-light);
+            padding: 15px 25px;
             text-align: center;
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            width: 250px;
-            min-height: 150px;
+            width: 200px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -77,26 +79,21 @@
         }
 
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--shadow-light);
         }
 
         .card.selected {
             border-color: var(--primary-color);
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--shadow-light);
         }
         
-        .card .icon {
-            font-size: 3em;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-
         .card h3 {
             margin: 0;
             color: var(--text-dark);
-            font-size: 1.2em;
+            font-size: 1.1em;
+            font-weight: normal;
         }
 
         #subject-selection {
@@ -107,7 +104,7 @@
         
         #topic-section {
             margin-top: 40px;
-            display: none; /* Hidden by default */
+            display: none;
             border-top: 1px solid var(--border-light);
             padding-top: 30px;
             animation: slideIn 0.6s ease-out forwards;
@@ -129,7 +126,7 @@
             display: none;
         }
 
-        .question {
+        .question-card {
             margin-bottom: 20px;
             padding: 20px;
             border-radius: 10px;
@@ -137,8 +134,8 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
 
-        .question p {
-            font-weight: 600;
+        .question-card p.question-text {
+            font-weight: normal;
             margin: 0 0 15px 0;
             color: var(--primary-color);
         }
@@ -165,7 +162,7 @@
             border-color: var(--primary-color);
         }
 
-        .answer-label input[type="radio"] {
+        .answer-label input[type="checkbox"] {
             margin-right: 12px;
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -173,35 +170,104 @@
             width: 18px;
             height: 18px;
             border: 2px solid var(--primary-color);
-            border-radius: 50%;
+            border-radius: 4px; /* Hình vuông cho checkbox */
             outline: none;
             cursor: pointer;
             position: relative;
             flex-shrink: 0;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
         }
-        .answer-label input[type="radio"]:checked {
+        .answer-label input[type="checkbox"]:checked {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
         }
-        .answer-label input[type="radio"]:checked::before {
-            content: '';
+        .answer-label input[type="checkbox"]:checked::before {
+            content: '\2713'; /* Dấu check */
             display: block;
-            width: 8px;
-            height: 8px;
-            background: var(--text-light);
-            border-radius: 50%;
+            color: var(--text-light);
+            font-size: 14px;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
         }
 
-        /* Responsive */
+        /* Styles for correct/incorrect answers */
+        .answer-label.correct {
+            background-color: #e8f5e9;
+            border-color: var(--primary-color);
+        }
+
+        .answer-label.incorrect {
+            background-color: #ffebee;
+            border-color: #f44336;
+        }
+
+        .answer-label.incorrect::after {
+            content: '\2717'; /* Dấu X */
+            color: #f44336;
+            font-size: 14px;
+            margin-left: auto;
+        }
+
+        .answer-label.correct::after {
+            content: '\2713'; /* Dấu check */
+            color: var(--primary-color);
+            font-size: 14px;
+            margin-left: auto;
+        }
+        
+        .question-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .feedback-correct {
+            background-color: #dcedc8;
+            color: var(--primary-color);
+        }
+        .feedback-incorrect {
+            background-color: #ffcdd2;
+            color: #f44336;
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .quiz-controls button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        
+        #submit-btn {
+            background-color: var(--primary-color);
+        }
+        #submit-btn:hover {
+            background-color: #43a047;
+        }
+        #next-btn, #prev-btn {
+            background-color: var(--secondary-color);
+        }
+        #next-btn:hover, #prev-btn:hover {
+            background-color: #1e88e5;
+        }
+        
+        /* Responsive adjustments */
         @media (max-width: 768px) {
             .container { padding: 20px; }
             .selection-section { flex-direction: column; align-items: stretch; }
             .card { width: auto; }
+            .quiz-controls { flex-direction: column; gap: 10px; }
         }
     </style>
 </head>
@@ -214,15 +280,12 @@
             <h2>Chọn môn thi</h2>
             <div class="selection-section">
                 <div class="card" data-subject="phap_luat_hai_quan">
-                    <i class="fas fa-gavel icon"></i>
                     <h3>Pháp luật hải quan</h3>
                 </div>
                 <div class="card" data-subject="ky_thuat_nghiep_vu_ngoai_thuong">
-                    <i class="fas fa-ship icon"></i>
                     <h3>Kỹ thuật nghiệp vụ ngoại thương</h3>
                 </div>
                 <div class="card" data-subject="ky_thuat_nghiep_vu_hai_quan">
-                    <i class="fas fa-balance-scale icon"></i>
                     <h3>Kỹ thuật nghiệp vụ hải quan</h3>
                 </div>
             </div>
@@ -238,6 +301,12 @@
             <h2>Câu hỏi Trắc nghiệm ✨</h2>
             <div id="quiz-questions">
                 </div>
+            
+            <div class="quiz-controls">
+                <button id="prev-btn" style="display: none;">Câu trước</button>
+                <button id="submit-btn" style="display: none;">Trả lời</button>
+                <button id="next-btn" style="display: none;">Câu tiếp</button>
+            </div>
         </div>
     </div>
 
@@ -247,111 +316,249 @@
         const topicSection = document.getElementById('topic-section');
         const quizSection = document.getElementById('quiz-section');
         const quizQuestionsContainer = document.getElementById('quiz-questions');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
 
         const topics = {
-            'phap_luat_hai_quan': {
-                icon: 'fas fa-gavel',
-                list: ['Pháp luật hải quan', 'Chính sách thuế', 'Vi phạm hành chính']
-            },
-            'ky_thuat_nghiep_vu_ngoai_thuong': {
-                icon: 'fas fa-ship',
-                list: ['Giao nhận vận tải', 'Ngoại thương', 'Thanh toán quốc tế']
-            },
-            'ky_thuat_nghiep_vu_hai_quan': {
-                icon: 'fas fa-balance-scale',
-                list: ['Thủ tục hải quan', 'Chính sách mặt hàng', 'Trị giá hải quan', 'Xuất xứ hàng hóa', 'Sở hữu trí tuệ', 'Phân loại hàng hóa']
-            }
+            'phap_luat_hai_quan': ['Pháp luật hải quan', 'Chính sách thuế', 'Vi phạm hành chính'],
+            'ky_thuat_nghiep_vu_ngoai_thuong': ['Giao nhận vận tải', 'Ngoại thương', 'Thanh toán quốc tế'],
+            'ky_thuat_nghiep_vu_hai_quan': ['Thủ tục hải quan', 'Chính sách mặt hàng', 'Trị giá hải quan', 'Xuất xứ hàng hóa', 'Sở hữu trí tuệ', 'Phân loại hàng hóa']
+        };
+
+        const quizData = {
+            'phap_luat_hai_quan': [
+                {
+                    question: 'Câu hỏi 1 (PLHQ): Cơ quan nào ban hành luật Hải quan?',
+                    answers: ['Quốc hội', 'Chính phủ', 'Bộ Tài chính', 'Tổng cục Hải quan'],
+                    correct_indices: [0], // Đáp án đúng là "Quốc hội"
+                    answered: false
+                },
+                {
+                    question: 'Câu hỏi 2 (PLHQ): Vị trí của hải quan Việt Nam nằm ở đâu?',
+                    answers: ['Trong Chính phủ', 'Trong Bộ Tài chính'],
+                    correct_indices: [1],
+                    answered: false
+                },
+            ],
+            'ky_thuat_nghiep_vu_ngoai_thuong': [
+                {
+                    question: 'Câu hỏi 1 (NVNT): Phương thức thanh toán nào sau đây được sử dụng phổ biến nhất trong thương mại quốc tế?',
+                    answers: ['Thanh toán bằng chuyển tiền', 'Thanh toán bằng tín dụng thư', 'Thanh toán bằng điện chuyển tiền', 'Thanh toán bằng nhờ thu'],
+                    correct_indices: [1],
+                    answered: false
+                },
+                {
+                    question: 'Câu hỏi 2 (NVNT): FOB là gì?',
+                    answers: ['Free on Board', 'Freight on Board', 'Free out Board'],
+                    correct_indices: [0],
+                    answered: false
+                },
+            ],
+            'ky_thuat_nghiep_vu_hai_quan': [
+                {
+                    question: 'Câu hỏi 1 (NVHQ): Hàng hóa nào được miễn thuế nhập khẩu theo quy định hiện hành?',
+                    answers: ['Hàng hóa phục vụ nghiên cứu khoa học', 'Hàng hóa viện trợ không hoàn lại', 'Tất cả các đáp án trên', 'Không có đáp án nào đúng'],
+                    correct_indices: [1, 2], // Ví dụ có nhiều đáp án đúng
+                    answered: false
+                },
+            ]
         };
 
         let selectedSubject = null;
+        let currentQuizQuestions = [];
+        let currentQuestionIndex = 0;
 
-        // Function to render topic cards
         function renderTopicCards(subject) {
             topicSelectionSection.innerHTML = '';
-            const topicList = topics[subject].list;
+            const topicList = topics[subject];
             topicList.forEach(topic => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.dataset.topic = topic;
-                card.innerHTML = `
-                    <i class="${topics[subject].icon} icon"></i>
-                    <h3>${topic}</h3>
-                `;
+                card.innerHTML = `<h3>${topic}</h3>`;
                 card.addEventListener('click', () => {
                     document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
                     card.classList.add('selected');
-                    displayQuestions(topic);
+                    startQuiz(topic);
                 });
                 topicSelectionSection.appendChild(card);
             });
             topicSection.style.display = 'block';
         }
 
-        // Function to display questions
-        function displayQuestions(topic) {
-            quizQuestionsContainer.innerHTML = `<h3>Câu hỏi cho lĩnh vực: ${topic}</h3>`;
-            
-            const sampleQuestions = [
-                {
-                    question: `Câu hỏi 1 về ${topic}: Đây là câu hỏi ví dụ.`,
-                    answers: ['Đáp án A', 'Đáp án B', 'Đáp án C', 'Đáp án D']
-                },
-                {
-                    question: `Câu hỏi 2 về ${topic}: Một câu hỏi khác.`,
-                    answers: ['Đáp án A', 'Đáp án B', 'Đáp án C', 'Đáp án D']
-                },
-            ];
-
-            sampleQuestions.forEach((q, index) => {
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'question';
-                questionDiv.innerHTML = `<p>${index + 1}. ${q.question}</p>`;
-                
-                const answersDiv = document.createElement('div');
-                answersDiv.className = 'answers';
-                q.answers.forEach((answer, ansIndex) => {
-                    answersDiv.innerHTML += `
-                        <label class="answer-label">
-                            <input type="radio" name="question${index}" value="answer${ansIndex}">
-                            ${answer}
-                        </label>
-                    `;
-                });
-                
-                questionDiv.appendChild(answersDiv);
-                quizQuestionsContainer.appendChild(questionDiv);
-            });
-            
+        function startQuiz(topic) {
+            // Reset quiz state
+            const subjectCode = getSubjectCodeFromTopic(topic);
+            currentQuizQuestions = quizData[subjectCode];
+            currentQuestionIndex = 0;
             quizSection.style.display = 'block';
             
-            // Scroll to the quiz section
+            // Re-render questions based on selected topic.
+            displayCurrentQuestion();
+
+            // Hide/show navigation buttons
+            updateButtonVisibility();
+
+            // Scroll to quiz section
             setTimeout(() => {
                 quizSection.scrollIntoView({ behavior: 'smooth' });
             }, 300);
         }
 
-        // Add event listeners to subject cards
+        function getSubjectCodeFromTopic(topic) {
+            for (const subject in topics) {
+                if (topics[subject].includes(topic)) {
+                    return subject;
+                }
+            }
+            return null;
+        }
+
+        function displayCurrentQuestion() {
+            if (currentQuizQuestions.length === 0) {
+                quizQuestionsContainer.innerHTML = `<p>Không có câu hỏi nào cho lĩnh vực này.</p>`;
+                return;
+            }
+
+            const currentQuestion = currentQuizQuestions[currentQuestionIndex];
+            quizQuestionsContainer.innerHTML = ''; // Clear previous content
+
+            const questionCard = document.createElement('div');
+            questionCard.className = 'question-card';
+            
+            questionCard.innerHTML = `
+                <p class="question-text">Câu hỏi ${currentQuestionIndex + 1}/${currentQuizQuestions.length}: ${currentQuestion.question}</p>
+                <div class="answers" id="answers-container"></div>
+            `;
+            quizQuestionsContainer.appendChild(questionCard);
+
+            const answersContainer = questionCard.querySelector('#answers-container');
+            currentQuestion.answers.forEach((answer, ansIndex) => {
+                const label = document.createElement('label');
+                label.className = 'answer-label';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = `q-${currentQuestionIndex}`;
+                checkbox.value = ansIndex;
+                checkbox.checked = currentQuestion.user_answers && currentQuestion.user_answers.includes(ansIndex);
+                checkbox.disabled = currentQuestion.answered;
+
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(answer));
+                answersContainer.appendChild(label);
+
+                // Add event listener to each checkbox
+                checkbox.addEventListener('change', updateSubmitButtonVisibility);
+            });
+
+            // Update button visibility
+            updateButtonVisibility();
+
+            // Check if question was answered and apply feedback
+            if (currentQuestion.answered) {
+                showAnswerFeedback();
+            }
+            updateSubmitButtonVisibility();
+        }
+
+        function updateSubmitButtonVisibility() {
+            const currentQuestion = currentQuizQuestions[currentQuestionIndex];
+            const checkboxes = document.querySelectorAll(`input[name="q-${currentQuestionIndex}"]`);
+            const hasSelection = Array.from(checkboxes).some(cb => cb.checked);
+            
+            if (currentQuestion.answered) {
+                submitBtn.style.display = 'none';
+            } else {
+                submitBtn.style.display = hasSelection ? 'inline-block' : 'none';
+            }
+        }
+
+        function showAnswerFeedback() {
+            const currentQuestion = currentQuizQuestions[currentQuestionIndex];
+            const checkboxes = document.querySelectorAll(`input[name="q-${currentQuestionIndex}"]`);
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = 'question-feedback';
+
+            let isCorrect = true;
+            
+            checkboxes.forEach((cb, index) => {
+                const label = cb.closest('.answer-label');
+                cb.disabled = true; // Disable further changes
+                
+                const isUserChecked = cb.checked;
+                const isCorrectAnswer = currentQuestion.correct_indices.includes(index);
+                
+                if (isUserChecked && isCorrectAnswer) {
+                    label.classList.add('correct');
+                } else if (isUserChecked && !isCorrectAnswer) {
+                    label.classList.add('incorrect');
+                    isCorrect = false;
+                } else if (!isUserChecked && isCorrectAnswer) {
+                    label.classList.add('correct');
+                    isCorrect = false;
+                }
+            });
+
+            if (isCorrect) {
+                feedbackDiv.textContent = 'Chính xác! 🎉';
+                feedbackDiv.classList.add('feedback-correct');
+            } else {
+                feedbackDiv.textContent = 'Chưa chính xác. 🤔 Vui lòng xem lại đáp án đúng.';
+                feedbackDiv.classList.add('feedback-incorrect');
+            }
+            quizQuestionsContainer.appendChild(feedbackDiv);
+        }
+
+        function updateButtonVisibility() {
+            nextBtn.style.display = (currentQuestionIndex < currentQuizQuestions.length - 1) ? 'inline-block' : 'none';
+            prevBtn.style.display = (currentQuestionIndex > 0) ? 'inline-block' : 'none';
+        }
+
+        // Event Listeners for buttons
+        submitBtn.addEventListener('click', () => {
+            const currentQuestion = currentQuizQuestions[currentQuestionIndex];
+            currentQuestion.answered = true;
+            
+            const checkboxes = document.querySelectorAll(`input[name="q-${currentQuestionIndex}"]:checked`);
+            currentQuestion.user_answers = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            showAnswerFeedback();
+            submitBtn.style.display = 'none'; // Hide submit button after answering
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestionIndex < currentQuizQuestions.length - 1) {
+                currentQuestionIndex++;
+                displayCurrentQuestion();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayCurrentQuestion();
+            }
+        });
+
+        // Event listeners for subject and topic cards
         subjectCards.forEach(card => {
             card.addEventListener('click', () => {
-                // Remove 'selected' class from all cards
                 subjectCards.forEach(c => c.classList.remove('selected'));
-                // Add 'selected' class to the clicked card
                 card.classList.add('selected');
                 
                 selectedSubject = card.dataset.subject;
                 renderTopicCards(selectedSubject);
                 
-                // Hide quiz section when a new subject is selected
                 quizSection.style.display = 'none';
                 quizQuestionsContainer.innerHTML = '';
                 
-                // Scroll to the topic section
                 setTimeout(() => {
                     topicSection.scrollIntoView({ behavior: 'smooth' });
                 }, 300);
             });
         });
-
     </script>
 </body>
 </html>
