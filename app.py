@@ -269,6 +269,15 @@ def cau_tra_loi_sai():
     return "Trang Câu trả lời sai (đang phát triển)"
 
 # ----------Tạo mã thanh toán --------
+
+@app.route("/thanh-toan")
+def thanh_toan_page():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    return render_template("thanh_toan.html", username=session["username"])
+
+
+
 import qrcode
 import io
 from flask import send_file
