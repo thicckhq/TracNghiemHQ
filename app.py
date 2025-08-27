@@ -177,7 +177,7 @@ def tai_khoan():
 
         with engine.begin() as conn:
             if new_pw:
-                pw_hash = generate_password_hash(new_pw)
+                pw_hash = new_pw
                 conn.execute(text("""
                     UPDATE Nguoidung 
                     SET password_hash=:pw, ten_thuc=:t, so_dien_thoai=:sdt, email=:e 
