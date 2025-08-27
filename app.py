@@ -441,6 +441,57 @@ def upload_bodethi():
 
     return redirect(url_for("quan_tri"))
 
+#---- Tạo ôn tập----
+# ---------- API: Lấy câu hỏi ngẫu nhiên theo lĩnh vực ----------
+@app.route("/api/get-questions", methods=["POST"])
+@require_login
+def api_get_questions():
+    data = request.get_json()
+    ten_mon_thi = data.get("ten_mon_thi")
+
+    if not ten_mon_thi:
+        return {"error": "Thiếu tên môn thi!"}, 400
+
+    with engine.connect() as conn:
+        # Lấy ma_mon_thi từ bảng Monthi
+        row = conn.execute(
+            text("SELECT ma_mon_thi FROM Monthi WHERE ten_mon_thi=:t"),
+            {"t": ten_mon_thi}
+        ).mappings().first()
+
+        if not row:
+            return {"error": "Không tìm thấy môn thi!"}, 404
+
+        ma_mon_thi = row["ma_mon_thi"]
+
+        # Lấy tất cả câu hỏi của môn này
+        questions = conn.execute(
+            text("SELECT * FROM bodethi WHERE ma_mon_thi=:m"),
+            {"m": ma_mon_thi}
+        ).mappings().all()
+
+    if not questions:
+        return {"questions": []}
+
+    # Chọn ngẫu nhiên 1 câu (hoặc nhiều nếu muốn)
+    import random
+    question = random.choice(questions)
+
+    # Giả định bảng bodethi có các cột: id, ma_mon_thi, noi_dung, dapan1..dapan4, dapan_dung
+    formatted = {
+        "id": question["id"],
+        "question": question.get("cau_hoi"),
+        "answers": [
+            question.get("dap_an_a"),
+            question.get("dap_an_b"),
+            question.get("dap_an_c"),
+            question.get("dap_an_d"),
+        ],
+        # dapan_dung lưu 1..4 => chuyển về index 0..3
+        "correct_indices": [int(question.get("dap_an_dung", 1)) - 1]
+    }
+
+    return {"questions": [formatted]}
 
 if __name__ == "__main__":
     app.run(debug=True)
