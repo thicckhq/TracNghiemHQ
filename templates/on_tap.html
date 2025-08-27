@@ -36,6 +36,7 @@
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             animation: fadeIn 0.8s ease-out;
+            position: relative; /* Thêm position: relative để định vị nút đóng */
         }
 
         @keyframes fadeIn {
@@ -124,6 +125,7 @@
             border-top: 1px solid var(--border-light);
             padding-top: 25px;
             display: none;
+            position: relative; /* Thêm position: relative để định vị nút đóng */
         }
 
         .question-card {
@@ -170,7 +172,7 @@
             width: 18px;
             height: 18px;
             border: 2px solid var(--primary-color);
-            border-radius: 4px; /* Hình vuông cho checkbox */
+            border-radius: 4px;
             outline: none;
             cursor: pointer;
             position: relative;
@@ -182,7 +184,7 @@
             border-color: var(--primary-color);
         }
         .answer-label input[type="checkbox"]:checked::before {
-            content: '\2713'; /* Dấu check */
+            content: '\2713';
             display: block;
             color: var(--text-light);
             font-size: 14px;
@@ -194,7 +196,7 @@
 
         /* Styles for correct/incorrect answers */
         .answer-label.correct {
-            background-color: #e8f5e9;
+            background-color: #dcedc8;
             border-color: var(--primary-color);
         }
 
@@ -204,14 +206,14 @@
         }
 
         .answer-label.incorrect::after {
-            content: '\2717'; /* Dấu X */
+            content: '\2717';
             color: #f44336;
             font-size: 14px;
             margin-left: auto;
         }
 
         .answer-label.correct::after {
-            content: '\2713'; /* Dấu check */
+            content: '\2713';
             color: var(--primary-color);
             font-size: 14px;
             margin-left: auto;
@@ -222,7 +224,7 @@
             padding: 10px;
             border-radius: 8px;
             text-align: center;
-            font-weight: bold;
+            font-weight: normal;
         }
         .feedback-correct {
             background-color: #dcedc8;
@@ -262,7 +264,25 @@
             background-color: #1e88e5;
         }
         
-        /* Responsive adjustments */
+        #close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: none; /* Ẩn ban đầu */
+        }
+        
+        #close-btn:hover {
+            background: #d32f2f;
+        }
+
         @media (max-width: 768px) {
             .container { padding: 20px; }
             .selection-section { flex-direction: column; align-items: stretch; }
@@ -274,7 +294,7 @@
 <body>
 
     <div class="container">
-        <h1>Ôn tập Trắc nghiệm Hải quan 📚</h1>
+        <button id="close-btn">&times;</button> <h1>Ôn tập Trắc nghiệm Hải quan 📚</h1>
 
         <div id="subject-selection">
             <h2>Chọn môn thi</h2>
@@ -298,14 +318,14 @@
         </div>
         
         <div id="quiz-section">
-            <h2>Câu hỏi Trắc nghiệm ✨</h2>
+            <h2 id="quiz-title"></h2>
             <div id="quiz-questions">
                 </div>
             
             <div class="quiz-controls">
-                <button id="prev-btn" style="display: none;">Câu trước</button>
+                <button id="prev-btn">Câu trước</button>
                 <button id="submit-btn" style="display: none;">Trả lời</button>
-                <button id="next-btn" style="display: none;">Câu tiếp</button>
+                <button id="next-btn">Câu tiếp</button>
             </div>
         </div>
     </div>
@@ -315,10 +335,12 @@
         const topicSelectionSection = document.getElementById('topic-selection');
         const topicSection = document.getElementById('topic-section');
         const quizSection = document.getElementById('quiz-section');
+        const quizTitle = document.getElementById('quiz-title');
         const quizQuestionsContainer = document.getElementById('quiz-questions');
         const submitBtn = document.getElementById('submit-btn');
         const nextBtn = document.getElementById('next-btn');
         const prevBtn = document.getElementById('prev-btn');
+        const closeBtn = document.getElementById('close-btn');
 
         const topics = {
             'phap_luat_hai_quan': ['Pháp luật hải quan', 'Chính sách thuế', 'Vi phạm hành chính'],
@@ -329,13 +351,13 @@
         const quizData = {
             'phap_luat_hai_quan': [
                 {
-                    question: 'Câu hỏi 1 (PLHQ): Cơ quan nào ban hành luật Hải quan?',
+                    question: 'Cơ quan nào ban hành luật Hải quan?',
                     answers: ['Quốc hội', 'Chính phủ', 'Bộ Tài chính', 'Tổng cục Hải quan'],
-                    correct_indices: [0], // Đáp án đúng là "Quốc hội"
+                    correct_indices: [0],
                     answered: false
                 },
                 {
-                    question: 'Câu hỏi 2 (PLHQ): Vị trí của hải quan Việt Nam nằm ở đâu?',
+                    question: 'Vị trí của hải quan Việt Nam nằm ở đâu?',
                     answers: ['Trong Chính phủ', 'Trong Bộ Tài chính'],
                     correct_indices: [1],
                     answered: false
@@ -343,13 +365,13 @@
             ],
             'ky_thuat_nghiep_vu_ngoai_thuong': [
                 {
-                    question: 'Câu hỏi 1 (NVNT): Phương thức thanh toán nào sau đây được sử dụng phổ biến nhất trong thương mại quốc tế?',
+                    question: 'Phương thức thanh toán nào sau đây được sử dụng phổ biến nhất trong thương mại quốc tế?',
                     answers: ['Thanh toán bằng chuyển tiền', 'Thanh toán bằng tín dụng thư', 'Thanh toán bằng điện chuyển tiền', 'Thanh toán bằng nhờ thu'],
                     correct_indices: [1],
                     answered: false
                 },
                 {
-                    question: 'Câu hỏi 2 (NVNT): FOB là gì?',
+                    question: 'FOB là gì?',
                     answers: ['Free on Board', 'Freight on Board', 'Free out Board'],
                     correct_indices: [0],
                     answered: false
@@ -357,9 +379,9 @@
             ],
             'ky_thuat_nghiep_vu_hai_quan': [
                 {
-                    question: 'Câu hỏi 1 (NVHQ): Hàng hóa nào được miễn thuế nhập khẩu theo quy định hiện hành?',
+                    question: 'Hàng hóa nào được miễn thuế nhập khẩu theo quy định hiện hành?',
                     answers: ['Hàng hóa phục vụ nghiên cứu khoa học', 'Hàng hóa viện trợ không hoàn lại', 'Tất cả các đáp án trên', 'Không có đáp án nào đúng'],
-                    correct_indices: [1, 2], // Ví dụ có nhiều đáp án đúng
+                    correct_indices: [1, 2],
                     answered: false
                 },
             ]
@@ -388,19 +410,17 @@
         }
 
         function startQuiz(topic) {
-            // Reset quiz state
             const subjectCode = getSubjectCodeFromTopic(topic);
             currentQuizQuestions = quizData[subjectCode];
             currentQuestionIndex = 0;
             quizSection.style.display = 'block';
             
-            // Re-render questions based on selected topic.
+            quizTitle.textContent = topic;
+            
             displayCurrentQuestion();
-
-            // Hide/show navigation buttons
             updateButtonVisibility();
+            closeBtn.style.display = 'block';
 
-            // Scroll to quiz section
             setTimeout(() => {
                 quizSection.scrollIntoView({ behavior: 'smooth' });
             }, 300);
@@ -422,13 +442,13 @@
             }
 
             const currentQuestion = currentQuizQuestions[currentQuestionIndex];
-            quizQuestionsContainer.innerHTML = ''; // Clear previous content
+            quizQuestionsContainer.innerHTML = '';
 
             const questionCard = document.createElement('div');
             questionCard.className = 'question-card';
             
             questionCard.innerHTML = `
-                <p class="question-text">Câu hỏi ${currentQuestionIndex + 1}/${currentQuizQuestions.length}: ${currentQuestion.question}</p>
+                <p class="question-text">${currentQuestion.question}</p>
                 <div class="answers" id="answers-container"></div>
             `;
             quizQuestionsContainer.appendChild(questionCard);
@@ -449,14 +469,11 @@
                 label.appendChild(document.createTextNode(answer));
                 answersContainer.appendChild(label);
 
-                // Add event listener to each checkbox
                 checkbox.addEventListener('change', updateSubmitButtonVisibility);
             });
 
-            // Update button visibility
             updateButtonVisibility();
 
-            // Check if question was answered and apply feedback
             if (currentQuestion.answered) {
                 showAnswerFeedback();
             }
@@ -485,7 +502,7 @@
             
             checkboxes.forEach((cb, index) => {
                 const label = cb.closest('.answer-label');
-                cb.disabled = true; // Disable further changes
+                cb.disabled = true;
                 
                 const isUserChecked = cb.checked;
                 const isCorrectAnswer = currentQuestion.correct_indices.includes(index);
@@ -512,11 +529,23 @@
         }
 
         function updateButtonVisibility() {
-            nextBtn.style.display = (currentQuestionIndex < currentQuizQuestions.length - 1) ? 'inline-block' : 'none';
-            prevBtn.style.display = (currentQuestionIndex > 0) ? 'inline-block' : 'none';
+            // Nút "Câu tiếp" và "Câu trước" luôn hiển thị
+            nextBtn.style.display = 'inline-block';
+            prevBtn.style.display = 'inline-block';
         }
 
-        // Event Listeners for buttons
+        function resetQuizState() {
+            quizSection.style.display = 'none';
+            quizQuestionsContainer.innerHTML = '';
+            closeBtn.style.display = 'none';
+            
+            document.querySelectorAll('#subject-selection .card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
+            
+            const mainContainer = document.querySelector('.container');
+            mainContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
         submitBtn.addEventListener('click', () => {
             const currentQuestion = currentQuizQuestions[currentQuestionIndex];
             currentQuestion.answered = true;
@@ -525,7 +554,7 @@
             currentQuestion.user_answers = Array.from(checkboxes).map(cb => parseInt(cb.value));
 
             showAnswerFeedback();
-            submitBtn.style.display = 'none'; // Hide submit button after answering
+            submitBtn.style.display = 'none';
         });
 
         nextBtn.addEventListener('click', () => {
@@ -542,7 +571,8 @@
             }
         });
 
-        // Event listeners for subject and topic cards
+        closeBtn.addEventListener('click', resetQuizState);
+
         subjectCards.forEach(card => {
             card.addEventListener('click', () => {
                 subjectCards.forEach(c => c.classList.remove('selected'));
