@@ -450,10 +450,9 @@ def upload_bodethi():
 def api_get_question():
     try:
         data = request.get_json()
-        linh_vuc = data.get("ten_mon_thi")   # tên lĩnh vực (ví dụ: "Pháp luật hải quan")
+        linh_vuc = data.get("ten_mon_thi")
         exclude_ids = data.get("exclude_ids", [])
 
-        # Hardcode mapping lĩnh vực -> ma_mon_thi
         topic_map = {
             "Pháp luật hải quan": 11,
             "Chính sách thuế": 12,
@@ -498,13 +497,17 @@ def api_get_question():
 
         correct_indices = []
         if raw:
-            # Trường hợp nhiều đáp án, ví dụ "A,C" hoặc "1,2"
-            parts = [x.strip() for x in raw.replace(";", ",").split(",")]
-            for p in parts:
-                if p in map_choice:
-                    correct_indices.append(map_choice[p])
-                elif p.isdigit() and int(p) in [0, 1, 2, 3]:
-                    correct_indices.append(int(p))
+            # Nếu là dạng "AB", "ABD"
+            if all(ch in map_choice for ch in raw):
+                correct_indices = [map_choice[ch] for ch in raw]
+            else:
+                # Dạng "A,C" hoặc "1,2"
+                parts = [x.strip() for x in raw.replace(";", ",").split(",")]
+                for p in parts:
+                    if p in map_choice:
+                        correct_indices.append(map_choice[p])
+                    elif p.isdigit() and int(p) in [0, 1, 2, 3]:
+                        correct_indices.append(int(p))
 
         # ---- Lọc đáp án trống hoặc NaN ----
         answers_raw = [
@@ -539,6 +542,7 @@ def api_get_question():
         print("API /api/get-question lỗi:", e)
         traceback.print_exc()
         return {"error": str(e)}, 500
+
 
 
 
