@@ -9,10 +9,7 @@ import pandas as pd
 
 # ---------- Flask config ----------
 app = Flask(__name__)
-# Sử dụng biến môi trường cho secret_key để đảm bảo
-# tất cả các worker đều dùng cùng một key, tránh lỗi logout
-# nếu biến môi trường chưa được đặt, dùng giá trị mặc định
-app.secret_key = os.getenv("SECRET_KEY", "supersecretkey123")
+app.secret_key = "supersecretkey123"   # Cố định key để session không bị reset
 
 # ---------- Session config ----------
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # session sống 1 giờ
@@ -44,10 +41,6 @@ def home():
 # ---------- Đăng nhập ----------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Kiểm tra nếu người dùng đã đăng nhập, chuyển hướng đến trang chính
-    if 'username' in session:
-        return redirect(url_for('index'))
-
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -60,11 +53,10 @@ def login():
 
         if user:
             if check_password_hash(user["password_hash"], password):
-                # Gán giá trị và set session là permanent
+                session.permanent = True  # giữ session sống lâu
                 session['username'] = user["username"]
                 session['ten_thuc'] = user.get("ten_thuc", "Người dùng")
                 session['is_admin'] = user.get("is_admin", False)
-                session.permanent = True  # Giữ session sống lâu hơn
                 print("LOGIN OK:", dict(session))  # debug
                 return redirect(url_for('index'))
             else:
@@ -77,7 +69,6 @@ def login():
 # ---------- Đăng ký ----------
 @app.route('/register', methods=['POST'])
 def register():
-    # ... giữ nguyên chức năng đăng ký ...
     username = request.form.get('username')
     password = request.form.get('password')
     display_name = request.form.get('display_name')
@@ -128,8 +119,6 @@ def logout():
 def index():
     if 'username' not in session:
         return redirect(url_for('login'))
-    # Đặt lại session.permanent để đảm bảo session không bị hết hạn
-    session.permanent = True
     print("DEBUG SESSION (index):", dict(session))  # debug
     return render_template(
         'index.html',
@@ -142,8 +131,7 @@ def index():
 def tai_khoan():
     if 'username' not in session:
         return redirect(url_for('login'))
-    
-    session.permanent = True
+
     username = session['username']
 
     # --- Nếu submit form ---
@@ -230,8 +218,7 @@ def tai_khoan():
 def quan_tri():
     if not session.get("is_admin"):
         return "Bạn không có quyền truy cập!"
-    
-    session.permanent = True
+
     with engine.connect() as conn:
         users = conn.execute(text(
             "SELECT username, ten_thuc, email, cong_ty, is_admin FROM Nguoidung"
@@ -298,4 +285,3 @@ def cau_tra_loi_sai():
 # ---------- Run ----------
 if __name__ == "__main__":
     app.run(debug=True)
-

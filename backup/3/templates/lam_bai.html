@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Làm bài thi</title>
+</head>
+<body>
+    <h2>Bài thi</h2>
+    <form>
+        {% for c in cauhoi %}
+        <div style="margin-bottom:20px;">
+            <b>Câu {{ loop.index }}:</b> {{ c.cau_hoi }} <br>
+            <input type="radio" name="q{{ loop.index }}" value="A"> A. {{ c.dap_an_a }} <br>
+            <input type="radio" name="q{{ loop.index }}" value="B"> B. {{ c.dap_an_b }} <br>
+            <input type="radio" name="q{{ loop.index }}" value="C"> C. {{ c.dap_an_c }} <br>
+            <input type="radio" name="q{{ loop.index }}" value="D"> D. {{ c.dap_an_d }} <br>
+        </div>
+        {% endfor %}
+        <button type="submit">Nộp bài</button>
+    </form>
+</body>
+</html>
