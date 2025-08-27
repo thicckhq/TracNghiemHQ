@@ -169,10 +169,39 @@ def tai_khoan():
     username = session['username']
     with engine.connect() as conn:
         user = conn.execute(
-            text("SELECT * FROM Nguoidung WHERE username=:u"),
+            text("""SELECT username, ten_thuc, so_dien_thoai, email, mon_dang_ky, ngay_het_han 
+                    FROM Nguoidung WHERE username=:u"""),
             {"u": username}
         ).mappings().first()
-    return render_template("tai_khoan.html", user=user)
+
+    if not user:
+        flash("Không tìm thấy thông tin người dùng!")
+        return redirect(url_for('index'))
+
+    # --- Xử lý môn đăng ký (có thể nhiều giá trị) ---
+    mon_map = {
+        "1": "Pháp luật hải quan",
+        "2": "Kỹ thuật nghiệp vụ ngoại thương",
+        "3": "Kỹ thuật nghiệp vụ hải quan"
+    }
+
+    raw_mon = str(user.get("mon_dang_ky") or "").strip()
+    if not raw_mon:
+        mon_dk = "Chưa đăng ký môn học"
+    else:
+        mon_list = [mon_map.get(x.strip(), f"Không rõ ({x.strip()})") for x in raw_mon.split(",") if x.strip()]
+        mon_dk = ", ".join(mon_list) if mon_list else "Chưa đăng ký môn học"
+
+    # --- Xử lý ngày hết hạn ---
+    ngay_het_han = user.get("ngay_het_han")
+    if ngay_het_han is None:
+        ngay_het_han = "Chưa có"
+    else:
+        ngay_het_han = str(ngay_het_han)
+
+    return render_template("tai_khoan.html", user=user, mon_dk=mon_dk, ngay_het_han=ngay_het_han)
+
+
 
 # ---------- Quản trị ----------
 @app.route('/quan-tri')
