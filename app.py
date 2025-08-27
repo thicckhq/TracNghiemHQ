@@ -217,75 +217,8 @@ def tao_thanh_toan():
 def thanh_toan_page():
     return render_template("thanh_toan.html", username=session["username"])
 
-# ---------- Run ----------from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 
-
-# ---- ROUTE ADMIN ----
-@app.route("/admin")
-def admin():
-    if "username" not in session or session["username"] != "admin":  # chỉ admin mới vào
-        return redirect(url_for("login"))
-
-    with engine.connect() as conn:
-        users = conn.execute(text("SELECT * FROM Nguoidung")).mappings().all()
-    return render_template("admin.html", users=users)
-
-# Upload & cập nhật bộ đề thi từ Excel
-@app.route("/upload-exam", methods=["POST"])
-def upload_exam():
-    if "username" not in session or session["username"] != "admin":
-        return redirect(url_for("login"))
-
-    file = request.files.get("file")
-    if not file:
-        flash("Chưa chọn file Excel!", "error")
-        return redirect(url_for("admin"))
-
-    # Lưu file tạm
-    filepath = os.path.join("uploads", file.filename)
-    os.makedirs("uploads", exist_ok=True)
-    file.save(filepath)
-
-    # Đọc Excel (ví dụ sử dụng pandas)
-    df = pd.read_excel(filepath)
-
-    # TODO: cập nhật bộ đề thi vào DB (tùy theo cấu trúc bảng của bạn)
-    # for _, row in df.iterrows():
-    #     ...
-
-    flash("Đã cập nhật bộ đề thi thành công!", "success")
-    return redirect(url_for("admin"))
-
-# Sửa thông tin người dùng
-@app.route("/edit-user/<username>", methods=["GET", "POST"])
-def edit_user(username):
-    if "username" not in session or session["username"] != "admin":
-        return redirect(url_for("login"))
-
-    with engine.connect() as conn:
-        if request.method == "POST":
-            email = request.form.get("email")
-            phone = request.form.get("phone")
-            ngay_het_han = request.form.get("ngay_het_han") or None
-
-            conn.execute(
-                text("""
-                    UPDATE Nguoidung 
-                    SET email=:email, phone=:phone, ngay_het_han=:ngay_het_han
-                    WHERE username=:u
-                """),
-                {"email": email, "phone": phone, "ngay_het_han": ngay_het_han, "u": username}
-            )
-            flash("Cập nhật thành công!", "success")
-            return redirect(url_for("admin"))
-
-        user = conn.execute(
-            text("SELECT * FROM Nguoidung WHERE username=:u"),
-            {"u": username}
-        ).mappings().first()
-
-    return render_template("edit_user.html", user=user)
 
 if __name__ == "__main__":
     app.run(debug=True)
