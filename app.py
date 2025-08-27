@@ -272,13 +272,7 @@ def cau_tra_loi_sai():
 
 
 
-
-import qrcode
-import io
-from flask import send_file
-from datetime import date
-
-import base64
+import urllib.parse
 
 @app.route('/tao-thanh-toan', methods=['POST'])
 def tao_thanh_toan():
@@ -292,6 +286,7 @@ def tao_thanh_toan():
     if so_mon == 0:
         return {"error": "Vui lòng chọn ít nhất 1 môn!"}, 400
 
+    # Lấy ngày hết hạn từ DB
     with engine.connect() as conn:
         user = conn.execute(
             text("SELECT ngay_het_han FROM Nguoidung WHERE username=:u"),
@@ -312,25 +307,23 @@ def tao_thanh_toan():
         so_tien = so_mon * 100000
 
     noi_dung = f"{username} - Gia han TracNghiemHQ - {so_mon} mon"
+
+    # Dùng VietQR API
+    bank_code = "970415"  # Vietinbank
     account_no = "109004999631"
-    account_name = "NGUYEN DOAN VINH"
-    bank_code = "970415"  # Vietinbank BIN
-
-    qr_data = (
-        f"vietqr://{bank_code}/{account_no}"
-        f"?amount={so_tien}&addInfo={noi_dung}&accountName={account_name}"
+    url_qr = (
+        f"https://img.vietqr.io/image/{bank_code}-{account_no}-qr_only.png"
+        f"?amount={so_tien}&addInfo={urllib.parse.quote(noi_dung)}"
     )
-
-    img = qrcode.make(qr_data)
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    qr_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
     return {
         "amount": so_tien,
-        "qr_base64": qr_base64,
-        "noi_dung": noi_dung
+        "noi_dung": noi_dung,
+        "qr_url": url_qr
     }
+
+
+#----- Hiện Thanh toán -----
 @app.route("/thanh-toan")
 def thanh_toan_page():
     if "username" not in session:
