@@ -268,65 +268,6 @@ def on_tap():
 def cau_tra_loi_sai():
     return "Trang Câu trả lời sai (đang phát triển)"
 
-# ----------Tạo mã thanh toán --------
-import qrcode
-import io
-from flask import send_file
-from datetime import date
-
-@app.route('/tao-thanh-toan', methods=['POST'])
-def tao_thanh_toan():
-    if 'username' not in session:
-        return {"error": "Bạn chưa đăng nhập!"}, 403
-
-    username = session['username']
-    mon_selected = request.form.getlist('mon')  # list môn từ checkbox
-    so_mon = len(mon_selected)
-
-    if so_mon == 0:
-        return {"error": "Vui lòng chọn ít nhất 1 môn!"}, 400
-
-    # Lấy ngày hết hạn từ DB
-    with engine.connect() as conn:
-        user = conn.execute(
-            text("SELECT ngay_het_han FROM Nguoidung WHERE username=:u"),
-            {"u": username}
-        ).mappings().first()
-
-    ngay_het_han = user.get("ngay_het_han") if user else None
-
-    # Tính số tiền
-    if not ngay_het_han:  # lần đầu
-        if so_mon == 1:
-            so_tien = 200000
-        elif so_mon == 2:
-            so_tien = 350000
-        else:
-            so_tien = 500000
-    else:  # gia hạn từ năm thứ 2
-        so_tien = so_mon * 100000
-
-    # Nội dung chuyển khoản
-    noi_dung = f"{username} - Gia han TracNghiemHQ - {so_mon} mon"
-
-    # Tạo link Vietinbank (theo chuẩn Napas/QR Bank)
-    account_no = "109004999631"
-    account_name = "NGUYEN DOAN VINH"
-    bank_code = "970415"  # Vietinbank BIN
-
-    qr_data = (
-        f"vietqr://{bank_code}/{account_no}"
-        f"?amount={so_tien}&addInfo={noi_dung}&accountName={account_name}"
-    )
-
-    # Tạo QR code
-    img = qrcode.make(qr_data)
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    buf.seek(0)
-
-    return send_file(buf, mimetype="image/png")
-
 # ---------- Run ----------
 if __name__ == "__main__":
     app.run(debug=True)

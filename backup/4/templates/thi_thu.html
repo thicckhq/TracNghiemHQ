@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thi thử</title>
+</head>
+<body>
+    <h2>Chọn môn thi</h2>
+    <form method="POST">
+        <select name="ma_mon" required>
+            {% for m in monthi %}
+            <option value="{{ m.ma_mon }}">{{ m.ten_mon }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Bắt đầu</button>
+    </form>
+    <p><a href="{{ url_for('index') }}">Quay lại</a></p>
+</body>
+</html>
