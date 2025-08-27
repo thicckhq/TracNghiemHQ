@@ -443,12 +443,13 @@ def upload_bodethi():
 
 #---- Tạo ôn tập----
 # ---------- API: Lấy câu hỏi ngẫu nhiên theo lĩnh vực ----------
+# ---------- API: Lấy câu hỏi ngẫu nhiên theo lĩnh vực ----------
 @app.route("/api/get-question", methods=["POST"])
 @require_login
 def api_get_question():
     try:
         data = request.get_json()
-        linh_vuc = data.get("ten_mon_thi")   # thực ra giờ là tên lĩnh vực
+        linh_vuc = data.get("ten_mon_thi")   # tên lĩnh vực (ví dụ: "Pháp luật hải quan")
         exclude_ids = data.get("exclude_ids", [])
 
         # Hardcode mapping lĩnh vực -> ma_mon_thi
@@ -490,6 +491,20 @@ def api_get_question():
         import random
         q = random.choice(questions)
 
+        # ---- Chuẩn hóa dap_an_dung ----
+        raw = str(q.get("dap_an_dung") or "").strip().upper()
+        map_choice = {"A": 0, "B": 1, "C": 2, "D": 3}
+
+        correct_indices = []
+        if raw:
+            # Trường hợp nhiều đáp án, ví dụ "A,C"
+            parts = [x.strip() for x in raw.replace(";", ",").split(",")]
+            for p in parts:
+                if p in map_choice:
+                    correct_indices.append(map_choice[p])
+                elif p.isdigit() and int(p) in [0,1,2,3]:
+                    correct_indices.append(int(p))
+
         formatted = {
             "id": q.get("id"),
             "question": q.get("cau_hoi", "Không có nội dung"),
@@ -499,8 +514,8 @@ def api_get_question():
                 q.get("dap_an_c"),
                 q.get("dap_an_d"),
             ],
-            "correct_indices": q["dap_an_dung"] if q.get("dap_an_dung") else [],
-            "note": q.get("ghi_chu", "")   # 👈 thêm ghi chú
+            "correct_indices": correct_indices,
+            "note": q.get("ghi_chu", "")
         }
 
         return {"questions": [formatted]}
@@ -510,6 +525,7 @@ def api_get_question():
         print("API /api/get-question lỗi:", e)
         traceback.print_exc()
         return {"error": str(e)}, 500
+
 
 
 

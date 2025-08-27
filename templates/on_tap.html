@@ -482,11 +482,9 @@
     });
 
     closeBtn.addEventListener('click', () => {
-        quizSection.style.display = 'none';
-        quizQuestionsContainer.innerHTML = '';
-        closeBtn.style.display = 'none';
-        usedQuestionIds.clear();
-    });
+    	window.location.href = "/index";
+	});
+
 submitBtn.addEventListener('click', () => {
     if (currentQuizQuestions.length === 0) return;
 
