@@ -182,6 +182,12 @@ def quan_tri():
         return "Bạn không có quyền truy cập!"
     return render_template("admin.html")
 
+#--- Tổng hợp kiến thức -----
+@app.route("/tong-hop-kien-thuc")
+@require_login
+def tong_hop_kien_thuc():
+    return render_template("tong_hop_kien_thuc.html")
+
 # ---------- Nhập bộ đề thi ----------
 @app.route('/nhap-bodethi', methods=['GET', 'POST'])
 @require_login
