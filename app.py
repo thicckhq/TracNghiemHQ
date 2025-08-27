@@ -402,6 +402,44 @@ def thanh_toan_page():
 def upload_exam():
     return render_template("upload_exam.html")
 
+@app.route('/upload-bodethi', methods=['POST'])
+@require_login
+def upload_bodethi():
+    if not session.get("is_admin"):
+        return "Bạn không có quyền truy cập!"
+
+    if 'file' not in request.files:
+        flash("Không tìm thấy file!", "danger")
+        return redirect(url_for("quan_tri"))
+
+    file = request.files['file']
+    if file.filename == '':
+        flash("Chưa chọn file!", "danger")
+        return redirect(url_for("quan_tri"))
+
+    try:
+        # Đọc file Excel bằng pandas
+        df = pd.read_excel(file)
+
+        # Lấy danh sách cột từ excel (giả định trùng với table bodethi)
+        columns = list(df.columns)
+
+        with engine.begin() as conn:
+            # Xóa dữ liệu cũ
+            conn.execute(text("DELETE FROM bodethi"))
+
+            # Chèn dữ liệu mới
+            for _, row in df.iterrows():
+                placeholders = ", ".join([f":{col}" for col in columns])
+                sql = f"INSERT INTO bodethi ({', '.join(columns)}) VALUES ({placeholders})"
+                conn.execute(text(sql), row.to_dict())
+
+        flash("Cập nhật bộ đề thành công!", "success")
+
+    except Exception as e:
+        flash(f"Lỗi khi cập nhật bộ đề: {e}", "danger")
+
+    return redirect(url_for("quan_tri"))
 
 
 if __name__ == "__main__":

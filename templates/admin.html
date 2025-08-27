@@ -11,8 +11,20 @@
   </style>
 </head>
 <body>
-  <h1>Quản trị Admin - Danh sách người dùng</h1>
+  <h1>Quản trị Admin</h1>
   <a href="{{ url_for('index') }}">⬅️ Quay lại Trang chính</a>
+
+  <!-- Group 1: Cập nhật bộ đề -->
+  <h2>Cập nhật bộ đề thi</h2>
+  <form method="POST" action="{{ url_for('upload_bodethi') }}" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".xlsx,.xls" required>
+    <button type="submit">Cập nhật</button>
+  </form>
+
+  <hr>
+
+  <!-- Group 2: Danh sách người dùng -->
+  <h2>Danh sách người dùng</h2>
   <table>
     <thead>
       <tr>
