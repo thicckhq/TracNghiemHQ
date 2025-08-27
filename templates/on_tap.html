@@ -409,22 +409,40 @@
             topicSection.style.display = 'block';
         }
 
-        function startQuiz(topic) {
-            const subjectCode = getSubjectCodeFromTopic(topic);
-            currentQuizQuestions = quizData[subjectCode];
-            currentQuestionIndex = 0;
-            quizSection.style.display = 'block';
-            
-            quizTitle.textContent = topic;
-            
-            displayCurrentQuestion();
-            updateButtonVisibility();
-            closeBtn.style.display = 'block';
+        async function startQuiz(topic) {
+    // Gửi request lên Flask để lấy câu hỏi ngẫu nhiên
+    try {
+        const res = await fetch("/api/get-questions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ten_mon_thi: topic })   // gửi tên lĩnh vực (giống cột ten_mon_thi trong Monthi)
+        });
 
-            setTimeout(() => {
-                quizSection.scrollIntoView({ behavior: 'smooth' });
-            }, 300);
+        const data = await res.json();
+        if (!data.questions || data.questions.length === 0) {
+            quizQuestionsContainer.innerHTML = "<p>Không có câu hỏi nào cho lĩnh vực này.</p>";
+            quizSection.style.display = 'block';
+            return;
         }
+
+        currentQuizQuestions = data.questions;
+        currentQuestionIndex = 0;
+        quizSection.style.display = 'block';
+
+        quizTitle.textContent = topic;
+        displayCurrentQuestion();
+        updateButtonVisibility();
+        closeBtn.style.display = 'block';
+
+        setTimeout(() => {
+            quizSection.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+    } catch (err) {
+        console.error("Lỗi khi tải câu hỏi:", err);
+        quizQuestionsContainer.innerHTML = "<p>Lỗi khi tải dữ liệu từ server!</p>";
+    }
+}
+
 
         function getSubjectCodeFromTopic(topic) {
             for (const subject in topics) {
