@@ -323,9 +323,9 @@
                 </div>
             
             <div class="quiz-controls">
-                <button id="prev-btn">Câu trước</button>
+                
                 <button id="submit-btn" style="display: none;">Trả lời</button>
-                <button id="next-btn">Câu tiếp</button>
+                <button id="next-btn">Câu tiếp theo</button>
             </div>
         </div>
     </div>
@@ -408,24 +408,29 @@
             });
             topicSection.style.display = 'block';
         }
+let selectedTenMonThi = null;
 
-        async function startQuiz(topic) {
-    // Gửi request lên Flask để lấy câu hỏi ngẫu nhiên
+async function startQuiz(tenMonThi, topic) {
+    selectedTenMonThi = tenMonThi; // lưu lại môn thi
+    await loadNewQuestion(topic);
+}
+
+async function loadNewQuestion(topic) {
     try {
-        const res = await fetch("/api/get-questions", {
+        const res = await fetch("/api/get-question", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ten_mon_thi: topic })   // gửi tên lĩnh vực (giống cột ten_mon_thi trong Monthi)
+            body: JSON.stringify({ ten_mon_thi: selectedTenMonThi })
         });
 
         const data = await res.json();
         if (!data.questions || data.questions.length === 0) {
-            quizQuestionsContainer.innerHTML = "<p>Không có câu hỏi nào cho lĩnh vực này.</p>";
+            quizQuestionsContainer.innerHTML = "<p>Không có câu hỏi nào.</p>";
             quizSection.style.display = 'block';
             return;
         }
 
-        currentQuizQuestions = data.questions;
+        currentQuizQuestions = data.questions; // chỉ 1 câu
         currentQuestionIndex = 0;
         quizSection.style.display = 'block';
 
@@ -434,14 +439,18 @@
         updateButtonVisibility();
         closeBtn.style.display = 'block';
 
-        setTimeout(() => {
-            quizSection.scrollIntoView({ behavior: 'smooth' });
-        }, 300);
     } catch (err) {
         console.error("Lỗi khi tải câu hỏi:", err);
-        quizQuestionsContainer.innerHTML = "<p>Lỗi khi tải dữ liệu từ server!</p>";
+        quizQuestionsContainer.innerHTML = "<p>Lỗi server!</p>";
     }
 }
+
+// Khi bấm nút Câu tiếp
+nextBtn.addEventListener('click', () => {
+    if (selectedTenMonThi) {
+        loadNewQuestion(quizTitle.textContent);
+    }
+});
 
 
         function getSubjectCodeFromTopic(topic) {

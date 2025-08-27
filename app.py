@@ -443,9 +443,9 @@ def upload_bodethi():
 
 #---- Tạo ôn tập----
 # ---------- API: Lấy câu hỏi ngẫu nhiên theo lĩnh vực ----------
-@app.route("/api/get-questions", methods=["POST"])
+@app.route("/api/get-question", methods=["POST"])
 @require_login
-def api_get_questions():
+def api_get_question():
     try:
         data = request.get_json()
         ten_mon_thi = data.get("ten_mon_thi")
@@ -473,33 +473,28 @@ def api_get_questions():
             return {"questions": []}
 
         import random
-        question = random.choice(questions)
+        q = random.choice(questions)
 
         formatted = {
-            "id": question.get("id"),
-            "question": question.get("cau_hoi", "Không có nội dung"),
+            "id": q.get("id"),
+            "question": q.get("noi_dung", "Không có nội dung"),
             "answers": [
-                question.get("dap_an_a"),
-                question.get("dap_an_b"),
-                question.get("dap_an_c"),
-                question.get("dap_an_d"),
+                q.get("dapan1"),
+                q.get("dapan2"),
+                q.get("dapan3"),
+                q.get("dapan4"),
             ],
-            "correct_indices": []
+            "correct_indices": [int(q["dapan_dung"]) - 1] if q.get("dapan_dung") else []
         }
 
-        # Chỉ thêm đáp án đúng nếu parse được
-        try:
-            if question.get("dap_an_dung"):
-                formatted["correct_indices"] = question["dap_an_dung"]
-        except Exception as e:
-            print("Lỗi parse dap_an_dung:", e)
-
         return {"questions": [formatted]}
+
     except Exception as e:
         import traceback
-        print("API /api/get-questions lỗi:", e)
+        print("API /api/get-question lỗi:", e)
         traceback.print_exc()
         return {"error": str(e)}, 500
+
 
 
 if __name__ == "__main__":
