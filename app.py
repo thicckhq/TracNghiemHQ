@@ -499,7 +499,7 @@ def api_get_question():
                 q.get("dap_an_c"),
                 q.get("dap_an_d"),
             ],
-            "correct_indices": [int(q["dapan_dung"]) - 1] if q.get("dapan_dung") else []
+            "correct_indices": q["dap_an_dung"] if q.get("dap_an_dung") else []
         }
 
         return {"questions": [formatted]}
