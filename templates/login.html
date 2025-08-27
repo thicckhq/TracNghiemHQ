@@ -209,16 +209,7 @@
       if(!ok) e.preventDefault();
     });
 
-    document.getElementById('forgotFrm').addEventListener('submit', function(e){
-      const email = document.getElementById('forgot_email').value.trim();
-      const emailPattern=/^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$/i;
-      if(!emailPattern.test(email)){
-        document.getElementById('err_forgot_email').style.display='block';
-        e.preventDefault();
-      }else{
-        document.getElementById('err_forgot_email').style.display='none';
-      }
-    });
+    
   </script>
 </body>
 </html>

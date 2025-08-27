@@ -9,6 +9,10 @@ import pandas as pd
 
 # ---------- Flask config ----------
 app = Flask(__name__)
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SAMESITE="None"
+)
 app.secret_key = "supersecretkey123"   # Cố định key để session không bị reset
 
 # ---------- Session config ----------
