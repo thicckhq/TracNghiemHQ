@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sửa người dùng</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen p-6 flex justify-center">
+
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg">
+    <h1 class="text-2xl font-bold mb-6 text-center">Sửa thông tin người dùng</h1>
+
+    <form method="POST">
+      <div class="mb-4">
+        <label class="block font-semibold mb-1">Username</label>
+        <input type="text" value="{{ user.username }}" disabled class="w-full border p-2 rounded">
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-semibold mb-1">Email</label>
+        <input type="email" name="email" value="{{ user.email or '' }}" class="w-full border p-2 rounded">
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-semibold mb-1">Điện thoại</label>
+        <input type="text" name="phone" value="{{ user.phone or '' }}" class="w-full border p-2 rounded">
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-semibold mb-1">Ngày hết hạn</label>
+        <input type="date" name="ngay_het_han" value="{{ user.ngay_het_han or '' }}" class="w-full border p-2 rounded">
+      </div>
+
+      <div class="flex justify-between mt-6">
+        <a href="{{ url_for('admin') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Hủy</a>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Cập nhật</button>
+      </div>
+    </form>
+  </div>
+
+</body>
+</html>

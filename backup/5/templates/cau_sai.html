@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Câu đã trả lời sai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-3xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">❌ Câu đã trả lời sai</h1>
+        <p class="text-gray-600 mb-6">Trang này sẽ hiển thị danh sách các câu bạn đã làm sai.</p>
+
+        <a href="{{ url_for('index') }}" 
+           class="bg-indigo-600 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-700">
+           ⬅ Quay lại Trang chủ
+        </a>
+    </div>
+</body>
+</html>
