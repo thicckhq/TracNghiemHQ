@@ -67,6 +67,14 @@
     <!-- ===== ĐĂNG NHẬP ===== -->
     <div id="loginForm">
       <h2>Đăng nhập hệ thống</h2>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div style="color:red; margin:10px 0; text-align:center;">
+      {{ messages[0] }}
+    </div>
+  {% endif %}
+{% endwith %}
+
       <form method="POST" action="/login">
         <label>Tên đăng nhập</label>
         <input type="text" name="username" required />
