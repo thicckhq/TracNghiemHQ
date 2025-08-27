@@ -21,14 +21,14 @@
     input[type="text"],input[type="password"],input[type="email"],input[type="tel"]{
       width:100%; padding:12px; border:1px solid #ccc; border-radius:10px;
       font-family:"Times New Roman", serif;
-	margin-top:16px; 
+      margin-top:16px; 
     }
     input:focus{ border-color:var(--primary); outline:none; box-shadow:0 0 5px rgba(79,172,254,.5); }
     button{
       width:100%; padding:12px; border:none; border-radius:10px;
       background:var(--primary); color:#fff; font-size:16px; cursor:pointer;
       font-family:"Times New Roman", serif;
-	margin-top:16px; 
+      margin-top:16px; 
     }
     button:hover{ background:#00c6ff; }
     .links{ text-align:center; margin-top:14px; font-size:14px; }
@@ -135,13 +135,14 @@
     <div class="overlay-content">
       <div style="margin-bottom:10px;">Hãy kết bạn để tôi hỗ trợ</div>
       <img id="qrImg" src="{{ url_for('static', filename='images/qr.png') }}" alt="QR Zalo Nguyễn Doãn Vinh" />
-      </div>
     </div>
   </div>
 
+  </div> <!-- end .container -->
+
   <script>
     function showForm(id){
-      ['loginForm','registerForm','forgotForm'].forEach(x=>{
+      ['loginForm','registerForm'].forEach(x=>{
         document.getElementById(x).classList.add('hidden');
       });
       document.getElementById(id).classList.remove('hidden');
@@ -198,7 +199,7 @@
       if(pw!==pw2){ document.getElementById('err_pw2').style.display='block'; ok=false; }
       else document.getElementById('err_pw2').style.display='none';
 
-      const emailPattern=/^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$/i;
+      const emailPattern=/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/i;
       if(email && !emailPattern.test(email)){ document.getElementById('err_email').style.display='block'; ok=false; }
       else document.getElementById('err_email').style.display='none';
 
@@ -208,8 +209,6 @@
 
       if(!ok) e.preventDefault();
     });
-
-    
   </script>
 </body>
 </html>
