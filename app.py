@@ -455,30 +455,35 @@ def api_get_question():
             return {"error": "Thiếu tên môn thi!"}, 400
 
         with engine.connect() as conn:
+            # Tìm mã môn thi từ bảng Monthi
             row = conn.execute(
-                text("SELECT ma_mon_thi FROM Monthi WHERE ten_mon_thi=:t"),
+                text("SELECT ma_mon_thi FROM Monthi WHERE LOWER(ten_mon_thi)=LOWER(:t)"),
                 {"t": ten_mon_thi}
             ).mappings().first()
+
             if not row:
-                return {"error": "Không tìm thấy môn thi"}, 404
+                return {"error": f"Không tìm thấy môn thi: {ten_mon_thi}"}, 404
 
             ma_mon_thi = row["ma_mon_thi"]
 
-            # Query loại bỏ các ID đã dùng
-            sql = "SELECT * FROM bodethi WHERE ma_mon_thi=:m"
+            # Query câu hỏi theo ma_mon_thi, loại bỏ exclude_ids
             if exclude_ids:
-                sql += " AND id NOT IN :ids"
+                query = text("""
+                    SELECT * FROM bodethi 
+                    WHERE ma_mon_thi=:m AND id NOT IN :ids
+                """)
+                params = {"m": ma_mon_thi, "ids": tuple(exclude_ids)}
+            else:
+                query = text("SELECT * FROM bodethi WHERE ma_mon_thi=:m")
+                params = {"m": ma_mon_thi}
 
-            result = conn.execute(
-                text(sql),
-                {"m": ma_mon_thi, "ids": tuple(exclude_ids)}
-            ).mappings().all()
+            questions = conn.execute(query, params).mappings().all()
 
-        if not result:
+        if not questions:
             return {"questions": []}
 
         import random
-        q = random.choice(result)
+        q = random.choice(questions)
 
         formatted = {
             "id": q.get("id"),
@@ -491,13 +496,15 @@ def api_get_question():
             ],
             "correct_indices": [int(q["dap_an_dung"]) - 1] if q.get("dap_an_dung") else []
         }
+
         return {"questions": [formatted]}
 
     except Exception as e:
         import traceback
-        print("API lỗi:", e)
+        print("API /api/get-question lỗi:", e)
         traceback.print_exc()
         return {"error": str(e)}, 500
+
 
 
 

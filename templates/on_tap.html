@@ -332,254 +332,170 @@
     </div>
 
     <script>
-        const subjectCards = document.querySelectorAll('#subject-selection .card');
-        const topicSelectionSection = document.getElementById('topic-selection');
-        const topicSection = document.getElementById('topic-section');
-        const quizSection = document.getElementById('quiz-section');
-        const quizTitle = document.getElementById('quiz-title');
-        const quizQuestionsContainer = document.getElementById('quiz-questions');
-        const submitBtn = document.getElementById('submit-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const closeBtn = document.getElementById('close-btn');
+    const subjectCards = document.querySelectorAll('#subject-selection .card');
+    const topicSelectionSection = document.getElementById('topic-selection');
+    const topicSection = document.getElementById('topic-section');
+    const quizSection = document.getElementById('quiz-section');
+    const quizTitle = document.getElementById('quiz-title');
+    const quizQuestionsContainer = document.getElementById('quiz-questions');
+    const submitBtn = document.getElementById('submit-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const closeBtn = document.getElementById('close-btn');
 
-        const topics = {
-            'phap_luat_hai_quan': ['Pháp luật hải quan', 'Chính sách thuế', 'Vi phạm hành chính'],
-            'ky_thuat_nghiep_vu_ngoai_thuong': ['Giao nhận vận tải', 'Ngoại thương', 'Thanh toán quốc tế'],
-            'ky_thuat_nghiep_vu_hai_quan': ['Thủ tục hải quan', 'Chính sách mặt hàng', 'Trị giá hải quan', 'Xuất xứ hàng hóa', 'Sở hữu trí tuệ', 'Phân loại hàng hóa']
-        };
+    const topics = {
+        'phap_luat_hai_quan': ['Pháp luật hải quan', 'Chính sách thuế', 'Vi phạm hành chính'],
+        'ky_thuat_nghiep_vu_ngoai_thuong': ['Giao nhận vận tải', 'Ngoại thương', 'Thanh toán quốc tế'],
+        'ky_thuat_nghiep_vu_hai_quan': ['Thủ tục hải quan', 'Chính sách mặt hàng', 'Trị giá hải quan', 'Xuất xứ hàng hóa', 'Sở hữu trí tuệ', 'Phân loại hàng hóa']
+    };
 
-        const quizData = {
-            'phap_luat_hai_quan': [
-                {
-                    question: 'Cơ quan nào ban hành luật Hải quan?',
-                    answers: ['Quốc hội', 'Chính phủ', 'Bộ Tài chính', 'Tổng cục Hải quan'],
-                    correct_indices: [0],
-                    answered: false
-                },
-                {
-                    question: 'Vị trí của hải quan Việt Nam nằm ở đâu?',
-                    answers: ['Trong Chính phủ', 'Trong Bộ Tài chính'],
-                    correct_indices: [1],
-                    answered: false
-                },
-            ],
-            'ky_thuat_nghiep_vu_ngoai_thuong': [
-                {
-                    question: 'Phương thức thanh toán nào sau đây được sử dụng phổ biến nhất trong thương mại quốc tế?',
-                    answers: ['Thanh toán bằng chuyển tiền', 'Thanh toán bằng tín dụng thư', 'Thanh toán bằng điện chuyển tiền', 'Thanh toán bằng nhờ thu'],
-                    correct_indices: [1],
-                    answered: false
-                },
-                {
-                    question: 'FOB là gì?',
-                    answers: ['Free on Board', 'Freight on Board', 'Free out Board'],
-                    correct_indices: [0],
-                    answered: false
-                },
-            ],
-            'ky_thuat_nghiep_vu_hai_quan': [
-                {
-                    question: 'Hàng hóa nào được miễn thuế nhập khẩu theo quy định hiện hành?',
-                    answers: ['Hàng hóa phục vụ nghiên cứu khoa học', 'Hàng hóa viện trợ không hoàn lại', 'Tất cả các đáp án trên', 'Không có đáp án nào đúng'],
-                    correct_indices: [1, 2],
-                    answered: false
-                },
-            ]
-        };
+    let selectedTenMonThi = null;
+    let usedQuestionIds = new Set();
 
-        let selectedSubject = null;
-        let currentQuizQuestions = [];
-        let currentQuestionIndex = 0;
+    let currentQuizQuestions = [];
+    let currentQuestionIndex = 0;
 
-        function renderTopicCards(subject) {
-            topicSelectionSection.innerHTML = '';
-            const topicList = topics[subject];
-            topicList.forEach(topic => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.dataset.topic = topic;
-                card.innerHTML = `<h3>${topic}</h3>`;
-                card.addEventListener('click', () => {
-                    document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
-                    startQuiz(topic);
-                });
-                topicSelectionSection.appendChild(card);
+    function renderTopicCards(subject) {
+        topicSelectionSection.innerHTML = '';
+        const topicList = topics[subject];
+        topicList.forEach(topic => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.topic = topic;
+            card.innerHTML = `<h3>${topic}</h3>`;
+            card.addEventListener('click', () => {
+                document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+
+                // lấy tên môn thi cha theo subject code
+                selectedTenMonThi = getSubjectName(subject);
+                usedQuestionIds.clear(); // reset
+                startQuiz(topic);
             });
-            topicSection.style.display = 'block';
-        }
+            topicSelectionSection.appendChild(card);
+        });
+        topicSection.style.display = 'block';
+    }
 
-        function startQuiz(topic) {
-            const subjectCode = getSubjectCodeFromTopic(topic);
-            currentQuizQuestions = quizData[subjectCode];
+    function getSubjectName(subjectCode) {
+        switch (subjectCode) {
+            case 'phap_luat_hai_quan':
+                return 'Pháp luật hải quan';
+            case 'ky_thuat_nghiep_vu_ngoai_thuong':
+                return 'Kỹ thuật nghiệp vụ ngoại thương';
+            case 'ky_thuat_nghiep_vu_hai_quan':
+                return 'Kỹ thuật nghiệp vụ hải quan';
+            default:
+                return '';
+        }
+    }
+
+    async function startQuiz(topic) {
+        await loadNewQuestion(topic);
+    }
+
+    async function loadNewQuestion(topic) {
+        try {
+            const res = await fetch("/api/get-question", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ten_mon_thi: selectedTenMonThi,
+                    exclude_ids: Array.from(usedQuestionIds)
+                })
+            });
+
+            const data = await res.json();
+            if (!data.questions || data.questions.length === 0) {
+                quizQuestionsContainer.innerHTML = "<p>Không còn câu hỏi nào cho môn này.</p>";
+                quizSection.style.display = 'block';
+                return;
+            }
+
+            let q = data.questions[0];
+            usedQuestionIds.add(q.id);
+
+            currentQuizQuestions = [q];
             currentQuestionIndex = 0;
             quizSection.style.display = 'block';
-            
+
             quizTitle.textContent = topic;
-            
             displayCurrentQuestion();
             updateButtonVisibility();
             closeBtn.style.display = 'block';
 
-            setTimeout(() => {
-                quizSection.scrollIntoView({ behavior: 'smooth' });
-            }, 300);
+        } catch (err) {
+            console.error("Lỗi khi tải câu hỏi:", err);
+            quizQuestionsContainer.innerHTML = "<p>Lỗi server!</p>";
+        }
+    }
+
+    function displayCurrentQuestion() {
+        if (currentQuizQuestions.length === 0) {
+            quizQuestionsContainer.innerHTML = `<p>Không có câu hỏi nào.</p>`;
+            return;
         }
 
-        function getSubjectCodeFromTopic(topic) {
-            for (const subject in topics) {
-                if (topics[subject].includes(topic)) {
-                    return subject;
-                }
-            }
-            return null;
+        const currentQuestion = currentQuizQuestions[currentQuestionIndex];
+        quizQuestionsContainer.innerHTML = '';
+
+        const questionCard = document.createElement('div');
+        questionCard.className = 'question-card';
+
+        questionCard.innerHTML = `
+            <p class="question-text">${currentQuestion.question}</p>
+            <div class="answers" id="answers-container"></div>
+        `;
+        quizQuestionsContainer.appendChild(questionCard);
+
+        const answersContainer = questionCard.querySelector('#answers-container');
+        currentQuestion.answers.forEach((answer, ansIndex) => {
+            const label = document.createElement('label');
+            label.className = 'answer-label';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = ansIndex;
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(answer));
+            answersContainer.appendChild(label);
+        });
+    }
+
+    function updateButtonVisibility() {
+        nextBtn.style.display = 'inline-block';
+    }
+
+    nextBtn.addEventListener('click', () => {
+        if (selectedTenMonThi) {
+            loadNewQuestion(quizTitle.textContent);
         }
+    });
 
-        function displayCurrentQuestion() {
-            if (currentQuizQuestions.length === 0) {
-                quizQuestionsContainer.innerHTML = `<p>Không có câu hỏi nào cho lĩnh vực này.</p>`;
-                return;
-            }
+    closeBtn.addEventListener('click', () => {
+        quizSection.style.display = 'none';
+        quizQuestionsContainer.innerHTML = '';
+        closeBtn.style.display = 'none';
+        usedQuestionIds.clear();
+    });
 
-            const currentQuestion = currentQuizQuestions[currentQuestionIndex];
-            quizQuestionsContainer.innerHTML = '';
+    subjectCards.forEach(card => {
+        card.addEventListener('click', () => {
+            subjectCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
 
-            const questionCard = document.createElement('div');
-            questionCard.className = 'question-card';
-            
-            questionCard.innerHTML = `
-                <p class="question-text">${currentQuestion.question}</p>
-                <div class="answers" id="answers-container"></div>
-            `;
-            quizQuestionsContainer.appendChild(questionCard);
+            const subject = card.dataset.subject;
+            renderTopicCards(subject);
 
-            const answersContainer = questionCard.querySelector('#answers-container');
-            currentQuestion.answers.forEach((answer, ansIndex) => {
-                const label = document.createElement('label');
-                label.className = 'answer-label';
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.name = `q-${currentQuestionIndex}`;
-                checkbox.value = ansIndex;
-                checkbox.checked = currentQuestion.user_answers && currentQuestion.user_answers.includes(ansIndex);
-                checkbox.disabled = currentQuestion.answered;
-
-                label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(answer));
-                answersContainer.appendChild(label);
-
-                checkbox.addEventListener('change', updateSubmitButtonVisibility);
-            });
-
-            updateButtonVisibility();
-
-            if (currentQuestion.answered) {
-                showAnswerFeedback();
-            }
-            updateSubmitButtonVisibility();
-        }
-
-        function updateSubmitButtonVisibility() {
-            const currentQuestion = currentQuizQuestions[currentQuestionIndex];
-            const checkboxes = document.querySelectorAll(`input[name="q-${currentQuestionIndex}"]`);
-            const hasSelection = Array.from(checkboxes).some(cb => cb.checked);
-            
-            if (currentQuestion.answered) {
-                submitBtn.style.display = 'none';
-            } else {
-                submitBtn.style.display = hasSelection ? 'inline-block' : 'none';
-            }
-        }
-
-        function showAnswerFeedback() {
-            const currentQuestion = currentQuizQuestions[currentQuestionIndex];
-            const checkboxes = document.querySelectorAll(`input[name="q-${currentQuestionIndex}"]`);
-            const feedbackDiv = document.createElement('div');
-            feedbackDiv.className = 'question-feedback';
-
-            let isCorrect = true;
-            
-            checkboxes.forEach((cb, index) => {
-                const label = cb.closest('.answer-label');
-                cb.disabled = true;
-                
-                const isUserChecked = cb.checked;
-                const isCorrectAnswer = currentQuestion.correct_indices.includes(index);
-                
-                if (isUserChecked && isCorrectAnswer) {
-                    label.classList.add('correct');
-                } else if (isUserChecked && !isCorrectAnswer) {
-                    label.classList.add('incorrect');
-                    isCorrect = false;
-                } else if (!isUserChecked && isCorrectAnswer) {
-                    label.classList.add('correct');
-                    isCorrect = false;
-                }
-            });
-
-            if (isCorrect) {
-                feedbackDiv.textContent = 'Chính xác! 🎉';
-                feedbackDiv.classList.add('feedback-correct');
-            } else {
-                feedbackDiv.textContent = 'Chưa chính xác. 🤔 Vui lòng xem lại đáp án đúng.';
-                feedbackDiv.classList.add('feedback-incorrect');
-            }
-            quizQuestionsContainer.appendChild(feedbackDiv);
-        }
-
-        function updateButtonVisibility() {
-            nextBtn.style.display = 'inline-block';
-        }
-
-        function resetQuizState() {
             quizSection.style.display = 'none';
             quizQuestionsContainer.innerHTML = '';
-            closeBtn.style.display = 'none';
-            
-            document.querySelectorAll('#subject-selection .card').forEach(c => c.classList.remove('selected'));
-            document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
-            
-            const mainContainer = document.querySelector('.container');
-            mainContainer.scrollIntoView({ behavior: 'smooth' });
-        }
 
-        submitBtn.addEventListener('click', () => {
-            const currentQuestion = currentQuizQuestions[currentQuestionIndex];
-            currentQuestion.answered = true;
-            
-            const checkboxes = document.querySelectorAll(`input[name="q-${currentQuestionIndex}"]:checked`);
-            currentQuestion.user_answers = Array.from(checkboxes).map(cb => parseInt(cb.value));
-
-            showAnswerFeedback();
-            submitBtn.style.display = 'none';
+            setTimeout(() => {
+                topicSection.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
         });
+    });
+</script>
 
-        nextBtn.addEventListener('click', () => {
-            if (currentQuestionIndex < currentQuizQuestions.length - 1) {
-                currentQuestionIndex++;
-                displayCurrentQuestion();
-            }
-        });
-
-        closeBtn.addEventListener('click', resetQuizState);
-
-        subjectCards.forEach(card => {
-            card.addEventListener('click', () => {
-                subjectCards.forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                
-                selectedSubject = card.dataset.subject;
-                renderTopicCards(selectedSubject);
-                
-                quizSection.style.display = 'none';
-                quizQuestionsContainer.innerHTML = '';
-                
-                setTimeout(() => {
-                    topicSection.scrollIntoView({ behavior: 'smooth' });
-                }, 300);
-            });
-        });
-    </script>
 </body>
 </html>
