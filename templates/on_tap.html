@@ -390,8 +390,12 @@
     }
 
     async function startQuiz(topic) {
-        await loadNewQuestion(topic);
-    }
+    await loadNewQuestion(topic);
+    setTimeout(() => {
+        quizSection.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+}
+
 
     async function loadNewQuestion(topic) {
         try {
@@ -478,6 +482,48 @@
         closeBtn.style.display = 'none';
         usedQuestionIds.clear();
     });
+submitBtn.addEventListener('click', () => {
+    if (currentQuizQuestions.length === 0) return;
+
+    const currentQuestion = currentQuizQuestions[currentQuestionIndex];
+    const selected = Array.from(
+        document.querySelectorAll('#answers-container input[type="checkbox"]:checked')
+    ).map(cb => parseInt(cb.value));
+
+    const correct = Array.isArray(currentQuestion.correct_indices)
+        ? currentQuestion.correct_indices.map(x => parseInt(x))
+        : [parseInt(currentQuestion.correct_indices)];
+
+    const labels = document.querySelectorAll('#answers-container .answer-label');
+
+    let isCorrect = true;
+
+    labels.forEach((label, idx) => {
+        if (correct.includes(idx)) {
+            label.classList.add('correct'); // tô màu xanh
+        }
+        if (selected.includes(idx) && !correct.includes(idx)) {
+            label.classList.add('incorrect'); // tô màu đỏ cho sai
+            isCorrect = false;
+        }
+    });
+
+    // Nếu người dùng chọn thiếu đáp án đúng thì coi như sai
+    correct.forEach(idx => {
+        if (!selected.includes(idx)) {
+            isCorrect = false;
+        }
+    });
+
+    // Thông báo kết quả sinh động
+    const feedback = document.createElement('div');
+    feedback.className = 'question-feedback ' + (isCorrect ? 'feedback-correct' : 'feedback-incorrect');
+    feedback.textContent = isCorrect ? '🎉 Chính xác! Tuyệt vời!' : '❌ Sai rồi! Cố gắng lần sau nhé!';
+    quizQuestionsContainer.appendChild(feedback);
+
+    // Khóa nút trả lời sau khi chọn
+    submitBtn.disabled = true;
+});
 
     subjectCards.forEach(card => {
         card.addEventListener('click', () => {
