@@ -194,6 +194,13 @@ def tong_hop_kien_thuc():
 def on_tap():
     return render_template("on_tap.html")
 
+#---- Trả lời câu sai -----
+@app.route("/cau-tra-loi-sai")
+@require_login
+def cau_tra_loi_sai():
+    return render_template("cau_tra_loi_sai.html")
+
+
 
 # ---------- Nhập bộ đề thi ----------
 @app.route('/nhap-bodethi', methods=['GET', 'POST'])
