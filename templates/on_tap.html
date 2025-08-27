@@ -36,7 +36,7 @@
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             animation: fadeIn 0.8s ease-out;
-            position: relative; /* Thêm position: relative để định vị nút đóng */
+            position: relative;
         }
 
         @keyframes fadeIn {
@@ -125,7 +125,7 @@
             border-top: 1px solid var(--border-light);
             padding-top: 25px;
             display: none;
-            position: relative; /* Thêm position: relative để định vị nút đóng */
+            position: relative;
         }
 
         .question-card {
@@ -186,7 +186,7 @@
         .answer-label input[type="checkbox"]:checked::before {
             content: '\2713';
             display: block;
-            color: var(--text-light);
+            color: white;
             font-size: 14px;
             position: absolute;
             top: 50%;
@@ -237,8 +237,9 @@
 
         .quiz-controls {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end; /* Căn phải các nút */
             margin-top: 20px;
+            gap: 10px; /* Khoảng cách giữa các nút */
         }
         
         .quiz-controls button {
@@ -257,10 +258,10 @@
         #submit-btn:hover {
             background-color: #43a047;
         }
-        #next-btn, #prev-btn {
+        #next-btn {
             background-color: var(--secondary-color);
         }
-        #next-btn:hover, #prev-btn:hover {
+        #next-btn:hover {
             background-color: #1e88e5;
         }
         
@@ -276,7 +277,7 @@
             height: 30px;
             font-size: 1.2em;
             cursor: pointer;
-            display: none; /* Ẩn ban đầu */
+            display: none;
         }
         
         #close-btn:hover {
@@ -294,7 +295,8 @@
 <body>
 
     <div class="container">
-        <button id="close-btn">&times;</button> <h1>Ôn tập Trắc nghiệm Hải quan 📚</h1>
+        <button id="close-btn">&times;</button>
+        <h1>Ôn tập Trắc nghiệm Hải quan 📚</h1>
 
         <div id="subject-selection">
             <h2>Chọn môn thi</h2>
@@ -323,9 +325,8 @@
                 </div>
             
             <div class="quiz-controls">
-                
                 <button id="submit-btn" style="display: none;">Trả lời</button>
-                <button id="next-btn">Câu tiếp theo</button>
+                <button id="next-btn">Câu tiếp</button>
             </div>
         </div>
     </div>
@@ -339,7 +340,6 @@
         const quizQuestionsContainer = document.getElementById('quiz-questions');
         const submitBtn = document.getElementById('submit-btn');
         const nextBtn = document.getElementById('next-btn');
-        const prevBtn = document.getElementById('prev-btn');
         const closeBtn = document.getElementById('close-btn');
 
         const topics = {
@@ -408,7 +408,8 @@
             });
             topicSection.style.display = 'block';
         }
-let selectedTenMonThi = null;
+
+        let selectedTenMonThi = null;
 
 async function startQuiz(tenMonThi, topic) {
     selectedTenMonThi = tenMonThi; // lưu lại môn thi
@@ -420,17 +421,23 @@ async function loadNewQuestion(topic) {
         const res = await fetch("/api/get-question", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ten_mon_thi: selectedTenMonThi })
+            body: JSON.stringify({ 
+                ten_mon_thi: selectedTenMonThi,
+                exclude_ids: Array.from(usedQuestionIds) // gửi danh sách id đã dùng
+            })
         });
 
         const data = await res.json();
         if (!data.questions || data.questions.length === 0) {
-            quizQuestionsContainer.innerHTML = "<p>Không có câu hỏi nào.</p>";
+            quizQuestionsContainer.innerHTML = "<p>Đã hết câu hỏi cho môn này.</p>";
             quizSection.style.display = 'block';
             return;
         }
 
-        currentQuizQuestions = data.questions; // chỉ 1 câu
+        let q = data.questions[0];
+        usedQuestionIds.add(q.id); // lưu lại id đã dùng
+
+        currentQuizQuestions = [q];
         currentQuestionIndex = 0;
         quizSection.style.display = 'block';
 
@@ -556,9 +563,8 @@ nextBtn.addEventListener('click', () => {
         }
 
         function updateButtonVisibility() {
-            // Nút "Câu tiếp" và "Câu trước" luôn hiển thị
+            // Nút "Câu tiếp" luôn hiển thị
             nextBtn.style.display = 'inline-block';
-            prevBtn.style.display = 'inline-block';
         }
 
         function resetQuizState() {
@@ -587,13 +593,6 @@ nextBtn.addEventListener('click', () => {
         nextBtn.addEventListener('click', () => {
             if (currentQuestionIndex < currentQuizQuestions.length - 1) {
                 currentQuestionIndex++;
-                displayCurrentQuestion();
-            }
-        });
-
-        prevBtn.addEventListener('click', () => {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
                 displayCurrentQuestion();
             }
         });

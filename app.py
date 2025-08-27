@@ -449,6 +449,7 @@ def api_get_question():
     try:
         data = request.get_json()
         ten_mon_thi = data.get("ten_mon_thi")
+        exclude_ids = data.get("exclude_ids", [])
 
         if not ten_mon_thi:
             return {"error": "Thiếu tên môn thi!"}, 400
@@ -458,40 +459,43 @@ def api_get_question():
                 text("SELECT ma_mon_thi FROM Monthi WHERE ten_mon_thi=:t"),
                 {"t": ten_mon_thi}
             ).mappings().first()
-
             if not row:
-                return {"error": f"Không tìm thấy môn thi: {ten_mon_thi}"}, 404
+                return {"error": "Không tìm thấy môn thi"}, 404
 
             ma_mon_thi = row["ma_mon_thi"]
 
-            questions = conn.execute(
-                text("SELECT * FROM bodethi WHERE ma_mon_thi=:m"),
-                {"m": ma_mon_thi}
+            # Query loại bỏ các ID đã dùng
+            sql = "SELECT * FROM bodethi WHERE ma_mon_thi=:m"
+            if exclude_ids:
+                sql += " AND id NOT IN :ids"
+
+            result = conn.execute(
+                text(sql),
+                {"m": ma_mon_thi, "ids": tuple(exclude_ids)}
             ).mappings().all()
 
-        if not questions:
+        if not result:
             return {"questions": []}
 
         import random
-        q = random.choice(questions)
+        q = random.choice(result)
 
         formatted = {
             "id": q.get("id"),
-            "question": q.get("noi_dung", "Không có nội dung"),
+            "question": q.get("cau_hoi", "Không có nội dung"),
             "answers": [
-                q.get("dapan1"),
-                q.get("dapan2"),
-                q.get("dapan3"),
-                q.get("dapan4"),
+                q.get("dap_an_a"),
+                q.get("dap_an_b"),
+                q.get("dap_an_c"),
+                q.get("dap_an_d"),
             ],
-            "correct_indices": [int(q["dapan_dung"]) - 1] if q.get("dapan_dung") else []
+            "correct_indices": [int(q["dap_an_dung"]) - 1] if q.get("dap_an_dung") else []
         }
-
         return {"questions": [formatted]}
 
     except Exception as e:
         import traceback
-        print("API /api/get-question lỗi:", e)
+        print("API lỗi:", e)
         traceback.print_exc()
         return {"error": str(e)}, 500
 
