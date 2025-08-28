@@ -3,142 +3,519 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thi thử Chứng chỉ Hải quan</title>
-    <!-- Tải Tailwind CSS để tạo kiểu nhanh chóng -->
+    <title>Giao diện bài thi trắc nghiệm</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
         body {
-            font-family: 'Times New Roman', serif;
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header-fixed {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background-color: #f9fafb;
+            padding: 12px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+        .footer-fixed {
+            position: sticky;
+            bottom: 0;
+            z-index: 20;
+            background-color: #f9fafb;
+            padding: 12px 24px;
+            border-top: 1px solid #e5e7eb;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #f9fafb;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 0;
+        }
+        .button {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .answer-label {
+            transition: all 0.2s ease-in-out;
+            border: 1px solid transparent;
+        }
+        input[type="radio"]:checked + .answer-label,
+        input[type="checkbox"]:checked + .answer-label {
+            background-color: #e5e7eb;
+            border-color: #d1d5db;
+        }
+        .quiz-option {
+            transition: all 0.2s ease;
+            font-size: 0.875rem; /* text-sm */
+            position: relative;
+            overflow: hidden;
+        }
+        .quiz-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1-px rgba(0, 0, 0, 0.06);
+        }
+        .quiz-option.answered {
+            background-color: #d1d5db; /* Màu xám mờ */
+            color: #1f2937; /* Màu chữ xám đậm */
+        }
+        .quiz-option.unanswered {
+            background-color: #ffffff; /* Màu trắng */
+            color: #4b5563; /* Màu chữ xám */
+            border: 1px solid #d1d5db;
+        }
+        .quiz-option.flagged {
+            background-color: #fde68a;
+        }
+        .quiz-option.answered.flagged {
+            background-color: #fde68a; /* Ưu tiên flagged */
+        }
+        .quiz-option.flagged.unanswered {
+            /* Background cho hiệu ứng chia đôi */
+            background: linear-gradient(to top right, #fde68a 50%, #ffffff 50%);
+            border: 1px solid #d1d5db;
+        }
+
+        #overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        #timer.red-text {
+            color: #ef4444; /* Màu đỏ của Tailwind */
+        }
+        #timer.blue-text {
+            color: #3b82f6; /* Màu xanh của Tailwind */
+        }
+
+        /* Giảm khoảng cách tối đa giữa các câu hỏi */
+        #quiz-content {
+            padding: 0.5rem 1.5rem; /* Giảm padding tổng thể */
+            line-height: 1.25; /* Thêm line-height để giảm khoảng cách giữa các dòng */
+        }
+        .question-item {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem; /* Giảm padding cho từng câu hỏi */
+        }
+        /* Giảm khoảng cách giữa câu hỏi và đáp án */
+        .question-body {
+            margin-bottom: 0.5rem; /* Giảm khoảng cách */
+        }
+        /* Giảm khoảng cách giữa các đáp án */
+        .answers-container {
+            margin-top: 0.25rem;
+        }
+        .answer-option {
+            margin-bottom: 0.25rem; /* Giảm khoảng cách giữa các đáp án */
+        }
+        /* Gạch ngang phân cách */
+        .question-item + .question-item {
+            border-top: 1px solid #d1d5db; /* Màu xám mờ */
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-2xl">
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">Ca thi của tôi</h1>
-            <a href="#" id="history-link" class="text-blue-600 hover:text-blue-800 font-medium">Lịch sử thi thử</a>
-        </div>
-        
-        <div id="exam-list" class="space-y-6">
-            <!-- Môn thi 1 -->
-            <div class="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-transform transform hover:scale-105">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-700">Môn 1: Pháp luật hải quan</h2>
-                    <p class="text-gray-500 text-sm mt-1">80 câu trắc nghiệm / 50 phút</p>
-                </div>
-                <button class="start-btn bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    Bắt đầu
-                </button>
-            </div>
+<body class="bg-gray-100">
 
-            <!-- Môn thi 2 -->
-            <div class="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-transform transform hover:scale-105">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-700">Môn 2: Kỹ thuật nghiệp vụ ngoại thương</h2>
-                    <p class="text-gray-500 text-sm mt-1">80 câu trắc nghiệm / 50 phút</p>
+    <div class="container relative">
+        <!-- Header -->
+        <div class="header-fixed flex items-center justify-between">
+            <!-- Subject Title -->
+            <h2 class="text-xl font-semibold text-gray-700 quiz-subject-title">Môn thi: Kỹ thuật nghiệp vụ ngoại thương</h2>
+            <!-- Page Select and Timer container -->
+            <div class="flex items-center space-x-4">
+                <!-- Page Select Dropdown -->
+                <div class="relative inline-block text-left page-select-container hidden sm:inline-block">
+                    <button id="dropdown-button" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Số câu/trang: <span id="questions-per-page-display">10</span>
+                    </button>
+                    <div id="dropdown-menu" class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden z-10">
+                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-count="3">3 câu</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-count="5">5 câu</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-count="10">10 câu</a>
+                        </div>
+                    </div>
                 </div>
-                <button class="start-btn bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    Bắt đầu
-                </button>
-            </div>
-            
-            <!-- Môn thi 3 -->
-            <div class="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-transform transform hover:scale-105">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-700">Môn 3: Kỹ thuật nghiệp vụ hải quan</h2>
-                    <p class="text-gray-500 text-sm mt-1">80 câu trắc nghiệm / 50 phút</p>
-                </div>
-                <button class="start-btn bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    Bắt đầu
-                </button>
-            </div>
-        </div>
-
-        <!-- Popup/Modal cho thông báo Bắt đầu -->
-        <div id="start-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
-                <h3 id="start-modal-title" class="text-lg font-semibold text-gray-800 mb-4">Thông báo</h3>
-                <p id="start-modal-message" class="text-gray-600 mb-4">Bạn đã bắt đầu môn thi.</p>
-                <div class="flex justify-end">
-                    <button id="start-modal-close-btn" class="bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-full hover:bg-gray-300">Đóng</button>
+                <!-- Timer -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-md text-gray-700 whitespace-nowrap">Thời gian còn lại:</span>
+                    <span id="timer" class="text-2xl font-bold px-4 py-1 rounded-full">50:00</span>
                 </div>
             </div>
         </div>
 
-        <!-- Popup/Modal cho Lịch sử thi -->
-        <div id="history-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4">Lịch sử thi thử</h3>
-                <div id="history-content" class="space-y-4">
-                    <!-- Dữ liệu lịch sử sẽ được thêm vào đây -->
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-semibold text-gray-700">Môn 1: Pháp luật hải quan</h4>
-                        <ul class="text-sm text-gray-600 mt-2 space-y-1">
-                            <li>Lần 1: 72/80 câu - Ngày 25/08/2025</li>
-                            <li>Lần 2: 78/80 câu - Ngày 27/08/2025</li>
-                        </ul>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-semibold text-gray-700">Môn 2: Kỹ thuật nghiệp vụ ngoại thương</h4>
-                        <ul class="text-sm text-gray-600 mt-2 space-y-1">
-                            <li>Lần 1: 65/80 câu - Ngày 26/08/2025</li>
-                        </ul>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-semibold text-gray-700">Môn 3: Kỹ thuật nghiệp vụ hải quan</h4>
-                        <p class="text-sm text-gray-600 mt-2">Chưa có lịch sử thi.</p>
+        <!-- Main Quiz Content -->
+        <div id="quiz-content" class="space-y-6 p-6">
+            <!-- Questions will be injected here by JavaScript -->
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="footer-fixed flex flex-wrap items-center justify-between space-y-4 md:space-y-0">
+            <div class="flex space-x-2 button-group-top w-full md:w-auto justify-center md:justify-start">
+                <button id="prev-btn" class="button bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Trang trước</button>
+                <button id="next-btn" class="button bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Trang sau</button>
+            </div>
+            <div class="flex space-x-2 button-group-bottom w-full md:w-auto justify-center md:justify-end">
+                <!-- Nút "Chọn nhanh câu hỏi" -->
+                <button id="quick-select-btn" class="button bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 whitespace-nowrap">
+                    Chọn nhanh câu hỏi
+                </button>
+                <button id="submit-btn" class="button w-1/2 bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Nộp bài</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Select Modal -->
+    <div id="overlay" class="fixed inset-0 hidden flex items-center justify-center z-50">
+        <div id="modal" class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center space-x-2">
+                    <h3 class="text-2xl font-bold text-gray-800">Chọn nhanh câu hỏi</h3>
+                    <!-- Modal Timer with label -->
+                    <div class="flex items-center space-x-2">
+                        <span class="text-md text-gray-700 whitespace-nowrap">Thời gian còn lại:</span>
+                        <span id="modal-timer" class="text-2xl font-bold text-blue-500">50:00</span>
                     </div>
                 </div>
-                <div class="flex justify-end mt-6">
-                    <button id="history-modal-close-btn" class="bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-full hover:bg-gray-300">Đóng</button>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700 text-3xl font-light leading-none">&times;</button>
+            </div>
+            <div id="legend" class="flex justify-center mb-4 text-sm space-x-4">
+                <div class="flex items-center">
+                    <span class="w-4 h-4 rounded-full bg-gray-200 mr-2"></span> Đã trả lời
                 </div>
+                <div class="flex items-center">
+                    <span class="w-4 h-4 rounded-full bg-white border border-gray-300 mr-2"></span> Chưa trả lời
+                </div>
+                <div class="flex items-center">
+                    <span class="w-4 h-4 rounded-full bg-yellow-300 mr-2"></span> Chưa chắc chắn
+                </div>
+            </div>
+            <div id="question-grid" class="grid gap-1">
+                <!-- Question buttons will be injected here -->
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const startButtons = document.querySelectorAll('.start-btn');
-            const historyLink = document.getElementById('history-link');
+            const quizContent = document.getElementById('quiz-content');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const quickSelectBtn = document.getElementById('quick-select-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const overlay = document.getElementById('overlay');
+            const modal = document.getElementById('modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const questionGrid = document.getElementById('question-grid');
+            const dropdownButton = document.getElementById('dropdown-button');
+            const dropdownMenu = document.getElementById('dropdown-menu');
+            const questionsPerPageDisplay = document.getElementById('questions-per-page-display');
+            const timerDisplay = document.getElementById('timer');
+            const modalTimerDisplay = document.getElementById('modal-timer');
+
+            const totalQuestions = 80;
+            let questionsPerPage = 10;
             
-            const startModal = document.getElementById('start-modal');
-            const startModalTitle = document.getElementById('start-modal-title');
-            const startModalMessage = document.getElementById('start-modal-message');
-            const startModalCloseBtn = document.getElementById('start-modal-close-btn');
+            // Set default questions per page based on screen size
+            if (window.innerWidth < 640) {
+                questionsPerPage = 3;
+                questionsPerPageDisplay.textContent = questionsPerPage;
+            }
+            
+            let currentPage = 1;
+            let quizState = [];
+            let timer;
+            let timeLeft = 50 * 60; // 50 minutes in seconds
+            const warningTime = 5 * 60; // 5 minutes in seconds
 
-            const historyModal = document.getElementById('history-modal');
-            const historyModalCloseBtn = document.getElementById('history-modal-close-btn');
+            // Map integer index to corresponding letter
+            const answerMap = ['A', 'B', 'C', 'D'];
 
-            // Lắng nghe sự kiện click trên tất cả các nút "Bắt đầu"
-            startButtons.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const examName = event.target.closest('.flex').querySelector('h2').textContent;
-                    startModalTitle.textContent = "Bắt đầu môn thi";
-                    startModalMessage.textContent = `Bạn đã bắt đầu môn: ${examName}. Chúc bạn làm bài tốt!`;
-                    startModal.classList.remove('hidden');
-                    startModal.classList.add('flex');
+            // Initialize quiz state
+            function initializeQuiz() {
+                for (let i = 1; i <= totalQuestions; i++) {
+                    quizState.push({
+                        id: i,
+                        text: `Đây là nội dung câu hỏi số ${i}. Bạn có thể trả lời một hoặc nhiều đáp án.`,
+                        answers: ['Đáp án A', 'Đáp án B', 'Đáp án C', 'Đáp án D'],
+                        selected: [], // Array to store multiple selected answers as letters (e.g., ['A', 'C'])
+                        isFlagged: false,
+                        isAnswered: false,
+                        type: 'checkbox' // Allow multiple answers
+                    });
+                }
+            }
+
+            // Render questions for the current page
+            function renderQuestions() {
+                const startIndex = (currentPage - 1) * questionsPerPage;
+                const endIndex = Math.min(startIndex + questionsPerPage, totalQuestions);
+                quizContent.innerHTML = '';
+                
+                for (let i = startIndex; i < endIndex; i++) {
+                    const question = quizState[i];
+                    const questionElement = document.createElement('div');
+                    questionElement.className = 'question-item';
+                    questionElement.setAttribute('data-question-id', question.id);
+                    questionElement.innerHTML = `
+                        <div class="flex items-start question-body">
+                            <div class="flex items-center h-5 mr-2">
+                                <input id="flag-${question.id}" type="checkbox" ${question.isFlagged ? 'checked' : ''} class="focus:ring-yellow-500 h-4 w-4 text-yellow-600 border-gray-300 rounded-lg">
+                            </div>
+                            <h4 class="text-md font-medium text-gray-900">
+                                Câu ${question.id}: <b>${question.text}</b>
+                            </h4>
+                        </div>
+                        <div class="space-y-2 pl-8 answers-container">
+                            ${question.answers.map((answer, ansIndex) => {
+                                const answerLetter = answerMap[ansIndex];
+                                const isChecked = question.selected.includes(answerLetter);
+                                return `
+                                <div class="flex items-center answer-option">
+                                    <input id="q${question.id}-ans${ansIndex}" name="q${question.id}-ans" type="checkbox" value="${answerLetter}" ${isChecked ? 'checked' : ''} class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded-lg">
+                                    <label for="q${question.id}-ans${ansIndex}" class="ml-3 block text-sm font-medium text-gray-700 answer-label px-3 py-2 rounded-lg w-full">
+                                        ${answer}
+                                    </label>
+                                </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                    quizContent.appendChild(questionElement);
+                }
+
+                // Update button states
+                prevBtn.disabled = currentPage === 1;
+                nextBtn.disabled = endIndex === totalQuestions;
+                
+                prevBtn.classList.toggle('opacity-50', prevBtn.disabled);
+                nextBtn.classList.toggle('opacity-50', nextBtn.disabled);
+
+                // Scroll to the top of the content area
+                quizContent.scrollTop = 0;
+            }
+
+            // Render modal quick select grid
+            function renderQuickSelectGrid() {
+                questionGrid.innerHTML = '';
+                for (let i = 1; i <= totalQuestions; i++) {
+                    const question = quizState[i - 1];
+                    const button = document.createElement('button');
+                    let colorClass = 'unanswered'; // Default
+                    if (question.isAnswered) {
+                        colorClass = 'answered';
+                    }
+                    if (question.isFlagged) {
+                        colorClass = 'flagged';
+                    }
+                    // Special case: flagged but not answered
+                    if (question.isFlagged && !question.isAnswered) {
+                        colorClass = 'flagged unanswered';
+                    }
+                    
+                    button.className = `w-10 h-10 rounded-lg shadow-sm flex items-center justify-center font-bold quiz-option ${colorClass}`;
+                    button.textContent = i;
+                    button.setAttribute('data-question-id', i);
+                    questionGrid.appendChild(button);
+                }
+            }
+
+            // Update quiz state when user interacts
+            function updateQuizState() {
+                const visibleQuestions = quizContent.querySelectorAll('[data-question-id]');
+                visibleQuestions.forEach(qElement => {
+                    const id = parseInt(qElement.getAttribute('data-question-id'));
+                    const question = quizState[id - 1];
+
+                    // Update flagged status
+                    const flagCheckbox = qElement.querySelector(`#flag-${id}`);
+                    if (flagCheckbox) {
+                        question.isFlagged = flagCheckbox.checked;
+                    }
+
+                    // Update selected answers to store letters
+                    const answerCheckboxes = qElement.querySelectorAll(`input[name="q${id}-ans"]:checked`);
+                    question.selected = Array.from(answerCheckboxes).map(cb => cb.value);
+                    
+                    // Check if answered
+                    question.isAnswered = question.selected.length > 0;
+                });
+                
+                // Log quizState to console for debugging
+                console.log(quizState);
+            }
+
+            // Dynamically set grid columns based on screen orientation
+            function updateGridColumns() {
+                if (window.innerWidth > window.innerHeight) {
+                    // Landscape or desktop view
+                    questionGrid.classList.remove('grid-cols-8');
+                    questionGrid.classList.add('grid-cols-10');
+                } else {
+                    // Portrait view
+                    questionGrid.classList.remove('grid-cols-10');
+                    questionGrid.classList.add('grid-cols-8');
+                }
+            }
+
+            // Handle page navigation
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    updateQuizState();
+                    currentPage--;
+                    renderQuestions();
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(totalQuestions / questionsPerPage);
+                if (currentPage < totalPages) {
+                    updateQuizState();
+                    currentPage++;
+                    renderQuestions();
+                }
+            });
+
+            // Handle dropdown for questions per page
+            dropdownButton.addEventListener('click', () => {
+                dropdownMenu.classList.toggle('hidden');
+            });
+
+            dropdownMenu.querySelectorAll('a').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    questionsPerPage = parseInt(e.target.dataset.count);
+                    questionsPerPageDisplay.textContent = questionsPerPage;
+                    currentPage = 1; // Reset to first page
+                    updateQuizState();
+                    renderQuestions();
+                    dropdownMenu.classList.add('hidden');
                 });
             });
 
-            // Lắng nghe sự kiện click trên liên kết "Lịch sử thi thử"
-            historyLink.addEventListener('click', (event) => {
-                event.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
-                historyModal.classList.remove('hidden');
-                historyModal.classList.add('flex');
+            // Handle modal
+            quickSelectBtn.addEventListener('click', () => {
+                updateQuizState(); // Save current state before opening modal
+                updateGridColumns(); // Update grid layout
+                renderQuickSelectGrid();
+                overlay.classList.remove('hidden');
+                updateModalTimer();
             });
 
-            // Đóng modal Bắt đầu khi click vào nút "Đóng"
-            startModalCloseBtn.addEventListener('click', () => {
-                startModal.classList.add('hidden');
-                startModal.classList.remove('flex');
+            closeModalBtn.addEventListener('click', () => {
+                overlay.classList.add('hidden');
+            });
+            
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.add('hidden');
+                }
             });
 
-            // Đóng modal Lịch sử khi click vào nút "Đóng"
-            historyModalCloseBtn.addEventListener('click', () => {
-                historyModal.classList.add('hidden');
-                historyModal.classList.remove('flex');
+            questionGrid.addEventListener('click', (e) => {
+                const target = e.target.closest('button');
+                if (target && target.hasAttribute('data-question-id')) {
+                    const questionId = parseInt(target.getAttribute('data-question-id'));
+                    const newPage = Math.ceil(questionId / questionsPerPage);
+                    currentPage = newPage;
+                    renderQuestions();
+                    overlay.classList.add('hidden');
+                }
             });
+
+            // Handle form changes to update state
+            quizContent.addEventListener('change', (e) => {
+                updateQuizState();
+            });
+
+            // Timer functionality for main timer
+            function startTimer() {
+                timer = setInterval(() => {
+                    timeLeft--;
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    timerDisplay.textContent = formattedTime;
+                    modalTimerDisplay.textContent = formattedTime; // Update modal timer as well
+
+                    // Update timer color based on remaining time
+                    if (timeLeft <= warningTime) {
+                        timerDisplay.classList.add('red-text');
+                        timerDisplay.classList.remove('blue-text');
+                        modalTimerDisplay.classList.add('red-text');
+                        modalTimerDisplay.classList.remove('blue-text');
+                    } else {
+                        timerDisplay.classList.add('blue-text');
+                        timerDisplay.classList.remove('red-text');
+                        modalTimerDisplay.classList.add('blue-text');
+                        modalTimerDisplay.classList.remove('red-text');
+                    }
+
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        alert('Hết giờ làm bài!');
+                        // Optional: automatically submit the quiz
+                        submitQuiz();
+                    }
+                }, 1000);
+            }
+
+            function updateModalTimer() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                modalTimerDisplay.textContent = formattedTime;
+            }
+
+            function submitQuiz() {
+                // Here you would process the final quizState data
+                // For this example, we'll just show an alert
+                const unanswered = quizState.filter(q => !q.isAnswered).length;
+                const flagged = quizState.filter(q => q.isFlagged).length;
+                
+                let message = 'Bạn đã nộp bài thành công!\n';
+                message += `Số câu chưa trả lời: ${unanswered}\n`;
+                message += `Số câu đánh dấu chưa chắc chắn: ${flagged}\n`;
+
+                alert(message);
+            }
+
+            submitBtn.addEventListener('click', () => {
+                // Confirm before submitting
+                if (confirm('Bạn có chắc chắn muốn nộp bài không?')) {
+                    submitQuiz();
+                }
+            });
+
+            // Initial setup
+            initializeQuiz();
+            renderQuestions();
+            startTimer();
+
+            // Add resize listener for dynamic grid columns and button text
+            window.addEventListener('resize', () => {
+                updateGridColumns();
+            });
+
         });
     </script>
 </body>

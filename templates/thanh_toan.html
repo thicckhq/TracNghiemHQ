@@ -23,6 +23,12 @@
 <body class="bg-gradient-to-br from-purple-200 to-indigo-300 min-h-screen flex justify-center p-6">
 
   <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-3xl">
+<div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-3xl relative">
+  <!-- Nút Đóng -->
+  <a href="{{ url_for('tai_khoan') }}"
+     class="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white font-bold w-10 h-10 flex items-center justify-center rounded-lg shadow-md transition-all">
+    ×
+  </a>
     <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Đăng ký / Gia hạn</h1>
 
     <!-- Báo giá -->
@@ -65,10 +71,7 @@
           class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-all">
           Tạo mã thanh toán
         </button>
-        <a href="{{ url_for('tai_khoan') }}"
-          class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-all">
-          Đóng / Quay về Tài khoản
-        </a>
+       
       </div>
     </form>
 
