@@ -1,18 +1,145 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Thi thử</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thi thử Chứng chỉ Hải quan</title>
+    <!-- Tải Tailwind CSS để tạo kiểu nhanh chóng -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
+        body {
+            font-family: 'Times New Roman', serif;
+        }
+    </style>
 </head>
-<body>
-    <h2>Chọn môn thi</h2>
-    <form method="POST">
-        <select name="ma_mon" required>
-            {% for m in monthi %}
-            <option value="{{ m.ma_mon }}">{{ m.ten_mon }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Bắt đầu</button>
-    </form>
-    <p><a href="{{ url_for('index') }}">Quay lại</a></p>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-2xl">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Ca thi của tôi</h1>
+            <a href="#" id="history-link" class="text-blue-600 hover:text-blue-800 font-medium">Lịch sử thi thử</a>
+        </div>
+        
+        <div id="exam-list" class="space-y-6">
+            <!-- Môn thi 1 -->
+            <div class="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-transform transform hover:scale-105">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-700">Môn 1: Pháp luật hải quan</h2>
+                    <p class="text-gray-500 text-sm mt-1">80 câu trắc nghiệm / 50 phút</p>
+                </div>
+                <button class="start-btn bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Bắt đầu
+                </button>
+            </div>
+
+            <!-- Môn thi 2 -->
+            <div class="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-transform transform hover:scale-105">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-700">Môn 2: Kỹ thuật nghiệp vụ ngoại thương</h2>
+                    <p class="text-gray-500 text-sm mt-1">80 câu trắc nghiệm / 50 phút</p>
+                </div>
+                <button class="start-btn bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Bắt đầu
+                </button>
+            </div>
+            
+            <!-- Môn thi 3 -->
+            <div class="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-transform transform hover:scale-105">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-700">Môn 3: Kỹ thuật nghiệp vụ hải quan</h2>
+                    <p class="text-gray-500 text-sm mt-1">80 câu trắc nghiệm / 50 phút</p>
+                </div>
+                <button class="start-btn bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Bắt đầu
+                </button>
+            </div>
+        </div>
+
+        <!-- Popup/Modal cho thông báo Bắt đầu -->
+        <div id="start-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+                <h3 id="start-modal-title" class="text-lg font-semibold text-gray-800 mb-4">Thông báo</h3>
+                <p id="start-modal-message" class="text-gray-600 mb-4">Bạn đã bắt đầu môn thi.</p>
+                <div class="flex justify-end">
+                    <button id="start-modal-close-btn" class="bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-full hover:bg-gray-300">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup/Modal cho Lịch sử thi -->
+        <div id="history-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Lịch sử thi thử</h3>
+                <div id="history-content" class="space-y-4">
+                    <!-- Dữ liệu lịch sử sẽ được thêm vào đây -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-700">Môn 1: Pháp luật hải quan</h4>
+                        <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                            <li>Lần 1: 72/80 câu - Ngày 25/08/2025</li>
+                            <li>Lần 2: 78/80 câu - Ngày 27/08/2025</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-700">Môn 2: Kỹ thuật nghiệp vụ ngoại thương</h4>
+                        <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                            <li>Lần 1: 65/80 câu - Ngày 26/08/2025</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-700">Môn 3: Kỹ thuật nghiệp vụ hải quan</h4>
+                        <p class="text-sm text-gray-600 mt-2">Chưa có lịch sử thi.</p>
+                    </div>
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button id="history-modal-close-btn" class="bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-full hover:bg-gray-300">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startButtons = document.querySelectorAll('.start-btn');
+            const historyLink = document.getElementById('history-link');
+            
+            const startModal = document.getElementById('start-modal');
+            const startModalTitle = document.getElementById('start-modal-title');
+            const startModalMessage = document.getElementById('start-modal-message');
+            const startModalCloseBtn = document.getElementById('start-modal-close-btn');
+
+            const historyModal = document.getElementById('history-modal');
+            const historyModalCloseBtn = document.getElementById('history-modal-close-btn');
+
+            // Lắng nghe sự kiện click trên tất cả các nút "Bắt đầu"
+            startButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const examName = event.target.closest('.flex').querySelector('h2').textContent;
+                    startModalTitle.textContent = "Bắt đầu môn thi";
+                    startModalMessage.textContent = `Bạn đã bắt đầu môn: ${examName}. Chúc bạn làm bài tốt!`;
+                    startModal.classList.remove('hidden');
+                    startModal.classList.add('flex');
+                });
+            });
+
+            // Lắng nghe sự kiện click trên liên kết "Lịch sử thi thử"
+            historyLink.addEventListener('click', (event) => {
+                event.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
+                historyModal.classList.remove('hidden');
+                historyModal.classList.add('flex');
+            });
+
+            // Đóng modal Bắt đầu khi click vào nút "Đóng"
+            startModalCloseBtn.addEventListener('click', () => {
+                startModal.classList.add('hidden');
+                startModal.classList.remove('flex');
+            });
+
+            // Đóng modal Lịch sử khi click vào nút "Đóng"
+            historyModalCloseBtn.addEventListener('click', () => {
+                historyModal.classList.add('hidden');
+                historyModal.classList.remove('flex');
+            });
+        });
+    </script>
 </body>
 </html>
