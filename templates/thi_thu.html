@@ -83,16 +83,15 @@
             color: #4b5563; /* Màu chữ xám */
             border: 1px solid #d1d5db;
         }
-        .quiz-option.flagged {
-            background-color: #fde68a;
-        }
-        .quiz-option.answered.flagged {
-            background-color: #fde68a; /* Ưu tiên flagged */
-        }
+        /* Style for Flagged but not Answered */
         .quiz-option.flagged.unanswered {
-            /* Background cho hiệu ứng chia đôi */
             background: linear-gradient(to top right, #fde68a 50%, #ffffff 50%);
             border: 1px solid #d1d5db;
+        }
+        /* Style for Answered and Flagged */
+        .quiz-option.answered.flagged {
+            background: linear-gradient(to top right, #fde68a 50%, #d1d5db 50%);
+            color: #1f2937;
         }
 
         #overlay {
@@ -131,21 +130,30 @@
             margin-top: 0.5rem;
             padding-top: 0.5rem;
         }
+        /* CSS cho thiết bị di động */
+        @media (max-width: 639px) {
+            .mobile-hidden {
+                display: none !important;
+            }
+            #dropdown-button, #questions-per-page-display {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100">
 
     <div class="container relative">
         <!-- Header -->
-        <div class="header-fixed flex items-center justify-between">
+        <div class="header-fixed flex flex-col items-center justify-center">
             <!-- Subject Title -->
             <h2 class="text-xl font-semibold text-gray-700 quiz-subject-title">Môn thi: Kỹ thuật nghiệp vụ ngoại thương</h2>
             <!-- Page Select and Timer container -->
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-4 mt-2">
                 <!-- Page Select Dropdown -->
-                <div class="relative inline-block text-left page-select-container hidden sm:inline-block">
+                <div class="relative inline-block text-left page-select-container sm:inline-block">
                     <button id="dropdown-button" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Số câu/trang: <span id="questions-per-page-display">10</span>
+                        Số câu/trang: <span id="questions-per-page-display"></span>
                     </button>
                     <div id="dropdown-menu" class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden z-10">
                         <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
@@ -157,7 +165,7 @@
                 </div>
                 <!-- Timer -->
                 <div class="flex items-center space-x-2">
-                    <span class="text-md text-gray-700 whitespace-nowrap">Thời gian còn lại:</span>
+                    <span class="text-md text-gray-700 whitespace-nowrap mobile-hidden">Thời gian còn lại:</span>
                     <span id="timer" class="text-2xl font-bold px-4 py-1 rounded-full">50:00</span>
                 </div>
             </div>
@@ -173,13 +181,12 @@
             <div class="flex space-x-2 button-group-top w-full md:w-auto justify-center md:justify-start">
                 <button id="prev-btn" class="button bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Trang trước</button>
                 <button id="next-btn" class="button bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Trang sau</button>
-            </div>
-            <div class="flex space-x-2 button-group-bottom w-full md:w-auto justify-center md:justify-end">
-                <!-- Nút "Chọn nhanh câu hỏi" -->
                 <button id="quick-select-btn" class="button bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 whitespace-nowrap">
-                    Chọn nhanh câu hỏi
+                    Chọn câu hỏi
                 </button>
-                <button id="submit-btn" class="button w-1/2 bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Nộp bài</button>
+            </div>
+            <div class="flex w-full md:w-auto justify-center md:justify-end">
+                <button id="submit-btn" class="button bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Nộp bài</button>
             </div>
         </div>
     </div>
@@ -236,11 +243,14 @@
             let questionsPerPage = 10;
             
             // Set default questions per page based on screen size
-            if (window.innerWidth < 640) {
+            const isMobile = window.innerWidth < 640;
+            if (isMobile) {
                 questionsPerPage = 3;
-                questionsPerPageDisplay.textContent = questionsPerPage;
+            } else {
+                questionsPerPage = 10;
             }
-            
+            questionsPerPageDisplay.textContent = questionsPerPage;
+
             let currentPage = 1;
             let quizState = [];
             let timer;
@@ -330,6 +340,10 @@
                     // Special case: flagged but not answered
                     if (question.isFlagged && !question.isAnswered) {
                         colorClass = 'flagged unanswered';
+                    }
+                    // Special case: answered and flagged
+                    if (question.isAnswered && question.isFlagged) {
+                        colorClass = 'answered flagged';
                     }
                     
                     button.className = `w-10 h-10 rounded-lg shadow-sm flex items-center justify-center font-bold quiz-option ${colorClass}`;
@@ -514,6 +528,22 @@
             // Add resize listener for dynamic grid columns and button text
             window.addEventListener('resize', () => {
                 updateGridColumns();
+                // Re-evaluate display of elements based on new screen size
+                const isMobileAfterResize = window.innerWidth < 640;
+                const mobileHiddenElements = document.querySelectorAll('.mobile-hidden');
+                if (isMobileAfterResize) {
+                    mobileHiddenElements.forEach(el => el.style.display = 'none');
+                    // Force questions per page to 3 on mobile resize
+                    questionsPerPage = 3;
+                    questionsPerPageDisplay.textContent = questionsPerPage;
+                    renderQuestions();
+                } else {
+                    mobileHiddenElements.forEach(el => el.style.display = '');
+                    // Force questions per page to 10 on desktop resize
+                    questionsPerPage = 10;
+                    questionsPerPageDisplay.textContent = questionsPerPage;
+                    renderQuestions();
+                }
             });
 
         });
