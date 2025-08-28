@@ -94,7 +94,7 @@
             color: #1f2937;
         }
 
-        #overlay {
+        #overlay, #confirm-overlay, #submit-overlay {
             background-color: rgba(0, 0, 0, 0.5);
         }
         #timer.red-text {
@@ -141,13 +141,62 @@
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 flex items-center justify-center">
 
-    <div class="container relative">
+    <!-- Subject Selection Interface -->
+    <div id="subject-selection" class="container relative p-6">
+        <h1 class="text-3xl font-bold text-gray-800 text-center mb-8">Ca thi của tôi</h1>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Subject 1 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-between">
+                <h3 class="text-xl font-semibold text-gray-700 text-center mb-2">Môn 1: Pháp luật hải quan</h3>
+                <p class="text-gray-500 mb-4 text-center">80 câu trắc nghiệm / 50 phút</p>
+                <button class="start-btn button bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" data-subject="Pháp luật hải quan">Bắt đầu</button>
+            </div>
+            <!-- Subject 2 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-between">
+                <h3 class="text-xl font-semibold text-gray-700 text-center mb-2">Môn 2: Kỹ thuật nghiệp vụ ngoại thương</h3>
+                <p class="text-gray-500 mb-4 text-center">80 câu trắc nghiệm / 50 phút</p>
+                <button class="start-btn button bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" data-subject="Kỹ thuật nghiệp vụ ngoại thương">Bắt đầu</button>
+            </div>
+            <!-- Subject 3 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-between">
+                <h3 class="text-xl font-semibold text-gray-700 text-center mb-2">Môn 3: Kỹ thuật nghiệp vụ hải quan</h3>
+                <p class="text-gray-500 mb-4 text-center">80 câu trắc nghiệm / 50 phút</p>
+                <button class="start-btn button bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" data-subject="Kỹ thuật nghiệp vụ hải quan">Bắt đầu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for Starting Quiz -->
+    <div id="confirm-overlay" class="fixed inset-0 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full transform scale-95 transition-transform duration-300">
+            <h3 id="confirm-message" class="text-lg font-bold text-gray-800 text-center mb-4"></h3>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-yes" class="button bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Có</button>
+                <button id="confirm-no" class="button bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400">Không</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for Submitting Quiz -->
+    <div id="submit-overlay" class="fixed inset-0 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full transform scale-95 transition-transform duration-300">
+            <h3 class="text-lg font-bold text-gray-800 text-center mb-4">Bạn chắc chắn muốn nộp bài?</h3>
+            <p id="submit-summary" class="text-gray-600 text-center mb-4"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="submit-yes" class="button bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Có</button>
+                <button id="submit-no" class="button bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400">Không</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Quiz Container -->
+    <div id="quiz-container" class="container relative hidden">
         <!-- Header -->
         <div class="header-fixed flex flex-col items-center justify-center">
             <!-- Subject Title -->
-            <h2 class="text-xl font-semibold text-gray-700 quiz-subject-title">Môn thi: Kỹ thuật nghiệp vụ ngoại thương</h2>
+            <h2 class="text-xl font-semibold text-gray-700 quiz-subject-title"></h2>
             <!-- Page Select and Timer container -->
             <div class="flex items-center space-x-4 mt-2">
                 <!-- Page Select Dropdown -->
@@ -196,7 +245,7 @@
         <div id="modal" class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full transform scale-95 transition-transform duration-300">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center space-x-2">
-                    <h3 class="text-2xl font-bold text-gray-800">Chọn nhanh câu hỏi</h3>
+                    <h3 class="text-2xl font-bold text-gray-800">Chọn câu hỏi</h3>
                     <!-- Modal Timer with label -->
                     <div class="flex items-center space-x-2">
                         <span class="text-md text-gray-700 whitespace-nowrap">Thời gian còn lại:</span>
@@ -224,6 +273,23 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const quizContainer = document.getElementById('quiz-container');
+            const subjectSelection = document.getElementById('subject-selection');
+            const quizSubjectTitle = document.querySelector('.quiz-subject-title');
+            const startButtons = document.querySelectorAll('.start-btn');
+            
+            // Confirmation modal elements for starting quiz
+            const confirmOverlay = document.getElementById('confirm-overlay');
+            const confirmMessage = document.getElementById('confirm-message');
+            const confirmYesBtn = document.getElementById('confirm-yes');
+            const confirmNoBtn = document.getElementById('confirm-no');
+
+            // Confirmation modal elements for submitting quiz
+            const submitOverlay = document.getElementById('submit-overlay');
+            const submitSummary = document.getElementById('submit-summary');
+            const submitYesBtn = document.getElementById('submit-yes');
+            const submitNoBtn = document.getElementById('submit-no');
+
             const quizContent = document.getElementById('quiz-content');
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
@@ -262,6 +328,8 @@
 
             // Initialize quiz state
             function initializeQuiz() {
+                // Clear existing state
+                quizState = [];
                 for (let i = 1; i <= totalQuestions; i++) {
                     quizState.push({
                         id: i,
@@ -274,6 +342,43 @@
                     });
                 }
             }
+            
+            // Handle start button clicks with custom confirmation
+            startButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const subjectTitle = button.getAttribute('data-subject');
+                    confirmMessage.textContent = `Bạn chắc chắn làm bài thi thử môn ${subjectTitle} không?`;
+                    confirmOverlay.classList.remove('hidden');
+
+                    const startQuiz = () => {
+                        quizSubjectTitle.textContent = `Môn thi: ${subjectTitle}`;
+                        subjectSelection.classList.add('hidden');
+                        quizContainer.classList.remove('hidden');
+                        
+                        // Initial setup for the quiz
+                        initializeQuiz();
+                        renderQuestions();
+                        startTimer();
+                        confirmOverlay.classList.add('hidden');
+                    };
+
+                    const handleYes = () => {
+                        startQuiz();
+                        confirmYesBtn.removeEventListener('click', handleYes);
+                        confirmNoBtn.removeEventListener('click', handleNo);
+                    };
+
+                    const handleNo = () => {
+                        confirmOverlay.classList.add('hidden');
+                        confirmYesBtn.removeEventListener('click', handleYes);
+                        confirmNoBtn.removeEventListener('click', handleNo);
+                    };
+                    
+                    // Attach event listeners for confirmation buttons
+                    confirmYesBtn.addEventListener('click', handleYes);
+                    confirmNoBtn.addEventListener('click', handleNo);
+                });
+            });
 
             // Render questions for the current page
             function renderQuestions() {
@@ -281,7 +386,17 @@
                 const endIndex = Math.min(startIndex + questionsPerPage, totalQuestions);
                 quizContent.innerHTML = '';
                 
+                // Add a guard clause to prevent rendering if there are no questions
+                if (quizState.length === 0) {
+                    console.error("Quiz state is empty. Cannot render questions.");
+                    return;
+                }
+                
                 for (let i = startIndex; i < endIndex; i++) {
+                    // Check if the current index is within the bounds of quizState
+                    if (i >= quizState.length) {
+                        break; // Stop the loop if we've gone past the end of the array
+                    }
                     const question = quizState[i];
                     const questionElement = document.createElement('div');
                     questionElement.className = 'question-item';
@@ -486,7 +601,6 @@
 
                     if (timeLeft <= 0) {
                         clearInterval(timer);
-                        alert('Hết giờ làm bài!');
                         // Optional: automatically submit the quiz
                         submitQuiz();
                     }
@@ -499,31 +613,35 @@
                 const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
                 modalTimerDisplay.textContent = formattedTime;
             }
-
-            function submitQuiz() {
-                // Here you would process the final quizState data
-                // For this example, we'll just show an alert
-                const unanswered = quizState.filter(q => !q.isAnswered).length;
-                const flagged = quizState.filter(q => q.isFlagged).length;
-                
-                let message = 'Bạn đã nộp bài thành công!\n';
-                message += `Số câu chưa trả lời: ${unanswered}\n`;
-                message += `Số câu đánh dấu chưa chắc chắn: ${flagged}\n`;
-
-                alert(message);
-            }
-
+            
+            // Handle submit button click to show custom confirmation popup
             submitBtn.addEventListener('click', () => {
-                // Confirm before submitting
-                if (confirm('Bạn có chắc chắn muốn nộp bài không?')) {
-                    submitQuiz();
-                }
+                updateQuizState(); // Save state one last time before showing popup
+                const answeredCount = quizState.filter(q => q.selected.length > 0).length;
+                const unansweredCount = quizState.filter(q => q.selected.length === 0).length;
+                
+                // Construct the summary message
+                submitSummary.innerHTML = `
+                    <p class="text-sm">Tổng số câu hỏi: <b>${totalQuestions}</b></p>
+                    <p class="text-sm">Số câu đã trả lời: <b>${answeredCount}</b></p>
+                    <p class="text-sm">Số câu chưa trả lời: <b>${unansweredCount}</b></p>
+                `;
+                submitOverlay.classList.remove('hidden');
             });
 
-            // Initial setup
-            initializeQuiz();
-            renderQuestions();
-            startTimer();
+            // Handle submission confirmation from the popup
+            submitYesBtn.addEventListener('click', () => {
+                // Final submission logic goes here
+                submitOverlay.classList.add('hidden');
+                clearInterval(timer); // Stop the timer
+                alert('Bạn đã nộp bài thành công!');
+                // You might want to redirect or show a results page here
+            });
+
+            submitNoBtn.addEventListener('click', () => {
+                // Hide the popup and continue the quiz
+                submitOverlay.classList.add('hidden');
+            });
 
             // Add resize listener for dynamic grid columns and button text
             window.addEventListener('resize', () => {
