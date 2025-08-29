@@ -232,7 +232,8 @@ def tai_khoan():
                     if ngay_het_han < today:
                         mon_quyen.append(f"{name}: Hết hạn - chuyển về Dùng thử")
                     else:
-                        mon_quyen.append(f"{name}: Thành công - hạn dùng đến {ngay_het_han}")
+                        ngay_str = ngay_het_han.strftime("%d-%m-%Y")
+                        mon_quyen.append(f"{name}: Dùng đến {ngay_str}")
             else:
                 # Môn không đăng ký
                 mon_quyen.append(f"{name}: Chưa đăng ký - Dùng thử")
