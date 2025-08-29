@@ -37,7 +37,10 @@
             {% endif %}
             <a href="{{ url_for('tong_hop_kien_thuc') }}" class="bg-purple-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-purple-700 transition-all duration-300 transform hover:scale-105">Tổng hợp kiến thức</a>
             <a href="{{ url_for('on_tap') }}" class="bg-blue-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">Ôn tập trắc nghiệm</a>
-            <a href="{{ url_for('cau_tra_loi_sai') }}" class="bg-yellow-500 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105">Câu đã trả lời sai</a>
+            <a href="{{ url_for('cau_tra_loi_sai') }}" 
+   class="hidden bg-yellow-500 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105">
+   Câu đã trả lời sai
+</a>
             <a href="{{ url_for('thi_thu') }}" class="bg-green-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105">Thi thử</a>
             <a href="{{ url_for('tai_khoan') }}" class="bg-gray-700 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:bg-gray-800 transition-all duration-300 transform hover:scale-105">Tài khoản của tôi</a>
         </div>
