@@ -217,26 +217,27 @@ def tai_khoan():
 
     # --- Xử lý hiển thị bản quyền cho từng môn ---
     mon_quyen = []
+    ngay_str = ngay_het_han.strftime("%d-%m-%Y")
     for code, name in mon_map.items():
         if not raw_mon:  
             # Không đăng ký bất kỳ môn nào
-            mon_quyen.append(f"{name}: Chưa đăng ký - Dùng thử")
+            mon_quyen.append(f"{name}: Chưa đăng ký")
         else:
             if code in raw_mon.split(","):
                 # Đã đăng ký môn này
                 if ngay_het_han is None:
-                    mon_quyen.append(f"{name}: Hết hạn - chuyển về Dùng thử")
+                    mon_quyen.append(f"{name}: Đã hết hạn từ ngày {ngay_str}")
                 else:
                     from datetime import date
                     today = date.today()
                     if ngay_het_han < today:
-                        mon_quyen.append(f"{name}: Hết hạn - chuyển về Dùng thử")
+                        mon_quyen.append(f"{name}: Đã hết hạn từ ngày {ngay_str}")
                     else:
-                        ngay_str = ngay_het_han.strftime("%d-%m-%Y")
-                        mon_quyen.append(f"{name}: Dùng đến {ngay_str}")
+                        
+                        mon_quyen.append(f"{name}: Bản quyền đến ngày {ngay_str}")
             else:
                 # Môn không đăng ký
-                mon_quyen.append(f"{name}: Chưa đăng ký - Dùng thử")
+                mon_quyen.append(f"{name}: Chưa đăng ký")
 
     return render_template("tai_khoan.html", user=user, mon_quyen=mon_quyen)
 
