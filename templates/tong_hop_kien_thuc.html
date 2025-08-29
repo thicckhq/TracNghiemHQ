@@ -1,11 +1,273 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <title>Tổng hợp kiến thức</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổng hợp Kiến thức</title>
+    <!-- Thư viện biểu tượng để sử dụng các icon đẹp mắt -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 25px 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 600;
+        }
+
+        .section {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .section-header {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .section-header:hover {
+            background-color: #d2e3fc;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header h2 i {
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+
+        .toggle-icon {
+            font-size: 1.5em;
+            color: #1a73e8;
+            transition: transform 0.3s ease;
+        }
+        
+        .section-content {
+            padding: 25px;
+            background-color: #fff;
+            display: none; /* Ẩn nội dung ban đầu */
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section.active .section-content {
+            display: block; /* Hiển thị nội dung khi active */
+        }
+
+        .section.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        li {
+            margin-bottom: 12px;
+            padding-left: 0; /* Đã bỏ padding để bỏ dấu tích */
+            position: relative;
+        }
+        
+        li::before {
+            content: none; /* Bỏ icon check circle */
+        }
+
+        h3 {
+            color: #1a73e8;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+
+        /* Thêm style cho các mục con */
+        .sub-list {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        
+        .section-content ol li > strong {
+            color: #1a73e8;
+            font-weight: bold;
+        }
+        
+        /* CSS mới để định dạng số thứ tự */
+        .section-content ol li::marker {
+            color: #1a73e8;
+            font-weight: bold;
+        }
+
+    </style>
 </head>
 <body>
-  <h1>Đây là trang Tổng hợp kiến thức</h1>
-  <a href="{{ url_for('index') }}">Quay lại trang chủ</a>
+
+<div class="container">
+    <h1>📚 Tổng hợp Kiến thức Ôn thi Hiệu quả</h1>
+    
+    <div class="section">
+        <div class="section-header">
+            <h2><i class="fas fa-book"></i> Phần 1: Kinh nghiệm học, ôn thi</h2>
+            <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="section-content">
+            <ol>
+                <li><strong>Cấu trúc các môn thi</strong>
+                    <ul>
+                        <li><strong>Môn 1: Pháp luật hải quan</strong>
+                            <ul class="sub-list">
+                                <li>Pháp luật hải quan: 24 câu hỏi</li>
+                                <li>Chính sách thuế: 32 câu</li>
+                                <li>Vi phạm hành chính: 24 câu</li>
+                            </ul>
+                        </li>
+                        <li><strong>Môn 2: Kỹ thuật nghiệp vụ ngoại thương</strong>
+                            <ul class="sub-list">
+                                <li>Giao nhận vận tải: 24 câu hỏi</li>
+                                <li>Ngoại thương: 32 câu</li>
+                                <li>Thanh toán quốc tế: 24 câu</li>
+                            </ul>
+                        </li>
+                        <li><strong>Môn 3: Kỹ thuật nghiệp vụ hải quan</strong>
+                            <ul class="sub-list">
+                                <li>Thủ tục hải quan: 28 câu</li>
+                                <li>Chính sách mặt hàng: 15 câu</li>
+                                <li>Trị giá hải quan: 16 câu</li>
+                                <li>Xuất xứ hàng hóa: 8 câu</li>
+                                <li>Sở hữu trí tuệ: 8 câu</li>
+                                <li>Phân loại hàng hóa: 5 câu</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>Phương thức thi:</strong> Thi trắc nghiệm hoàn toàn trên máy tính tại địa điểm thi do hội đồng thi tổ chức theo đúng quy định pháp luật.
+                    <ul>
+                        <li><strong>Điểm đỗ:</strong> đúng ít nhất 40/80 câu, tương đương 50/100 điểm.</li>
+                        <li>Mỗi câu trắc nghiệm có thể có 1 hoặc nhiều đáp án đúng nhưng không có câu nào chọn cả 4 đáp án.</li>
+                        <li>Thi đỗ cả 3 môn sẽ được cấp chứng chỉ.</li>
+                        <li>Nếu thi đỗ 1 hoặc 2 môn sẽ được bảo lưu 1 năm hoặc đến kỳ thi gần nhất (nếu trong 1 năm không tổ chức thi).</li>
+                    </ul>
+                </li>
+                <li><strong>Xác định rõ mục tiêu, khả năng bản thân:</strong>
+                    <ul>
+                        <li>Dựa trên khả năng học tập, kiến thức và kinh nghiệm của bản thân, thời gian học để xác định rõ mục tiêu học để thi đỗ cả 3 môn hoặc chỉ nên học để thi đỗ 1-2 môn sau đó bảo lưu đến lần tiếp theo. Chọn đúng phương án học quyết định hơn 50% thành công.</li>
+                    </ul>
+                </li>
+                <li><strong>Phương pháp học hiệu quả:</strong>
+                    <ul>
+                        <li>Học lý thuyết thông qua các văn bản pháp luật chính thống sau đó Ôn tập trả lời các câu hỏi trắc nghiệm theo từng môn nhỏ.</li>
+                        <li>Làm nhiều các dạng bài thực hành, tính toán thuế suất, tình huống thực tế.</li>
+                        <li>Lập kế hoạch chi tiết, học lặp lại ngắt quãng: Chia nhỏ mục tiêu, tạo thời gian biểu hàng ngày/ hàng tuần để đảm bảo bạn đi đúng hướng. Học tập nhắc lại theo tần suất ngắt quãng: 1, 3, 7, 14, 30.</li>
+                        <li>Học thông minh không học chăm chỉ: Tập trung học trong 25 phút, nghỉ 5 phút. Học tập trung theo từng chủ đề, không học lan man.</li>
+                        <li>Ghi chép thông minh: Dùng sơ đồ tư duy, flashcard hoặc ghi chú bằng màu sắc để tóm tắt kiến thức.</li>
+                        <li>Học nhóm: Thảo luận với bạn bè giúp bạn hiểu sâu hơn các kiến thức khó và phát hiện ra những lỗ hổng của mình. 1 kiến thức có thể đọc nhiều lần nhưng chỉ được lưu vào trí nhớ ngắn hạn, nhưng khi hỏi bạn bè có thể chuyển câu đó thành ghi nhớ dài hạn.</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h2><i class="fas fa-pencil-ruler"></i> Phần 2: Kinh nghiệm khi đi thi</h2>
+            <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="section-content">
+            <ul>
+                <li><strong>Chuẩn bị trước:</strong> Đảm bảo bạn đã có đủ bút, máy tính, giấy tờ tùy thân, và biết rõ địa điểm thi trước ngày thi.</li>
+                <li><strong>Đọc kỹ đề bài:</strong> Dành ít nhất 5 phút để đọc toàn bộ đề thi, gạch chân những từ khóa quan trọng và xác định những câu hỏi dễ làm trước.</li>
+                <li><strong>Quản lý thời gian:</strong> Chia thời gian cho từng phần của bài thi. Nếu gặp câu khó, hãy bỏ qua và quay lại sau.</li>
+                <li><strong>Kiểm tra lại bài:</strong> Dành 5-10 phút cuối giờ để rà soát lại toàn bộ câu trả lời, đặc biệt là các phép tính.</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-header">
+            <h2><i class="fas fa-graduation-cap"></i> Phần 3: Tổng quát theo môn học, Tài liệu học</h2>
+            <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="section-content">
+            <h3>Toán học</h3>
+            <ul>
+                <li><strong>Tài liệu:</strong> Sách giáo khoa, sách tham khảo, và các trang web luyện thi trực tuyến như HocMai, Moon.vn.</li>
+                <li><strong>Mẹo học:</strong> Nắm vững các công thức, làm nhiều dạng bài tập, và luyện giải đề thi thử để tăng tốc độ.</li>
+            </ul>
+            <h3>Vật lý</h3>
+            <ul>
+                <li><strong>Tài liệu:</strong> Sách giáo khoa, sách bài tập nâng cao, và các video bài giảng của các thầy cô nổi tiếng trên YouTube.</li>
+                <li><strong>Mẹo học:</strong> Hiểu rõ bản chất vật lý của từng hiện tượng, không chỉ học thuộc công thức.</li>
+            </ul>
+            <h3>Hóa học</h3>
+            <ul>
+                <li><strong>Tài liệu:</strong> Sách giáo khoa, sách "Giải nhanh Hóa học", các đề thi thử và chuyên đề ôn thi.</li>
+                <li><strong>Mẹo học:</strong> Học thuộc các quy tắc, phản ứng, và luyện giải các bài toán tính toán từ cơ bản đến nâng cao.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lấy tất cả các phần có class là 'section'
+        const sections = document.querySelectorAll('.section');
+        
+        sections.forEach(section => {
+            const header = section.querySelector('.section-header');
+            
+            // Lắng nghe sự kiện click trên tiêu đề
+            header.addEventListener('click', function() {
+                // Kiểm tra xem phần hiện tại có đang active không
+                const isActive = section.classList.contains('active');
+                
+                // Đóng tất cả các phần khác
+                sections.forEach(otherSection => {
+                    otherSection.classList.remove('active');
+                });
+                
+                // Nếu phần hiện tại chưa active, thì mở nó ra
+                if (!isActive) {
+                    section.classList.add('active');
+                }
+            });
+        });
+    });
+</script>
+
 </body>
 </html>
