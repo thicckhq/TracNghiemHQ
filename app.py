@@ -385,8 +385,8 @@ def tao_thanh_toan():
             so_tien = 500000
     else:
         so_tien = so_mon * 100000
-    mon_list = ",".join(mon_selected)
-    noi_dung = f"{username}. TracNghiemHQ. Mon {mon_list}"
+    mon_list = "".join(mon_selected)
+    noi_dung = f"{username} TracNghiemHQ Mon {mon_list}"
 
     # Dùng VietQR API
     bank_code = "970415"  # Vietinbank
