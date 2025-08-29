@@ -100,6 +100,8 @@
         <label>Tên người dùng *</label>
         <input type="text" id="reg_username" name="username" required />
         <div id="err_username" class="error">Tên đăng nhập đã tồn tại.</div>
+	<div id="err_username_min" class="error">Tên đăng nhập phải có ít nhất 4 ký tự.</div>
+        <div id="err_username_length" class="error">Tên đăng nhập không được quá 20 ký tự.</div>
 
         <label>Mật khẩu *</label>
         <div class="pw-wrap">
@@ -191,6 +193,7 @@
     // Kiểm tra validate khi submit
     document.getElementById('regForm').addEventListener('submit', function(e){
       let ok=true;
+      const username = document.getElementById('reg_username').value.trim();
       const pw = document.getElementById('reg_pw').value.trim();
       const pw2 = document.getElementById('reg_pw2').value.trim();
       const email = document.getElementById('reg_email').value.trim();
@@ -199,6 +202,20 @@
       if(document.getElementById('err_username').style.display==='block'){
         alert("Tên đăng nhập đã tồn tại, vui lòng chọn tên khác!");
         ok=false;
+      }
+
+      // Kiểm tra độ dài username
+	if(username.length < 4){
+  	document.getElementById('err_username_min').style.display='block';
+  	ok=false;
+	} else {
+  	document.getElementById('err_username_min').style.display='none';
+	}
+      if(username.length > 20){
+        document.getElementById('err_username_length').style.display='block';
+        ok=false;
+      } else {
+        document.getElementById('err_username_length').style.display='none';
       }
 
       if(pw.length<6){ document.getElementById('err_pw').style.display='block'; ok=false; }
