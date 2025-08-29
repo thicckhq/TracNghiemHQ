@@ -96,6 +96,19 @@
             font-size: 1.1em;
             font-weight: normal;
         }
+	.trial-label {
+            color: red;
+            font-size: 0.85em;
+            font-style: italic;
+            position: absolute;
+            bottom: 5px;
+            right: 8px;
+            display: none;
+        }
+
+        .card .trial-label.show {
+            display: block;
+        }
 
         #subject-selection {
             display: flex;
@@ -554,6 +567,26 @@ if (currentQuestion.note && currentQuestion.note.trim() !== "" && currentQuestio
                 topicSection.scrollIntoView({ behavior: 'smooth' });
             }, 300);
         });
+    });
+// Dữ liệu truyền từ Flask
+    const mon_dang_ky = {{ mon_dang_ky|tojson }};
+    const mon_het_han = {{ mon_het_han|tojson }};
+
+    // Mapping subject code -> mã môn trong DB
+    const subjectMap = {
+        "phap_luat_hai_quan": "1",
+        "ky_thuat_nghiep_vu_ngoai_thuong": "2",
+        "ky_thuat_nghiep_vu_hai_quan": "3"
+    };
+
+    subjectCards.forEach(card => {
+        const subject = card.dataset.subject;
+        const monCode = subjectMap[subject];
+        const trialLabel = card.querySelector('.trial-label');
+
+        if (!mon_dang_ky.includes(monCode) || mon_het_han.includes(monCode)) {
+            trialLabel.classList.add('show');
+        }
     });
 </script>
 

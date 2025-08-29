@@ -312,10 +312,39 @@ def tong_hop_kien_thuc():
     return render_template("tong_hop_kien_thuc.html")
 
 #----- Ôn Tập ------
+from datetime import datetime
 @app.route("/on-tap")
 @require_login
 def on_tap():
-    return render_template("on_tap.html")
+    username = session.get("username")
+    mon_dang_ky = []
+    ngay_het_han = None
+
+    with engine.connect() as conn:
+        user = conn.execute(
+            text("SELECT mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
+            {"u": username}
+        ).mappings().first()
+
+        if user:
+            # Giả sử cột mon_dang_ky lưu dạng "phap_luat_hai_quan,ky_thuat_nghiep_vu_hai_quan"
+            raw_mon = user.get("mon_dang_ky") or ""
+            mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
+
+            ngay_het_han = user.get("ngay_het_han")
+
+    # Xác định các môn đã hết hạn
+    mon_het_han = []
+    if ngay_het_han and isinstance(ngay_het_han, datetime):
+        if ngay_het_han < datetime.now():
+            # Nếu hết hạn thì tất cả môn trong mon_dang_ky coi như hết hạn
+            mon_het_han = mon_dang_ky
+
+    return render_template(
+        "on_tap.html",
+        mon_dang_ky=mon_dang_ky,
+        mon_het_han=mon_het_han
+    )
 
 #---- Trả lời câu sai -----
 @app.route("/cau-tra-loi-sai")
