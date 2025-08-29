@@ -95,19 +95,19 @@
       </div>
     </div>
 
-    <!-- Thông tin bản quyền -->
-    <div>
-      <div class="flex justify-between items-center mb-2">
-        <h2 class="text-lg font-semibold text-gray-700">Thông tin bản quyền</h2>
-        <a href="{{ url_for('thanh_toan_page') }}" class="text-green-600 hover:underline">Đăng ký / Gia hạn</a>
-
-      </div>
-      <div class="space-y-3 text-gray-700">
-        <p><span class="font-semibold">Môn đăng ký:</span> {{ mon_dk }}</p>
-        <p><span class="font-semibold">Ngày hết hạn bản quyền:</span> {{ ngay_het_han }}</p>
-      </div>
-    </div>
+<!-- Thông tin bản quyền -->
+<div>
+  <div class="flex justify-between items-center mb-2">
+    <h2 class="text-lg font-semibold text-gray-700">Thông tin bản quyền</h2>
+    <a href="{{ url_for('thanh_toan_page') }}" class="text-green-600 hover:underline">Đăng ký / Gia hạn</a>
   </div>
+
+  <div class="space-y-2 text-gray-700">
+    {% for m in mon_quyen %}
+      <p>{{ m }}</p>
+    {% endfor %}
+  </div>
+</div>
 
   <!-- Popup chỉnh sửa -->
   <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">

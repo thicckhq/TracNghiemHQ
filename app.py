@@ -213,20 +213,31 @@ def tai_khoan():
     }
 
     raw_mon = str(user.get("mon_dang_ky") or "").strip()
-    if not raw_mon:
-        mon_dk = "Chưa đăng ký môn học"
-    else:
-        mon_list = [mon_map.get(x.strip(), f"Không rõ ({x.strip()})") for x in raw_mon.split(",") if x.strip()]
-        mon_dk = ", ".join(mon_list) if mon_list else "Chưa đăng ký môn học"
-
-    # --- Xử lý ngày hết hạn ---
     ngay_het_han = user.get("ngay_het_han")
-    if ngay_het_han is None:
-        ngay_het_han = "Chưa có"
-    else:
-        ngay_het_han = str(ngay_het_han)
 
-    return render_template("tai_khoan.html", user=user, mon_dk=mon_dk, ngay_het_han=ngay_het_han)
+    # --- Xử lý hiển thị bản quyền cho từng môn ---
+    mon_quyen = []
+    for code, name in mon_map.items():
+        if not raw_mon:  
+            # Không đăng ký bất kỳ môn nào
+            mon_quyen.append(f"{name}: Chưa đăng ký - Dùng thử")
+        else:
+            if code in raw_mon.split(","):
+                # Đã đăng ký môn này
+                if ngay_het_han is None:
+                    mon_quyen.append(f"{name}: Hết hạn - chuyển về Dùng thử")
+                else:
+                    from datetime import date
+                    today = date.today()
+                    if ngay_het_han < today:
+                        mon_quyen.append(f"{name}: Hết hạn - chuyển về Dùng thử")
+                    else:
+                        mon_quyen.append(f"{name}: Thành công - hạn dùng đến {ngay_het_han}")
+            else:
+                # Môn không đăng ký
+                mon_quyen.append(f"{name}: Chưa đăng ký - Dùng thử")
+
+    return render_template("tai_khoan.html", user=user, mon_quyen=mon_quyen)
 
 
 
