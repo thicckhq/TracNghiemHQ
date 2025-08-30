@@ -336,7 +336,7 @@ def on_tap():
             ngay_het_han = user.get("ngay_het_han")
 
             # Xác định môn nào hết hạn hoặc không hợp lệ
-            today = datetime.now()
+            today = datetime.today().date()
             for m in mon_dang_ky:
                 if not ngay_het_han or ngay_het_han < today:
                     mon_het_han.append(m)
