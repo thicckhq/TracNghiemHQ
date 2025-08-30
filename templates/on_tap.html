@@ -216,13 +216,48 @@
     }
 
     function loadQuestions(subject) {
-      fetch(`/get-question?mon=${subject}`)
-        .then(res => res.json())
-        .then(data => {
-          questions = data.questions;
-          currentQuestionIndex = 0;
-          showQuestion();
-        });
+      // Create a mapping from data-subject to a Vietnamese topic name
+      const subjectTopicMap = {
+        "phap_luat_hai_quan": "Pháp luật hải quan",
+        "ky_thuat_nghiep_vu_ngoai_thuong": "Kỹ thuật nghiệp vụ ngoại thương",
+        "ky_thuat_nghiep_vu_hai_quan": "Kỹ thuật nghiệp vụ hải quan"
+      };
+
+      const topicName = subjectTopicMap[subject];
+      if (!topicName) {
+        console.error("Lĩnh vực không hợp lệ:", subject);
+        return;
+      }
+
+      fetch('/api/get-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ten_mon_thi: topicName })
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Lỗi khi lấy câu hỏi');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data.error) {
+          alert("Lỗi: " + data.error);
+          return;
+        }
+        questions = data.questions;
+        if (isTrial(subject) && questions.length > 5) {
+          questions = questions.slice(0, 5); // Giới hạn 5 câu cho chế độ dùng thử
+        }
+        currentQuestionIndex = 0;
+        showQuestion();
+      })
+      .catch(error => {
+        console.error('Fetch error:', error);
+        alert('Không thể tải câu hỏi. Vui lòng thử lại sau.');
+      });
     }
 
     function showQuestion() {
