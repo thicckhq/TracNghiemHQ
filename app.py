@@ -485,106 +485,92 @@ def upload_bodethi():
     return redirect(url_for("quan_tri"))
 
 #---- Tạo ôn tập----
-# ---------- API: Lấy câu hỏi ngẫu nhiên theo lĩnh vực ----------
-# ---------- API: Lấy câu hỏi ngẫu nhiên theo lĩnh vực ----------
-# ---------- API: Lấy câu hỏi ngẫu nhiên theo lĩnh vực ----------
+from flask import jsonify
 @app.route("/api/get-question", methods=["POST"])
 @require_login
-def api_get_question():
-    try:
-        data = request.get_json()
-        linh_vuc = data.get("ten_mon_thi")
-        exclude_ids = data.get("exclude_ids", [])
+def get_question():
+    data = request.get_json()
+    ma_mon_thi = data.get("ma_mon_thi")
+    exclude_ids = data.get("exclude_ids", [])
+    username = session["username"]
 
-        topic_map = {
-            "Pháp luật hải quan": 11,
-            "Chính sách thuế": 12,
-            "Vi phạm hành chính": 13,
-            "Giao nhận vận tải": 21,
-            "Ngoại thương": 22,
-            "Thanh toán quốc tế": 23,
-            "Thủ tục hải quan": 31,
-            "Chính sách mặt hàng": 32,
-            "Trị giá hải quan": 33,
-            "Xuất xứ hàng hóa": 34,
-            "Sở hữu trí tuệ": 35,
-            "Phân loại hàng hóa": 36,
-        }
+    today = date.today()
 
-        ma_mon_thi = topic_map.get(linh_vuc)
-        if not ma_mon_thi:
-            return {"error": f"Không tìm thấy mã cho lĩnh vực {linh_vuc}"}, 404
+    with engine.begin() as conn:
+        # Lấy thông tin người dùng
+        user = conn.execute(
+            text("SELECT mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
+            {"u": username}
+        ).mappings().first()
 
-        with engine.connect() as conn:
-            if exclude_ids:
-                query = text("""
-                    SELECT * FROM bodethi 
-                    WHERE ma_mon_thi=:m AND id NOT IN :ids
-                """)
-                params = {"m": ma_mon_thi, "ids": tuple(exclude_ids)}
+        # Kiểm tra bản quyền
+        ban_quyen = False
+        if user:
+            mon_dang_ky = user.get("mon_dang_ky") or ""
+            ds_mon = [m.strip() for m in mon_dang_ky.split(",") if m.strip()]
+            ngay_het_han = user.get("ngay_het_han")
+            if ma_mon_thi[:1] in ds_mon and ngay_het_han and ngay_het_han >= today:
+                ban_quyen = True
+
+        # Nếu Dùng thử
+        if not ban_quyen:
+            # Kiểm tra thông tin trial từ bảng TrialUsage
+            trial = conn.execute(
+                text("SELECT * FROM TrialUsage WHERE user=:u"),
+                {"u": username}
+            ).mappings().first()
+
+            if not trial:
+                # Nếu chưa có dữ liệu trial, tạo mới
+                conn.execute(
+                    text("INSERT INTO TrialUsage(user, last_update) VALUES(:u, :d)"),
+                    {"u": username, "d": today}
+                )
+                trial = {"last_update": today}
+
+            # Reset nếu ngày thay đổi
+            if trial.get("last_update") != today:
+                # Reset tất cả các trường lĩnh vực
+                update_columns = ", ".join([f"{col} = 0" for col in range(11, 37)])
+                conn.execute(
+                    text(f"UPDATE TrialUsage SET last_update=:d, {update_columns} WHERE user=:u"),
+                    {"d": today, "u": username}
+                )
+                count = 0
             else:
-                query = text("SELECT * FROM bodethi WHERE ma_mon_thi=:m")
-                params = {"m": ma_mon_thi}
+                count = trial.get(ma_mon_thi, 0)
 
-            questions = conn.execute(query, params).mappings().all()
+            # Kiểm tra số câu hỏi đã làm hôm nay, nếu đã quá 5 câu thì không cho tiếp
+            if count >= 5:
+                return jsonify({"questions": [], "message": "Đã hết lượt dùng thử cho lĩnh vực này trong hôm nay"})
 
-        if not questions:
-            return {"questions": []}
+            # Tăng số lượng câu hỏi đã làm
+            conn.execute(
+                text(f"UPDATE TrialUsage SET {ma_mon_thi} = COALESCE({ma_mon_thi}, 0) + 1 WHERE user=:u"),
+                {"u": username}
+            )
 
-        import random
-        q = random.choice(questions)
+        # Lấy câu hỏi từ bảng bodethi
+        q = conn.execute(
+            text("""
+                SELECT * FROM bodethi
+                WHERE ma_mon_thi=:m
+                AND id NOT IN :exclude
+                ORDER BY random() LIMIT 1
+            """),
+            {"m": ma_mon_thi, "exclude": tuple(exclude_ids) if exclude_ids else tuple([-1])}
+        ).mappings().first()
 
-        # ---- Chuẩn hóa dap_an_dung ----
-        raw = str(q.get("dap_an_dung") or "").strip().upper()
-        map_choice = {"A": 0, "B": 1, "C": 2, "D": 3}
+    if not q:
+        return jsonify({"questions": []})
 
-        correct_indices = []
-        if raw:
-            # Nếu là dạng "AB", "ABD"
-            if all(ch in map_choice for ch in raw):
-                correct_indices = [map_choice[ch] for ch in raw]
-            else:
-                # Dạng "A,C" hoặc "1,2"
-                parts = [x.strip() for x in raw.replace(";", ",").split(",")]
-                for p in parts:
-                    if p in map_choice:
-                        correct_indices.append(map_choice[p])
-                    elif p.isdigit() and int(p) in [0, 1, 2, 3]:
-                        correct_indices.append(int(p))
+    question = {
+        "id": q["id"],
+        "question": q["cau_hoi"],
+        "answers": [q[a] for a in ["A", "B", "C", "D"] if q[a]]
+    }
+    return jsonify({"questions": [question]})
 
-        # ---- Lọc đáp án trống hoặc NaN ----
-        answers_raw = [
-            q.get("dap_an_a"),
-            q.get("dap_an_b"),
-            q.get("dap_an_c"),
-            q.get("dap_an_d"),
-        ]
-        answers = []
-        for ans in answers_raw:
-            if ans and str(ans).strip().lower() not in ["nan", "none", "null", ""]:
-                answers.append(str(ans).strip())
-
-        # ---- Lọc ghi chú ----
-        note = ""
-        ghi_chu = q.get("ghi_chu")
-        if ghi_chu and str(ghi_chu).strip().lower() not in ["nan", "none", "null", ""]:
-            note = str(ghi_chu).strip()
-
-        formatted = {
-            "id": q.get("id"),
-            "question": q.get("cau_hoi", "Không có nội dung"),
-            "answers": answers,
-            "correct_indices": correct_indices,
-            "note": note
-        }
-
-        return {"questions": [formatted]}
-
-    except Exception as e:
-        import traceback
-        print("API /api/get-question lỗi:", e)
-        traceback.print_exc()
-        return {"error": str(e)}, 500
 
 # Tạo bảng TrialUsage nếu chưa tồn tại
 def init_trial_table():
