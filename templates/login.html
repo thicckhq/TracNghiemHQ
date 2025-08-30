@@ -217,6 +217,15 @@
 
       if(!ok) e.preventDefault();
     });
+<script>
+window.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    const u = params.get("u");
+    const p = params.get("p");
+
+    if (u) document.querySelector("#username").value = u;
+    if (p) document.querySelector("#password").value = p;
+});
   </script>
 </body>
 </html>
