@@ -68,7 +68,7 @@
     .trial-label.show { display: block; }
     #topic-section { margin-top:40px; display:none; border-top:1px solid var(--border-light); padding-top:30px; }
     #quiz-section { margin-top:30px; border-top:1px solid var(--border-light); padding-top:25px; display:none; position:relative; }
-    .question-card { margin-bottom:20px; padding:20px; border-radius:10px; background-color:#f9f9f9; box-shadow:0 4px 15px rgba(0,0,0,0.05);}
+    .question-card { margin-bottom:20px; padding:20px; border-radius:10px; background-color:#f9f9f9; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
     .question-card p.question-text { color:var(--primary-color); }
     .answers { display:flex; flex-direction:column; gap:10px; }
     .answer-label { display:flex; align-items:center; padding:12px 15px; border:1px solid var(--border-light); border-radius:8px; background-color:#fff; cursor:pointer; }
@@ -78,6 +78,23 @@
     #submit-btn { background-color:var(--primary-color); }
     #next-btn { background-color:var(--secondary-color); }
     #close-btn { position:absolute; top:15px; right:15px; background:#f44336; color:white; border:none; border-radius:50%; width:30px; height:30px; font-size:1.2em; cursor:pointer; display:none; }
+    .correct {
+      background-color: #4CAF50; /* Màu xanh cho đáp án đúng */
+      color: white;
+    }
+    .incorrect {
+      background-color: #f44336; /* Màu đỏ cho đáp án sai */
+      color: white;
+    }
+    .icon {
+      margin-left: 8px;
+    }
+    .correct .icon {
+      color: green;
+    }
+    .incorrect .icon {
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -119,6 +136,8 @@
   </div>
 
   <script>
+    let selectedAnswers = [];
+
     const subjectCards = document.querySelectorAll('#subject-selection .card');
     const topicSelectionSection = document.getElementById('topic-selection');
     const topicSection = document.getElementById('topic-section');
@@ -127,6 +146,7 @@
     const quizQuestionsContainer = document.getElementById('quiz-questions');
     const nextBtn = document.getElementById('next-btn');
     const closeBtn = document.getElementById('close-btn');
+    const submitBtn = document.getElementById('submit-btn');
 
     // ✅ Dữ liệu bản quyền từ backend
     const ban_quyen = {{ ban_quyen|tojson }};
@@ -157,7 +177,7 @@
 
     // ✅ Hiển thị "dùng thử" nếu False
     subjectCards.forEach(card => {
-      const monCode = card.dataset.subject; // trực tiếp 1,2,3
+      const monCode = card.dataset.subject;
       const trialLabel = card.querySelector('.trial-label');
       if (!ban_quyen[monCode]) {
         trialLabel.classList.add('show');
@@ -170,7 +190,7 @@
       Object.entries(topicList).forEach(([maMonThi, tenLinhVuc]) => {
         const card = document.createElement('div');
         card.className = 'card';
-        card.dataset.topic = maMonThi; // gắn mã 11,12,...
+        card.dataset.topic = maMonThi; 
         card.innerHTML = `<h3>${tenLinhVuc}</h3>`;
         card.addEventListener('click', () => {
           document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
@@ -220,17 +240,71 @@
       quizQuestionsContainer.appendChild(questionCard);
       const answersContainer = questionCard.querySelector('.answers');
       question.answers.forEach((answer, idx) => {
-        const label = document.createElement('label');
-        label.className = 'answer-label';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.value = idx;
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(answer));
-        answersContainer.appendChild(label);
+        if (answer && answer !== "NaN") {
+          const label = document.createElement('label');
+          label.className = 'answer-label';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.value = answer;
+          checkbox.addEventListener('change', () => toggleAnswer(answer, checkbox));
+          label.appendChild(checkbox);
+          label.appendChild(document.createTextNode(answer));
+          answersContainer.appendChild(label);
+        }
       });
     }
 
+    function toggleAnswer(answer, checkbox) {
+      if (checkbox.checked) {
+        selectedAnswers.push(answer);
+      } else {
+        selectedAnswers = selectedAnswers.filter(item => item !== answer);
+      }
+    }
+
+    async function handleAnswer() {
+      const currentQuestion = document.querySelector('.question-card');
+      if (!currentQuestion) return;
+
+      const res = await fetch("/api/get-question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ma_mon_thi: currentQuestion.dataset.maMonThi,
+          selected_answers: selectedAnswers
+        })
+      });
+      const data = await res.json();
+
+      const question = data.questions[0];
+      displayAnswersWithResults(question);
+    }
+
+    function displayAnswersWithResults(question) {
+      const answersContainer = document.querySelector('.answers');
+      const correctAnswers = question.correct_answer.split(',');
+
+      Array.from(answersContainer.children).forEach(label => {
+        const answerValue = label.querySelector('input').value;
+        if (correctAnswers.includes(answerValue)) {
+          label.classList.add('correct');
+          label.innerHTML += ' <span class="icon">✔️</span>';
+        } else if (selectedAnswers.includes(answerValue)) {
+          label.classList.add('incorrect');
+          label.innerHTML += ' <span class="icon">❌</span>';
+        }
+      });
+
+      const noteSection = document.getElementById('note-section');
+      if (question.note) {
+        noteSection.innerHTML = `<p>${question.note}</p>`;
+        noteSection.style.display = 'block';
+      } else {
+        noteSection.style.display = 'none';
+      }
+    }
+
+    submitBtn.addEventListener('click', handleAnswer);
     nextBtn.addEventListener('click', () => {
       const currentTopicCard = document.querySelector('#topic-selection .card.selected');
       if (currentTopicCard) {
@@ -251,7 +325,7 @@
       card.addEventListener('click', () => {
         subjectCards.forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
-        const monCode = card.dataset.subject; // trực tiếp "1","2","3"
+        const monCode = card.dataset.subject;
         renderTopicCards(monCode);
         quizSection.style.display = 'none';
         quizQuestionsContainer.innerHTML = '';
