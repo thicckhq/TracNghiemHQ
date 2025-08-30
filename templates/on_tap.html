@@ -137,11 +137,6 @@
 
     <div id="quiz-section">
       <h2 id="quiz-title">Câu hỏi</h2>
-      <div id="trial-warning" class="hidden"
-           style="color:red; font-weight:bold; margin-bottom:10px;">
-        Bạn đang ở chế độ dùng thử, chỉ có 5 câu hỏi.<br>
-        Hãy Đăng ký/Gia hạn để Ôn tập đầy đủ kèm theo flashcard
-      </div>
       <div id="question"></div>
       <div id="options"></div>
       <div id="note" class="hidden"></div>
@@ -159,7 +154,6 @@
     const noteEl = document.getElementById('note');
     const nextBtn = document.getElementById('next-btn');
     const backBtn = document.getElementById('back-btn');
-    const trialWarning = document.getElementById('trial-warning');
 
     let currentSubject = null;
     let currentQuestionIndex = 0;
@@ -175,22 +169,13 @@
       "ky_thuat_nghiep_vu_hai_quan": "3"
     };
 
-    // Hàm kiểm tra trial
-    function isTrial(subject) {
-      const monCode = subjectMap[subject];
-      return (!mon_dang_ky.includes(monCode) || mon_het_han.includes(monCode));
-    }
-
-    // Hiển thị nhãn (dùng thử) trên card
+    // Hiển thị nhãn (dùng thử)
     subjectCards.forEach(card => {
       const subject = card.dataset.subject;
       const monCode = subjectMap[subject];
       const trialLabel = card.querySelector('.trial-label');
-
       if (!mon_dang_ky.includes(monCode) || mon_het_han.includes(monCode)) {
         trialLabel.classList.add('show');
-      } else {
-        trialLabel.classList.remove('show');
       }
     });
 
@@ -198,13 +183,6 @@
     subjectCards.forEach(card => {
       card.addEventListener('click', () => {
         currentSubject = card.dataset.subject;
-
-        if (isTrial(currentSubject)) {
-          trialWarning.classList.remove("hidden");
-        } else {
-          trialWarning.classList.add("hidden");
-        }
-
         startQuiz(currentSubject);
       });
     });
@@ -216,48 +194,13 @@
     }
 
     function loadQuestions(subject) {
-      // Create a mapping from data-subject to a Vietnamese topic name
-      const subjectTopicMap = {
-        "phap_luat_hai_quan": "Pháp luật hải quan",
-        "ky_thuat_nghiep_vu_ngoai_thuong": "Kỹ thuật nghiệp vụ ngoại thương",
-        "ky_thuat_nghiep_vu_hai_quan": "Kỹ thuật nghiệp vụ hải quan"
-      };
-
-      const topicName = subjectTopicMap[subject];
-      if (!topicName) {
-        console.error("Lĩnh vực không hợp lệ:", subject);
-        return;
-      }
-
-      fetch('/api/get-question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ten_mon_thi: topicName })
-      })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error('Lỗi khi lấy câu hỏi');
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data.error) {
-          alert("Lỗi: " + data.error);
-          return;
-        }
-        questions = data.questions;
-        if (isTrial(subject) && questions.length > 5) {
-          questions = questions.slice(0, 5); // Giới hạn 5 câu cho chế độ dùng thử
-        }
-        currentQuestionIndex = 0;
-        showQuestion();
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        alert('Không thể tải câu hỏi. Vui lòng thử lại sau.');
-      });
+      fetch(`/get-question?mon=${subject}`)
+        .then(res => res.json())
+        .then(data => {
+          questions = data.questions;
+          currentQuestionIndex = 0;
+          showQuestion();
+        });
     }
 
     function showQuestion() {
