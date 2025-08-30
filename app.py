@@ -328,24 +328,24 @@ def on_tap():
 
         if user:
             raw_mon = user.get("mon_dang_ky")
-            # Nếu trống thì giữ [] luôn
             if raw_mon:
                 mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
-
             ngay_het_han = user.get("ngay_het_han")
 
-    # Xác định môn hết hạn
-    mon_het_han = []
-    now = datetime.now()
-    if ngay_het_han and isinstance(ngay_het_han, (datetime,)):
-        if ngay_het_han < now:
-            mon_het_han = mon_dang_ky[:]  # copy list (tất cả đều hết hạn)
+    # ✅ Tính bản quyền cho từng môn
+    ban_quyen = {"1": False, "2": False, "3": False}
+    today = datetime.now().date()
+    if ngay_het_han:
+        try:
+            ngay_het_han = ngay_het_han.date() if isinstance(ngay_het_han, datetime) else ngay_het_han
+        except:
+            ngay_het_han = None
+    for m in ["1", "2", "3"]:
+        if m in mon_dang_ky and ngay_het_han and ngay_het_han >= today:
+            ban_quyen[m] = True
 
-    return render_template(
-        "on_tap.html",
-        mon_dang_ky=mon_dang_ky,
-        mon_het_han=mon_het_han
-    )
+    return render_template("on_tap.html", ban_quyen=ban_quyen)
+
 
 #---- Trả lời câu sai -----
 @app.route("/cau-tra-loi-sai")
