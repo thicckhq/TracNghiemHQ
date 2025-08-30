@@ -524,18 +524,18 @@ def get_question():
             if not trial:
                 # Nếu chưa có dữ liệu trial, tạo mới
                 conn.execute(
-                text('INSERT INTO TrialUsage(username, last_update) VALUES(:u, :d)'),
+                text('INSERT INTO TrialUsage(username, last_date) VALUES(:u, :d)'),
                 {"u": username, "d": today}
                 )
 
-                trial = {"last_update": today}
+                trial = {"last_date": today}
 
             # Reset nếu ngày thay đổi
-            if trial.get("last_update") != today:
+            if trial.get("last_date") != today:
                 # Reset tất cả các trường lĩnh vực
                 update_columns = ", ".join([f"{col} = 0" for col in range(11, 37)])
                 conn.execute(
-                    text(f"UPDATE TrialUsage SET last_update=:d, {update_columns} WHERE username=:u"),
+                    text(f"UPDATE TrialUsage SET last_date=:d, {update_columns} WHERE username=:u"),
                     {"d": today, "u": username}
                 )
                 count = 0
