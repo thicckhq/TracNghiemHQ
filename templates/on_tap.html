@@ -88,15 +88,15 @@
     <div id="subject-selection">
       <h2>Chọn môn thi</h2>
       <div class="selection-section">
-        <div class="card" data-subject="phap_luat_hai_quan">
+        <div class="card" data-subject="1">
           <h3>Pháp luật hải quan</h3>
           <span class="trial-label">(dùng thử)</span>
         </div>
-        <div class="card" data-subject="ky_thuat_nghiep_vu_ngoai_thuong">
+        <div class="card" data-subject="2">
           <h3>Kỹ thuật nghiệp vụ ngoại thương</h3>
           <span class="trial-label">(dùng thử)</span>
         </div>
-        <div class="card" data-subject="ky_thuat_nghiep_vu_hai_quan">
+        <div class="card" data-subject="3">
           <h3>Kỹ thuật nghiệp vụ hải quan</h3>
           <span class="trial-label">(dùng thử)</span>
         </div>
@@ -131,26 +131,33 @@
     // ✅ Dữ liệu bản quyền từ backend
     const ban_quyen = {{ ban_quyen|tojson }};
 
-    // mapping tên subject -> mã môn
-    const subjectMap = {
-      "phap_luat_hai_quan": "1",
-      "ky_thuat_nghiep_vu_ngoai_thuong": "2",
-      "ky_thuat_nghiep_vu_hai_quan": "3"
-    };
-
-    // mapping mã môn -> danh sách lĩnh vực
+    // mapping mã môn -> { mã lĩnh vực: tên lĩnh vực }
     const topics = {
-      '1': ['Pháp luật hải quan', 'Chính sách thuế', 'Vi phạm hành chính'],
-      '2': ['Giao nhận vận tải', 'Ngoại thương', 'Thanh toán quốc tế'],
-      '3': ['Thủ tục hải quan', 'Chính sách mặt hàng', 'Trị giá hải quan', 'Xuất xứ hàng hóa', 'Sở hữu trí tuệ', 'Phân loại hàng hóa']
+      '1': {
+        '11': 'Pháp luật hải quan',
+        '12': 'Chính sách thuế',
+        '13': 'Vi phạm hành chính'
+      },
+      '2': {
+        '21': 'Giao nhận vận tải',
+        '22': 'Ngoại thương',
+        '23': 'Thanh toán quốc tế'
+      },
+      '3': {
+        '31': 'Thủ tục hải quan',
+        '32': 'Chính sách mặt hàng',
+        '33': 'Trị giá hải quan',
+        '34': 'Xuất xứ hàng hóa',
+        '35': 'Sở hữu trí tuệ',
+        '36': 'Phân loại hàng hóa'
+      }
     };
 
     let usedQuestionIds = new Set();
 
     // ✅ Hiển thị "dùng thử" nếu False
     subjectCards.forEach(card => {
-      const subject = card.dataset.subject;
-      const monCode = subjectMap[subject];
+      const monCode = card.dataset.subject; // trực tiếp 1,2,3
       const trialLabel = card.querySelector('.trial-label');
       if (!ban_quyen[monCode]) {
         trialLabel.classList.add('show');
@@ -159,33 +166,33 @@
 
     function renderTopicCards(monCode) {
       topicSelectionSection.innerHTML = '';
-      const topicList = topics[monCode] || [];
-      topicList.forEach(topic => {
+      const topicList = topics[monCode] || {};
+      Object.entries(topicList).forEach(([maMonThi, tenLinhVuc]) => {
         const card = document.createElement('div');
         card.className = 'card';
-        card.dataset.topic = topic;
-        card.innerHTML = `<h3>${topic}</h3>`;
+        card.dataset.topic = maMonThi; // gắn mã 11,12,...
+        card.innerHTML = `<h3>${tenLinhVuc}</h3>`;
         card.addEventListener('click', () => {
           document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
           card.classList.add('selected');
           usedQuestionIds.clear();
-          startQuiz(topic);
+          startQuiz(maMonThi, tenLinhVuc);
         });
         topicSelectionSection.appendChild(card);
       });
       topicSection.style.display = 'block';
     }
 
-    async function startQuiz(topic) {
-      await loadNewQuestion(topic);
+    async function startQuiz(maMonThi, tenLinhVuc) {
+      await loadNewQuestion(maMonThi, tenLinhVuc);
     }
 
-    async function loadNewQuestion(topic) {
+    async function loadNewQuestion(maMonThi, tenLinhVuc) {
       try {
         const res = await fetch("/api/get-question", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ten_mon_thi: topic, exclude_ids: Array.from(usedQuestionIds) })
+          body: JSON.stringify({ ma_mon_thi: maMonThi, exclude_ids: Array.from(usedQuestionIds) })
         });
         const data = await res.json();
         if (!data.questions || data.questions.length === 0) {
@@ -196,7 +203,7 @@
         let q = data.questions[0];
         usedQuestionIds.add(q.id);
         quizSection.style.display = 'block';
-        quizTitle.textContent = topic;
+        quizTitle.textContent = tenLinhVuc;
         displayQuestion(q);
         closeBtn.style.display = 'block';
       } catch (err) {
@@ -225,7 +232,12 @@
     }
 
     nextBtn.addEventListener('click', () => {
-      loadNewQuestion(quizTitle.textContent);
+      const currentTopicCard = document.querySelector('#topic-selection .card.selected');
+      if (currentTopicCard) {
+        const maMonThi = currentTopicCard.dataset.topic;
+        const tenLinhVuc = currentTopicCard.textContent.trim();
+        loadNewQuestion(maMonThi, tenLinhVuc);
+      }
     });
 
     closeBtn.addEventListener('click', () => {
@@ -239,7 +251,7 @@
       card.addEventListener('click', () => {
         subjectCards.forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
-        const monCode = subjectMap[card.dataset.subject]; // "1","2","3"
+        const monCode = card.dataset.subject; // trực tiếp "1","2","3"
         renderTopicCards(monCode);
         quizSection.style.display = 'none';
         quizQuestionsContainer.innerHTML = '';
