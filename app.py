@@ -524,9 +524,10 @@ def get_question():
             if not trial:
                 # Nếu chưa có dữ liệu trial, tạo mới
                 conn.execute(
-                    text("INSERT INTO TrialUsage(user, last_update) VALUES(:u, :d)"),
-                    {"u": username, "d": today}
+                text('INSERT INTO TrialUsage("user", last_update) VALUES(:u, :d)'),
+                {"u": username, "d": today}
                 )
+
                 trial = {"last_update": today}
 
             # Reset nếu ngày thay đổi
