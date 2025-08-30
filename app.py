@@ -317,39 +317,39 @@ from datetime import datetime
 @require_login
 def on_tap():
     from datetime import date, datetime
-
     username = session["username"]
 
-    # Lấy thông tin user từ DB
     with engine.connect() as conn:
         user = conn.execute(
             text("SELECT mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
             {"u": username}
         ).mappings().first()
 
-    mon_dang_ky = []
-    ngay_het_han = None
-
+    mon_dang_ky, ngay_het_han = [], None
     if user:
         raw_mon = user.get("mon_dang_ky") or ""
         mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
         ngay_het_han = user.get("ngay_het_han")
 
-    # Xử lý ngày hết hạn an toàn
     today = date.today()
-    if ngay_het_han:
-        if isinstance(ngay_het_han, datetime):
-            ngay_het_han = ngay_het_han.date()  # ép về date để so sánh
-    else:
-        ngay_het_han = None
+    if ngay_het_han and isinstance(ngay_het_han, datetime):
+        ngay_het_han = ngay_het_han.date()
 
-    # Truyền vào template để xác định trial
+    # chuẩn bị danh sách môn hết hạn/dùng thử
+    mon_map = {"1": "Pháp luật hải quan", "2": "Kỹ thuật nghiệp vụ ngoại thương", "3": "Nghiệp vụ hải quan"}
+    mon_het_han = []
+    for code in mon_map.keys():
+        if (code not in mon_dang_ky) or (not ngay_het_han) or (ngay_het_han < today):
+            mon_het_han.append(code)
+
     return render_template(
         "on_tap.html",
         mon_dang_ky=mon_dang_ky,
         ngay_het_han=ngay_het_han,
-        today=today
+        today=today,
+        mon_het_han=mon_het_han   # ✅ thêm vào để file HTML dùng
     )
+
 
 
 #---- Trả lời câu sai -----
