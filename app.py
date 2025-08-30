@@ -316,8 +316,9 @@ from datetime import datetime
 @app.route("/on-tap")
 @require_login
 def on_tap():
-    from datetime import date, datetime
-    username = session["username"]
+    username = session.get("username")
+    mon_dang_ky = []
+    mon_het_han = []
 
     with engine.connect() as conn:
         user = conn.execute(
@@ -325,32 +326,26 @@ def on_tap():
             {"u": username}
         ).mappings().first()
 
-    mon_dang_ky, ngay_het_han = [], None
-    if user:
-        raw_mon = user.get("mon_dang_ky") or ""
-        mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
-        ngay_het_han = user.get("ngay_het_han")
+        if user:
+            # Xử lý danh sách môn đăng ký
+            raw_mon = user.get("mon_dang_ky")
+            if raw_mon:
+                mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
 
-    today = date.today()
-    if ngay_het_han and isinstance(ngay_het_han, datetime):
-        ngay_het_han = ngay_het_han.date()
+            # Lấy ngày hết hạn
+            ngay_het_han = user.get("ngay_het_han")
 
-    # chuẩn bị danh sách môn hết hạn/dùng thử
-    mon_map = {"1": "Pháp luật hải quan", "2": "Kỹ thuật nghiệp vụ ngoại thương", "3": "Nghiệp vụ hải quan"}
-    mon_het_han = []
-    for code in mon_map.keys():
-        if (code not in mon_dang_ky) or (not ngay_het_han) or (ngay_het_han < today):
-            mon_het_han.append(code)
+            # Xác định môn nào hết hạn hoặc không hợp lệ
+            today = datetime.now()
+            for m in mon_dang_ky:
+                if not ngay_het_han or ngay_het_han < today:
+                    mon_het_han.append(m)
 
     return render_template(
         "on_tap.html",
         mon_dang_ky=mon_dang_ky,
-        ngay_het_han=ngay_het_han,
-        today=today,
-        mon_het_han=mon_het_han   # ✅ thêm vào để file HTML dùng
+        mon_het_han=mon_het_han
     )
-
-
 
 #---- Trả lời câu sai -----
 @app.route("/cau-tra-loi-sai")
@@ -501,7 +496,6 @@ def api_get_question():
         linh_vuc = data.get("ten_mon_thi")
         exclude_ids = data.get("exclude_ids", [])
 
-        # mapping lĩnh vực -> mã môn thi
         topic_map = {
             "Pháp luật hải quan": 11,
             "Chính sách thuế": 12,
@@ -516,108 +510,41 @@ def api_get_question():
             "Sở hữu trí tuệ": 35,
             "Phân loại hàng hóa": 36,
         }
-        parent_map = {
-            11: "1", 12: "1", 13: "1",
-            21: "2", 22: "2", 23: "2",
-            31: "3", 32: "3", 33: "3",
-            34: "3", 35: "3", 36: "3",
-        }
 
         ma_mon_thi = topic_map.get(linh_vuc)
         if not ma_mon_thi:
             return {"error": f"Không tìm thấy mã cho lĩnh vực {linh_vuc}"}, 404
 
-        username = session["username"]
-
-        # lấy thông tin user để check trial
         with engine.connect() as conn:
-            user = conn.execute(
-                text("SELECT mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
-                {"u": username}
-            ).mappings().first()
-
-        mon_dang_ky, ngay_het_han = [], None
-        if user:
-            raw_mon = user.get("mon_dang_ky") or ""
-            mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
-            ngay_het_han = user.get("ngay_het_han")
-
-        from datetime import datetime, date
-        today = datetime.now()
-        parent_mon = parent_map.get(ma_mon_thi)
-        trial_mode = (
-            not parent_mon or
-            (parent_mon not in mon_dang_ky) or
-            (not ngay_het_han or ngay_het_han < today)
-        )
-
-        # ---- TRIAL MODE ----
-        with engine.begin() as conn:
-            if trial_mode:
-                today_date = date.today()
-
-                # lấy usage row
-                usage = conn.execute(
-                    text("SELECT * FROM TrialUsage WHERE username=:u"),
-                    {"u": username}
-                ).mappings().first()
-
-                if not usage:
-                    # tạo row mới nếu chưa có
-                    conn.execute(
-                        text("INSERT INTO TrialUsage (username,last_date) VALUES (:u,:d)"),
-                        {"u": username, "d": today_date}
-                    )
-                    usage = {"last_date": today_date}
-                    for c in topic_map.values():
-                        usage[str(c)] = 0
-
-                # reset nếu sang ngày mới
-                if usage["last_date"] != today_date:
-                    reset_cols = ", ".join([f'"{c}"=0' for c in topic_map.values()])
-                    conn.execute(
-                        text(f"UPDATE TrialUsage SET last_date=:d, {reset_cols} WHERE username=:u"),
-                        {"d": today_date, "u": username}
-                    )
-                    for c in topic_map.values():
-                        usage[str(c)] = 0
-
-                # kiểm tra count lĩnh vực
-                current_count = usage.get(str(ma_mon_thi), 0)
-                if current_count >= 5:
-                    return {"error": f"Bạn đã hết 5 lượt dùng thử cho lĩnh vực {linh_vuc} hôm nay!"}, 403
-
-                # tăng count
-                conn.execute(
-                    text(f"UPDATE TrialUsage SET \"{ma_mon_thi}\"=\"{ma_mon_thi}\"+1 WHERE username=:u"),
-                    {"u": username}
-                )
-
-            # ---- LẤY CÂU HỎI ----
             if exclude_ids:
-                query = text("SELECT * FROM bodethi WHERE ma_mon_thi=:m AND id NOT IN :ids")
+                query = text("""
+                    SELECT * FROM bodethi 
+                    WHERE ma_mon_thi=:m AND id NOT IN :ids
+                """)
                 params = {"m": ma_mon_thi, "ids": tuple(exclude_ids)}
             else:
                 query = text("SELECT * FROM bodethi WHERE ma_mon_thi=:m")
                 params = {"m": ma_mon_thi}
+
             questions = conn.execute(query, params).mappings().all()
 
         if not questions:
             return {"questions": []}
 
-        # random câu hỏi
         import random
         q = random.choice(questions)
 
-        # ---- Chuẩn hóa đáp án ----
+        # ---- Chuẩn hóa dap_an_dung ----
         raw = str(q.get("dap_an_dung") or "").strip().upper()
         map_choice = {"A": 0, "B": 1, "C": 2, "D": 3}
 
         correct_indices = []
         if raw:
+            # Nếu là dạng "AB", "ABD"
             if all(ch in map_choice for ch in raw):
                 correct_indices = [map_choice[ch] for ch in raw]
             else:
+                # Dạng "A,C" hoặc "1,2"
                 parts = [x.strip() for x in raw.replace(";", ",").split(",")]
                 for p in parts:
                     if p in map_choice:
@@ -625,18 +552,19 @@ def api_get_question():
                     elif p.isdigit() and int(p) in [0, 1, 2, 3]:
                         correct_indices.append(int(p))
 
+        # ---- Lọc đáp án trống hoặc NaN ----
         answers_raw = [
             q.get("dap_an_a"),
             q.get("dap_an_b"),
             q.get("dap_an_c"),
             q.get("dap_an_d"),
         ]
-        answers = [
-            str(ans).strip()
-            for ans in answers_raw
-            if ans and str(ans).strip().lower() not in ["nan", "none", "null", ""]
-        ]
+        answers = []
+        for ans in answers_raw:
+            if ans and str(ans).strip().lower() not in ["nan", "none", "null", ""]:
+                answers.append(str(ans).strip())
 
+        # ---- Lọc ghi chú ----
         note = ""
         ghi_chu = q.get("ghi_chu")
         if ghi_chu and str(ghi_chu).strip().lower() not in ["nan", "none", "null", ""]:
@@ -658,7 +586,27 @@ def api_get_question():
         traceback.print_exc()
         return {"error": str(e)}, 500
 
-
+# Tạo bảng TrialUsage nếu chưa tồn tại
+def init_trial_table():
+    with engine.begin() as conn:
+        conn.execute(text("""
+        CREATE TABLE IF NOT EXISTS TrialUsage (
+            username TEXT PRIMARY KEY,
+            last_date DATE,
+            "11" INTEGER DEFAULT 0,
+            "12" INTEGER DEFAULT 0,
+            "13" INTEGER DEFAULT 0,
+            "21" INTEGER DEFAULT 0,
+            "22" INTEGER DEFAULT 0,
+            "23" INTEGER DEFAULT 0,
+            "31" INTEGER DEFAULT 0,
+            "32" INTEGER DEFAULT 0,
+            "33" INTEGER DEFAULT 0,
+            "34" INTEGER DEFAULT 0,
+            "35" INTEGER DEFAULT 0,
+            "36" INTEGER DEFAULT 0
+        );
+        """))
 
 
 
