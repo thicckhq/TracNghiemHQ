@@ -490,89 +490,94 @@ from flask import jsonify
 @app.route("/api/get-question", methods=["POST"])
 @require_login
 def get_question():
-    data = request.get_json()
-    ma_mon_thi = data.get("ma_mon_thi")
-    exclude_ids = data.get("exclude_ids", [])
-    username = session["username"]
+    try:
+        data = request.get_json()
+        ma_mon_thi = data.get("ma_mon_thi")
+        exclude_ids = data.get("exclude_ids", [])
+        username = session["username"]
 
-    today = date.today()
+        today = date.today()
 
-    with engine.begin() as conn:
-        # Lấy thông tin người dùng
-        user = conn.execute(
-            text("SELECT mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
-            {"u": username}
-        ).mappings().first()
-
-        # Kiểm tra bản quyền
-        ban_quyen = False
-        if user:
-            mon_dang_ky = user.get("mon_dang_ky") or ""
-            ds_mon = [m.strip() for m in mon_dang_ky.split(",") if m.strip()]
-            ngay_het_han = user.get("ngay_het_han")
-            if ma_mon_thi[:1] in ds_mon and ngay_het_han and ngay_het_han >= today:
-                ban_quyen = True
-
-        # Nếu Dùng thử
-        if not ban_quyen:
-            # Kiểm tra thông tin trial từ bảng trialusage
-            trial = conn.execute(
-                text("SELECT * FROM trialusage WHERE username=:u"),
+        with engine.begin() as conn:
+            # Lấy thông tin người dùng
+            user = conn.execute(
+                text("SELECT mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
                 {"u": username}
             ).mappings().first()
 
-            if not trial:
-                # Nếu chưa có dữ liệu trial, tạo mới
+            # Kiểm tra bản quyền
+            ban_quyen = False
+            if user:
+                mon_dang_ky = user.get("mon_dang_ky") or ""
+                ds_mon = [m.strip() for m in mon_dang_ky.split(",") if m.strip()]
+                ngay_het_han = user.get("ngay_het_han")
+                if ma_mon_thi[:1] in ds_mon and ngay_het_han and ngay_het_han >= today:
+                    ban_quyen = True
+
+            # Nếu Dùng thử
+            if not ban_quyen:
+                # Kiểm tra thông tin trial từ bảng trialusage
+                trial = conn.execute(
+                    text("SELECT * FROM trialusage WHERE username=:u"),
+                    {"u": username}
+                ).mappings().first()
+
+                if not trial:
+                    # Nếu chưa có dữ liệu trial, tạo mới
+                    conn.execute(
+                    text('INSERT INTO trialusage(username, last_date) VALUES(:u, :d)'),
+                    {"u": username, "d": today}
+                    )
+
+                    trial = {"last_date": today}
+
+                # Reset nếu ngày thay đổi
+                if trial.get("last_date") != today:
+                    # Reset tất cả các trường lĩnh vực
+                    update_columns = ", ".join([f"topic_{col} = 0" for col in range(11, 37)])
+                    conn.execute(
+                        text(f"UPDATE trialusage SET last_date=:d, {update_columns} WHERE username=:u"),
+                        {"d": today, "u": username}
+                    )
+                    count = 0
+                else:
+                    count = trial.get(f"topic_{ma_mon_thi}", 0)
+
+                # Kiểm tra số câu hỏi đã làm hôm nay, nếu đã quá 5 câu thì không cho tiếp
+                if count >= 5:
+                    return jsonify({"questions": [], "message": "Đã hết lượt dùng thử cho lĩnh vực này trong hôm nay"})
+
+                # Tăng số lượng câu hỏi đã làm
                 conn.execute(
-                text('INSERT INTO trialusage(username, last_date) VALUES(:u, :d)'),
-                {"u": username, "d": today}
+                    text(f"UPDATE trialusage SET topic_{ma_mon_thi} = COALESCE(topic_{ma_mon_thi}, 0) + 1 WHERE username=:u"),
+                    {"u": username}
                 )
 
-                trial = {"last_date": today}
+            # Lấy câu hỏi từ bảng bodethi
+            q = conn.execute(
+                text("""
+                    SELECT * FROM bodethi
+                    WHERE ma_mon_thi=:m
+                    AND id NOT IN :exclude
+                    ORDER BY random() LIMIT 1
+                """),
+                {"m": ma_mon_thi, "exclude": tuple(exclude_ids) if exclude_ids else tuple([-1])}
+            ).mappings().first()
 
-            # Reset nếu ngày thay đổi
-            if trial.get("last_date") != today:
-                # Reset tất cả các trường lĩnh vực
-                update_columns = ", ".join([f"topic_{col} = 0" for col in range(11, 37)])
-                conn.execute(
-                    text(f"UPDATE trialusage SET last_date=:d, {update_columns} WHERE username=:u"),
-                    {"d": today, "u": username}
-                )
-                count = 0
-            else:
-                count = trial.get(f"topic_{ma_mon_thi}", 0)
+        if not q:
+            return jsonify({"questions": []})
 
-            # Kiểm tra số câu hỏi đã làm hôm nay, nếu đã quá 5 câu thì không cho tiếp
-            if count >= 5:
-                return jsonify({"questions": [], "message": "Đã hết lượt dùng thử cho lĩnh vực này trong hôm nay"})
-
-            # Tăng số lượng câu hỏi đã làm
-            conn.execute(
-                text(f"UPDATE trialusage SET topic_{ma_mon_thi} = COALESCE(topic_{ma_mon_thi}, 0) + 1 WHERE username=:u"),
-                {"u": username}
-            )
-
-        # Lấy câu hỏi từ bảng bodethi
-        q = conn.execute(
-            text("""
-                SELECT * FROM bodethi
-                WHERE ma_mon_thi=:m
-                AND id NOT IN :exclude
-                ORDER BY random() LIMIT 1
-            """),
-            {"m": ma_mon_thi, "exclude": tuple(exclude_ids) if exclude_ids else tuple([-1])}
-        ).mappings().first()
-
-    if not q:
-        return jsonify({"questions": []})
-
-    question = {
-        "id": q["id"],
-        "question": q["cau_hoi"],
-        "answers": [q[a] for a in ["A", "B", "C", "D"] if q[a]]
-    }
-    return jsonify({"questions": [question]})
-
+        question = {
+            "id": q["id"],
+            "question": q["cau_hoi"],
+            "answers": [q[a] for a in ["dap_an_a", "dap_an_b", "dap_an_c", "dap_an_d"] if q[a]]
+        }
+        return jsonify({"questions": [question]})
+    except Exception as e:
+        import traceback
+        print("API /api/get-question lỗi:", e)
+        traceback.print_exc()
+        return {"error": str(e)}, 500
 
 
 if __name__ == "__main__":
