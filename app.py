@@ -533,14 +533,14 @@ def get_question():
             # Reset nếu ngày thay đổi
             if trial.get("last_date") != today:
                 # Reset tất cả các trường lĩnh vực
-                update_columns = ", ".join([f"{col} = 0" for col in range(11, 37)])
+                update_columns = ", ".join([f"topic_{col} = 0" for col in range(11, 37)])
                 conn.execute(
                     text(f"UPDATE trialusage SET last_date=:d, {update_columns} WHERE username=:u"),
                     {"d": today, "u": username}
                 )
                 count = 0
             else:
-                count = trial.get(ma_mon_thi, 0)
+                count = trial.get(f"topic_{ma_mon_thi}", 0)
 
             # Kiểm tra số câu hỏi đã làm hôm nay, nếu đã quá 5 câu thì không cho tiếp
             if count >= 5:
@@ -548,7 +548,7 @@ def get_question():
 
             # Tăng số lượng câu hỏi đã làm
             conn.execute(
-                text(f"UPDATE trialusage SET {ma_mon_thi} = COALESCE({ma_mon_thi}, 0) + 1 WHERE username=:u"),
+                text(f"UPDATE trialusage SET topic_{ma_mon_thi} = COALESCE(topic_{ma_mon_thi}, 0) + 1 WHERE username=:u"),
                 {"u": username}
             )
 
