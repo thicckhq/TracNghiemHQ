@@ -1,254 +1,251 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ôn tập</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 90%;
-            max-width: 1000px;
-            margin: 20px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1, h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .cards-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .card {
-            position: relative;
-            background: #fdfdfd;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.2);
-            cursor: pointer;
-            width: 250px;
-            text-align: center;
-            transition: transform 0.2s;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .trial-label {
-            display: none;
-            position: absolute;
-            bottom: 8px;
-            right: 10px;
-            font-size: 13px;
-            color: red;
-            font-weight: bold;
-        }
-        .trial-label.show {
-            display: inline;
-        }
-        #quiz-section {
-            display: none;
-            margin-top: 20px;
-        }
-        #question {
-            margin-bottom: 20px;
-        }
-        .option {
-            margin: 10px 0;
-            padding: 10px;
-            background: #eee;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .option.correct { background-color: #c8f7c5; }
-        .option.incorrect { background-color: #f7c5c5; }
-        #note {
-            margin-top: 10px;
-            font-style: italic;
-            color: #333;
-        }
-        .btn {
-            padding: 10px 20px;
-            margin: 5px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-        }
-        .btn-primary { background: #007bff; color: #fff; }
-        .btn-secondary { background: #6c757d; color: #fff; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ôn tập Trắc nghiệm</title>
+  <style>
+    :root {
+      --primary-color: #4CAF50;
+      --secondary-color: #2196F3;
+      --background-light: #e0f2f7;
+      --text-dark: #333;
+      --card-background: #ffffff;
+      --shadow-light: rgba(0, 0, 0, 0.15);
+      --border-light: #e0e0e0;
+    }
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      background: linear-gradient(135deg, var(--background-light) 0%, #c1dce7 100%);
+      margin: 0;
+      padding: 20px;
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: var(--card-background);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    h1, h2, h3 {
+      text-align: center;
+      color: var(--secondary-color);
+      margin-bottom: 25px;
+      font-weight: normal;
+    }
+    h1 { font-size: 2.5em; }
+    .selection-section {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 30px;
+    }
+    .card {
+      background-color: var(--card-background);
+      border-radius: 8px;
+      box-shadow: 0 4px 15px var(--shadow-light);
+      padding: 15px 25px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      width: 200px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      border: 2px solid transparent;
+      position: relative;
+    }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px var(--shadow-light); }
+    .card.selected { border-color: var(--primary-color); }
+    .card h3 { margin:0; color:var(--text-dark); font-size:1.1em; font-weight:normal; }
+    .trial-label {
+      display: none;
+      color: red;
+      font-size: 0.9em;
+      position: absolute;
+      bottom: 5px;
+      right: 10px;
+    }
+    .trial-label.show { display: block; }
+    #topic-section { margin-top:40px; display:none; border-top:1px solid var(--border-light); padding-top:30px; }
+    #quiz-section { margin-top:30px; border-top:1px solid var(--border-light); padding-top:25px; display:none; position:relative; }
+    .question-card { margin-bottom:20px; padding:20px; border-radius:10px; background-color:#f9f9f9; box-shadow:0 4px 15px rgba(0,0,0,0.05);}
+    .question-card p.question-text { color:var(--primary-color); }
+    .answers { display:flex; flex-direction:column; gap:10px; }
+    .answer-label { display:flex; align-items:center; padding:12px 15px; border:1px solid var(--border-light); border-radius:8px; background-color:#fff; cursor:pointer; }
+    .answer-label input[type="checkbox"] { margin-right:12px; }
+    .quiz-controls { display:flex; justify-content:flex-end; margin-top:20px; gap:10px; }
+    .quiz-controls button { padding:10px 20px; border:none; border-radius:5px; color:white; cursor:pointer; }
+    #submit-btn { background-color:var(--primary-color); }
+    #next-btn { background-color:var(--secondary-color); }
+    #close-btn { position:absolute; top:15px; right:15px; background:#f44336; color:white; border:none; border-radius:50%; width:30px; height:30px; font-size:1.2em; cursor:pointer; display:none; }
+  </style>
 </head>
 <body>
-<div class="container">
-    <h1>Ôn tập</h1>
+  <div class="container">
+    <button id="close-btn">&times;</button>
+    <h1>Ôn tập Trắc nghiệm Hải quan 📚</h1>
 
-    <!-- Phần chọn môn -->
     <div id="subject-selection">
-        <h2>Chọn môn thi</h2>
-        <div class="cards-container">
-            <div class="card" data-subject="phap_luat_hai_quan">
-                Pháp luật hải quan
-                <span class="trial-label">(dùng thử)</span>
-            </div>
-            <div class="card" data-subject="ky_thuat_nghiep_vu_ngoai_thuong">
-                Kỹ thuật nghiệp vụ ngoại thương
-                <span class="trial-label">(dùng thử)</span>
-            </div>
-            <div class="card" data-subject="ky_thuat_nghiep_vu_hai_quan">
-                Nghiệp vụ hải quan
-                <span class="trial-label">(dùng thử)</span>
-            </div>
+      <h2>Chọn môn thi</h2>
+      <div class="selection-section">
+        <div class="card" data-subject="phap_luat_hai_quan">
+          <h3>Pháp luật hải quan</h3>
+          <span class="trial-label">(dùng thử)</span>
         </div>
+        <div class="card" data-subject="ky_thuat_nghiep_vu_ngoai_thuong">
+          <h3>Kỹ thuật nghiệp vụ ngoại thương</h3>
+          <span class="trial-label">(dùng thử)</span>
+        </div>
+        <div class="card" data-subject="ky_thuat_nghiep_vu_hai_quan">
+          <h3>Kỹ thuật nghiệp vụ hải quan</h3>
+          <span class="trial-label">(dùng thử)</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Phần quiz -->
+    <div id="topic-section">
+      <h2>Chọn lĩnh vực</h2>
+      <div class="selection-section" id="topic-selection"></div>
+    </div>
+
     <div id="quiz-section">
-        <h2 id="quiz-title">Ôn tập</h2>
-        <div id="question"></div>
-        <div id="options"></div>
-        <div id="note"></div>
-        <button id="next-btn" class="btn btn-primary">Câu tiếp theo</button>
-        <button id="back-btn" class="btn btn-secondary">Quay lại chọn môn</button>
+      <h2 id="quiz-title"></h2>
+      <div id="quiz-questions"></div>
+      <div class="quiz-controls">
+        <button id="submit-btn">Trả lời</button>
+        <button id="next-btn">Câu tiếp</button>
+      </div>
     </div>
-</div>
+  </div>
 
-<script>
-  const subjectCards = document.querySelectorAll('#subject-selection .card');
-  const subjectSelection = document.getElementById('subject-selection');
-  const quizSection = document.getElementById('quiz-section');
-  const questionEl = document.getElementById('question');
-  const optionsEl = document.getElementById('options');
-  const noteEl = document.getElementById('note');
-  const nextBtn = document.getElementById('next-btn');
-  const backBtn = document.getElementById('back-btn');
+  <script>
+    const subjectCards = document.querySelectorAll('#subject-selection .card');
+    const topicSelectionSection = document.getElementById('topic-selection');
+    const topicSection = document.getElementById('topic-section');
+    const quizSection = document.getElementById('quiz-section');
+    const quizTitle = document.getElementById('quiz-title');
+    const quizQuestionsContainer = document.getElementById('quiz-questions');
+    const nextBtn = document.getElementById('next-btn');
+    const closeBtn = document.getElementById('close-btn');
 
-  let currentSubject = null;
-  let currentQuestionIndex = 0;
-  let questions = [];
+    // ✅ Dữ liệu bản quyền từ backend
+    const ban_quyen = {{ ban_quyen|tojson }};
 
-  // ✅ Dữ liệu bản quyền từ server
-  const ban_quyen = {{ ban_quyen|tojson }};
+    // mapping tên subject -> mã môn
+    const subjectMap = {
+      "phap_luat_hai_quan": "1",
+      "ky_thuat_nghiep_vu_ngoai_thuong": "2",
+      "ky_thuat_nghiep_vu_hai_quan": "3"
+    };
 
-  const subjectMap = {
-    "phap_luat_hai_quan": "1",
-    "ky_thuat_nghiep_vu_ngoai_thuong": "2",
-    "ky_thuat_nghiep_vu_hai_quan": "3"
-  };
+    // mapping mã môn -> danh sách lĩnh vực
+    const topics = {
+      '1': ['Pháp luật hải quan', 'Chính sách thuế', 'Vi phạm hành chính'],
+      '2': ['Giao nhận vận tải', 'Ngoại thương', 'Thanh toán quốc tế'],
+      '3': ['Thủ tục hải quan', 'Chính sách mặt hàng', 'Trị giá hải quan', 'Xuất xứ hàng hóa', 'Sở hữu trí tuệ', 'Phân loại hàng hóa']
+    };
 
-  // ✅ Hiển thị nhãn (dùng thử) nếu False
-  subjectCards.forEach(card => {
-    const subject = card.dataset.subject;
-    const monCode = subjectMap[subject];
-    const trialLabel = card.querySelector('.trial-label');
-    if (!ban_quyen[monCode]) {
-      trialLabel.classList.add('show');
-    }
-  });
+    let usedQuestionIds = new Set();
 
-  // Event chọn môn
-  subjectCards.forEach(card => {
-    card.addEventListener('click', () => {
-      currentSubject = card.dataset.subject;
-      startQuiz();
+    // ✅ Hiển thị "dùng thử" nếu False
+    subjectCards.forEach(card => {
+      const subject = card.dataset.subject;
+      const monCode = subjectMap[subject];
+      const trialLabel = card.querySelector('.trial-label');
+      if (!ban_quyen[monCode]) {
+        trialLabel.classList.add('show');
+      }
     });
-  });
 
-  backBtn.addEventListener('click', () => {
-    quizSection.style.display = "none";
-    subjectSelection.style.display = "block";
-    questions = [];
-    currentQuestionIndex = 0;
-  });
-
-  nextBtn.addEventListener('click', () => {
-    currentQuestionIndex++;
-    if (currentQuestionIndex < questions.length) {
-      showQuestion();
-    } else {
-      alert("Bạn đã hoàn thành các câu hỏi!");
-      quizSection.style.display = "none";
-      subjectSelection.style.display = "block";
-    }
-  });
-
-  async function startQuiz() {
-    subjectSelection.style.display = "none";
-    quizSection.style.display = "block";
-    document.getElementById("quiz-title").innerText = "Môn: " + currentSubject;
-
-    const monCode = subjectMap[currentSubject];
-
-    try {
-      const res = await fetch("/api/get-question", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mon: monCode })
-      });
-
-      const data = await res.json();
-      if (data.error) {
-        alert(data.error);
-        quizSection.style.display = "none";
-        subjectSelection.style.display = "block";
-        return;
-      }
-
-      questions = data.questions || [];
-      currentQuestionIndex = 0;
-      if (questions.length > 0) {
-        showQuestion();
-      } else {
-        alert("Không có câu hỏi nào!");
-        quizSection.style.display = "none";
-        subjectSelection.style.display = "block";
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Lỗi khi tải câu hỏi!");
-      quizSection.style.display = "none";
-      subjectSelection.style.display = "block";
-    }
-  }
-
-  function showQuestion() {
-    const q = questions[currentQuestionIndex];
-    questionEl.innerText = q.noi_dung;
-    optionsEl.innerHTML = "";
-
-    const answers = ["A","B","C","D"];
-    answers.forEach(ans => {
-      if (q[ans]) {
-        const div = document.createElement("div");
-        div.classList.add("option");
-        div.innerText = ans + ". " + q[ans];
-        div.addEventListener("click", () => {
-          if (q.dap_an_dung.includes(ans)) {
-            div.classList.add("correct");
-          } else {
-            div.classList.add("incorrect");
-          }
-          if (q.ghi_chu) {
-            noteEl.innerText = "Ghi chú: " + q.ghi_chu;
-          } else {
-            noteEl.innerText = "";
-          }
+    function renderTopicCards(monCode) {
+      topicSelectionSection.innerHTML = '';
+      const topicList = topics[monCode] || [];
+      topicList.forEach(topic => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.topic = topic;
+        card.innerHTML = `<h3>${topic}</h3>`;
+        card.addEventListener('click', () => {
+          document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          usedQuestionIds.clear();
+          startQuiz(topic);
         });
-        optionsEl.appendChild(div);
+        topicSelectionSection.appendChild(card);
+      });
+      topicSection.style.display = 'block';
+    }
+
+    async function startQuiz(topic) {
+      await loadNewQuestion(topic);
+    }
+
+    async function loadNewQuestion(topic) {
+      try {
+        const res = await fetch("/api/get-question", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ten_mon_thi: topic, exclude_ids: Array.from(usedQuestionIds) })
+        });
+        const data = await res.json();
+        if (!data.questions || data.questions.length === 0) {
+          quizQuestionsContainer.innerHTML = "<p>Không còn câu hỏi nào cho lĩnh vực này.</p>";
+          quizSection.style.display = 'block';
+          return;
+        }
+        let q = data.questions[0];
+        usedQuestionIds.add(q.id);
+        quizSection.style.display = 'block';
+        quizTitle.textContent = topic;
+        displayQuestion(q);
+        closeBtn.style.display = 'block';
+      } catch (err) {
+        console.error("Lỗi khi tải câu hỏi:", err);
+        quizQuestionsContainer.innerHTML = "<p>Lỗi server!</p>";
       }
+    }
+
+    function displayQuestion(question) {
+      quizQuestionsContainer.innerHTML = '';
+      const questionCard = document.createElement('div');
+      questionCard.className = 'question-card';
+      questionCard.innerHTML = `<p class="question-text">${question.question}</p><div class="answers"></div>`;
+      quizQuestionsContainer.appendChild(questionCard);
+      const answersContainer = questionCard.querySelector('.answers');
+      question.answers.forEach((answer, idx) => {
+        const label = document.createElement('label');
+        label.className = 'answer-label';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = idx;
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(answer));
+        answersContainer.appendChild(label);
+      });
+    }
+
+    nextBtn.addEventListener('click', () => {
+      loadNewQuestion(quizTitle.textContent);
     });
 
-    noteEl.innerText = "";
-  }
-</script>
+    closeBtn.addEventListener('click', () => {
+      quizSection.style.display = 'none';
+      quizQuestionsContainer.innerHTML = '';
+      closeBtn.style.display = 'none';
+      usedQuestionIds.clear();
+    });
+
+    subjectCards.forEach(card => {
+      card.addEventListener('click', () => {
+        subjectCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        const monCode = subjectMap[card.dataset.subject]; // "1","2","3"
+        renderTopicCards(monCode);
+        quizSection.style.display = 'none';
+        quizQuestionsContainer.innerHTML = '';
+        setTimeout(() => { topicSection.scrollIntoView({ behavior: 'smooth' }); }, 300);
+      });
+    });
+  </script>
 </body>
 </html>
