@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from sqlalchemy import create_engine, text
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
-
+from datetime import date
 # ---------- Flask config ----------
 app = Flask(__name__)
 app.secret_key = "supersecretkey123"
@@ -486,6 +486,7 @@ def upload_bodethi():
 
 #---- Tạo ôn tập----
 from flask import jsonify
+
 @app.route("/api/get-question", methods=["POST"])
 @require_login
 def get_question():
