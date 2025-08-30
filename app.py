@@ -229,7 +229,7 @@ def tai_khoan():
                     mon_quyen.append(f"{name}: Đã hết hạn từ ngày {ngay_str}")
                 else:
                     from datetime import date
-                    today = date.today()
+                    today = datetime.today().date()
                     if ngay_het_han < today:
                         mon_quyen.append(f"{name}: Đã hết hạn từ ngày {ngay_str}")
                     else:
