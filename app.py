@@ -120,11 +120,11 @@ def register():
 
     with engine.begin() as conn:
         exist = conn.execute(
-            text("SELECT 1 FROM Nguoidung WHERE username=:u OR email=:e"),
-            {"u": username, "e": email}
+            text("SELECT 1 FROM Nguoidung WHERE username=:u"),
+            {"u": username}
         ).first()
         if exist:
-            flash("Tên đăng nhập hoặc Email đã tồn tại!")
+            flash("Tên đăng nhập đã tồn tại!")
             return redirect(url_for('login'))
 
         pw_hash = password
