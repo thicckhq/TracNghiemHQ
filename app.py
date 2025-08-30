@@ -566,11 +566,27 @@ def get_question():
 
         if not q:
             return jsonify({"questions": []})
+        correct_answer = q["dap_an_dung"]
+
+        user_answer = "".join(sorted(selected_answers))  # Sắp xếp đáp án người dùng theo thứ tự
+
+    # So sánh đáp án người dùng và đáp án đúng
+        correct = "Đúng" if user_answer == correct_answer else "Sai"
+
+    # Lấy ghi chú nếu có
+        note = q.get("ghi_chu", "").strip() if q.get("ghi_chu", "").strip() not in ["", "NaN"] else None
+        for answer in answers:
+            if answer["key"] in selected_answers:
+                answer["status"] = "incorrect" if correct == "Sai" else "correct"  # Đánh dấu đáp án người dùng chọn là sai hoặc đúng
 
         question = {
             "id": q["id"],
             "question": q["cau_hoi"],
-            "answers": [q[a] for a in ["dap_an_a", "dap_an_b", "dap_an_c", "dap_an_d"] if q[a]]
+            "answers": [q[a] for a in ["dap_an_a", "dap_an_b", "dap_an_c", "dap_an_d"] if q[a] and q[a] != "NaN"],
+            "correct_answer": correct_answer,
+            "user_answer": selected_answers,
+            "result": correct,  # Hiển thị kết quả so sánh
+            "note": note if note else None  # Hiển thị ghi chú nếu có
         }
         return jsonify({"questions": [question]})
     except Exception as e:
