@@ -1,268 +1,254 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ôn tập Trắc nghiệm</title>
-  <style>
-    body {
-      font-family: 'Times New Roman', serif;
-      background: #f2f9ff;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    h1, h2 {
-      text-align: center;
-      color: #2b6cb0;
-    }
-    .selection-section {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .card {
-      position: relative;
-      background: #fff;
-      border-radius: 8px;
-      padding: 15px 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: transform 0.2s;
-      width: 220px;
-      text-align: center;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-    }
-    .card h3 {
-      margin: 0;
-      font-size: 1.1em;
-    }
-    /* Nhãn dùng thử */
-    .trial-label {
-      color: red;
-      font-size: 0.85em;
-      font-style: italic;
-      position: absolute;
-      bottom: 5px;
-      right: 8px;
-      display: none;
-    }
-    .trial-label.show { display: block; }
-
-    /* Quiz section */
-    #quiz-section {
-      margin-top: 30px;
-      padding: 20px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      display: none;
-    }
-    #question {
-      font-weight: bold;
-      margin-bottom: 15px;
-    }
-    .option {
-      display: block;
-      margin: 8px 0;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .option:hover {
-      background: #f1f1f1;
-    }
-    .option.correct {
-      background: #d4edda;
-      border-color: #28a745;
-    }
-    .option.wrong {
-      background: #f8d7da;
-      border-color: #dc3545;
-    }
-    #note {
-      margin-top: 15px;
-      font-style: italic;
-      color: #555;
-    }
-    .hidden { display: none; }
-    .btn {
-      padding: 8px 14px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 15px;
-    }
-    .btn-primary {
-      background: #2b6cb0;
-      color: #fff;
-    }
-    .btn-secondary {
-      background: #e2e8f0;
-      color: #333;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn tập</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .card {
+            position: relative;
+            background: #fdfdfd;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+            width: 250px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .trial-label {
+            display: none;
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            font-size: 13px;
+            color: red;
+            font-weight: bold;
+        }
+        .trial-label.show {
+            display: inline;
+        }
+        #quiz-section {
+            display: none;
+            margin-top: 20px;
+        }
+        #question {
+            margin-bottom: 20px;
+        }
+        .option {
+            margin: 10px 0;
+            padding: 10px;
+            background: #eee;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .option.correct { background-color: #c8f7c5; }
+        .option.incorrect { background-color: #f7c5c5; }
+        #note {
+            margin-top: 10px;
+            font-style: italic;
+            color: #333;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        .btn-primary { background: #007bff; color: #fff; }
+        .btn-secondary { background: #6c757d; color: #fff; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Ôn tập Trắc nghiệm Hải quan 📚</h1>
+<div class="container">
+    <h1>Ôn tập</h1>
 
+    <!-- Phần chọn môn -->
     <div id="subject-selection">
-      <h2>Chọn môn thi</h2>
-      <div class="selection-section">
-        <div class="card" data-subject="phap_luat_hai_quan">
-          <h3>Pháp luật hải quan</h3>
-          <span class="trial-label">(dùng thử)</span>
+        <h2>Chọn môn thi</h2>
+        <div class="cards-container">
+            <div class="card" data-subject="phap_luat_hai_quan">
+                Pháp luật hải quan
+                <span class="trial-label">(dùng thử)</span>
+            </div>
+            <div class="card" data-subject="ky_thuat_nghiep_vu_ngoai_thuong">
+                Kỹ thuật nghiệp vụ ngoại thương
+                <span class="trial-label">(dùng thử)</span>
+            </div>
+            <div class="card" data-subject="ky_thuat_nghiep_vu_hai_quan">
+                Nghiệp vụ hải quan
+                <span class="trial-label">(dùng thử)</span>
+            </div>
         </div>
-        <div class="card" data-subject="ky_thuat_nghiep_vu_ngoai_thuong">
-          <h3>Kỹ thuật nghiệp vụ ngoại thương</h3>
-          <span class="trial-label">(dùng thử)</span>
-        </div>
-        <div class="card" data-subject="ky_thuat_nghiep_vu_hai_quan">
-          <h3>Kỹ thuật nghiệp vụ hải quan</h3>
-          <span class="trial-label">(dùng thử)</span>
-        </div>
-      </div>
     </div>
 
+    <!-- Phần quiz -->
     <div id="quiz-section">
-      <h2 id="quiz-title">Câu hỏi</h2>
-      <div id="question"></div>
-      <div id="options"></div>
-      <div id="note" class="hidden"></div>
-      <button id="next-btn" class="btn btn-primary hidden">Câu tiếp</button>
-      <button id="back-btn" class="btn btn-secondary hidden">Quay lại chọn môn</button>
+        <h2 id="quiz-title">Ôn tập</h2>
+        <div id="question"></div>
+        <div id="options"></div>
+        <div id="note"></div>
+        <button id="next-btn" class="btn btn-primary">Câu tiếp theo</button>
+        <button id="back-btn" class="btn btn-secondary">Quay lại chọn môn</button>
     </div>
-  </div>
+</div>
 
-  <script>
-    const subjectCards = document.querySelectorAll('#subject-selection .card');
-    const subjectSelection = document.getElementById('subject-selection');
-    const quizSection = document.getElementById('quiz-section');
-    const questionEl = document.getElementById('question');
-    const optionsEl = document.getElementById('options');
-    const noteEl = document.getElementById('note');
-    const nextBtn = document.getElementById('next-btn');
-    const backBtn = document.getElementById('back-btn');
+<script>
+  const subjectCards = document.querySelectorAll('#subject-selection .card');
+  const subjectSelection = document.getElementById('subject-selection');
+  const quizSection = document.getElementById('quiz-section');
+  const questionEl = document.getElementById('question');
+  const optionsEl = document.getElementById('options');
+  const noteEl = document.getElementById('note');
+  const nextBtn = document.getElementById('next-btn');
+  const backBtn = document.getElementById('back-btn');
 
-    let currentSubject = null;
-    let currentQuestionIndex = 0;
-    let questions = [];
+  let currentSubject = null;
+  let currentQuestionIndex = 0;
+  let questions = [];
 
-    // Dữ liệu từ server
-    const mon_dang_ky = {{ mon_dang_ky|tojson }};
-    const mon_het_han = {{ mon_het_han|tojson }};
+  // ✅ Dữ liệu bản quyền từ server
+  const ban_quyen = {{ ban_quyen|tojson }};
 
-    const subjectMap = {
-      "phap_luat_hai_quan": "1",
-      "ky_thuat_nghiep_vu_ngoai_thuong": "2",
-      "ky_thuat_nghiep_vu_hai_quan": "3"
-    };
+  const subjectMap = {
+    "phap_luat_hai_quan": "1",
+    "ky_thuat_nghiep_vu_ngoai_thuong": "2",
+    "ky_thuat_nghiep_vu_hai_quan": "3"
+  };
 
-    // Hiển thị nhãn (dùng thử)
-    subjectCards.forEach(card => {
-      const subject = card.dataset.subject;
-      const monCode = subjectMap[subject];
-      const trialLabel = card.querySelector('.trial-label');
-      if (!mon_dang_ky.includes(monCode) || mon_het_han.includes(monCode)) {
-        trialLabel.classList.add('show');
-      }
+  // ✅ Hiển thị nhãn (dùng thử) nếu False
+  subjectCards.forEach(card => {
+    const subject = card.dataset.subject;
+    const monCode = subjectMap[subject];
+    const trialLabel = card.querySelector('.trial-label');
+    if (!ban_quyen[monCode]) {
+      trialLabel.classList.add('show');
+    }
+  });
+
+  // Event chọn môn
+  subjectCards.forEach(card => {
+    card.addEventListener('click', () => {
+      currentSubject = card.dataset.subject;
+      startQuiz();
     });
+  });
 
-    // Xử lý chọn môn
-    subjectCards.forEach(card => {
-      card.addEventListener('click', () => {
-        currentSubject = card.dataset.subject;
-        startQuiz(currentSubject);
+  backBtn.addEventListener('click', () => {
+    quizSection.style.display = "none";
+    subjectSelection.style.display = "block";
+    questions = [];
+    currentQuestionIndex = 0;
+  });
+
+  nextBtn.addEventListener('click', () => {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+      showQuestion();
+    } else {
+      alert("Bạn đã hoàn thành các câu hỏi!");
+      quizSection.style.display = "none";
+      subjectSelection.style.display = "block";
+    }
+  });
+
+  async function startQuiz() {
+    subjectSelection.style.display = "none";
+    quizSection.style.display = "block";
+    document.getElementById("quiz-title").innerText = "Môn: " + currentSubject;
+
+    const monCode = subjectMap[currentSubject];
+
+    try {
+      const res = await fetch("/api/get-question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mon: monCode })
       });
-    });
 
-    function startQuiz(subject) {
-      subjectSelection.style.display = 'none';
-      quizSection.style.display = 'block';
-      loadQuestions(subject);
-    }
-
-    function loadQuestions(subject) {
-      fetch(`/get-question?mon=${subject}`)
-        .then(res => res.json())
-        .then(data => {
-          questions = data.questions;
-          currentQuestionIndex = 0;
-          showQuestion();
-        });
-    }
-
-    function showQuestion() {
-      const q = questions[currentQuestionIndex];
-      questionEl.textContent = q.noi_dung;
-      optionsEl.innerHTML = '';
-      noteEl.classList.add('hidden');
-      nextBtn.classList.add('hidden');
-      backBtn.classList.add('hidden');
-
-      q.dap_an.forEach((opt, i) => {
-        if (!opt) return; // ẩn nếu trống
-        const btn = document.createElement('div');
-        btn.classList.add('option');
-        btn.textContent = opt;
-        btn.addEventListener('click', () => selectAnswer(btn, i, q));
-        optionsEl.appendChild(btn);
-      });
-    }
-
-    function selectAnswer(btn, index, q) {
-      const correctAnswers = q.dap_an_dung.split('');
-      const isCorrect = correctAnswers.includes(String.fromCharCode(65 + index));
-
-      if (isCorrect) {
-        btn.classList.add('correct');
-      } else {
-        btn.classList.add('wrong');
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+        quizSection.style.display = "none";
+        subjectSelection.style.display = "block";
+        return;
       }
 
-      Array.from(optionsEl.children).forEach((child, i) => {
-        const ansChar = String.fromCharCode(65 + i);
-        if (correctAnswers.includes(ansChar)) {
-          child.classList.add('correct');
-        }
-        child.style.pointerEvents = 'none';
-      });
-
-      if (q.ghi_chu) {
-        noteEl.textContent = "Ghi chú: " + q.ghi_chu;
-        noteEl.classList.remove('hidden');
-      }
-
-      nextBtn.classList.remove('hidden');
-      backBtn.classList.remove('hidden');
-    }
-
-    nextBtn.addEventListener('click', () => {
-      currentQuestionIndex++;
-      if (currentQuestionIndex < questions.length) {
+      questions = data.questions || [];
+      currentQuestionIndex = 0;
+      if (questions.length > 0) {
         showQuestion();
       } else {
-        alert("Bạn đã hoàn thành tất cả câu hỏi!");
-        subjectSelection.style.display = 'block';
-        quizSection.style.display = 'none';
+        alert("Không có câu hỏi nào!");
+        quizSection.style.display = "none";
+        subjectSelection.style.display = "block";
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi tải câu hỏi!");
+      quizSection.style.display = "none";
+      subjectSelection.style.display = "block";
+    }
+  }
+
+  function showQuestion() {
+    const q = questions[currentQuestionIndex];
+    questionEl.innerText = q.noi_dung;
+    optionsEl.innerHTML = "";
+
+    const answers = ["A","B","C","D"];
+    answers.forEach(ans => {
+      if (q[ans]) {
+        const div = document.createElement("div");
+        div.classList.add("option");
+        div.innerText = ans + ". " + q[ans];
+        div.addEventListener("click", () => {
+          if (q.dap_an_dung.includes(ans)) {
+            div.classList.add("correct");
+          } else {
+            div.classList.add("incorrect");
+          }
+          if (q.ghi_chu) {
+            noteEl.innerText = "Ghi chú: " + q.ghi_chu;
+          } else {
+            noteEl.innerText = "";
+          }
+        });
+        optionsEl.appendChild(div);
       }
     });
 
-    backBtn.addEventListener('click', () => {
-      subjectSelection.style.display = 'block';
-      quizSection.style.display = 'none';
-    });
-  </script>
+    noteEl.innerText = "";
+  }
+</script>
 </body>
 </html>

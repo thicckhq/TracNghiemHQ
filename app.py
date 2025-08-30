@@ -138,7 +138,7 @@ def register():
         })
 
     flash("Đăng ký thành công, vui lòng đăng nhập!")
-    return redirect(url_for('login', u=username))
+    return redirect(url_for('login'))
 
 # ---------- Quên mật khẩu ----------
 @app.route('/forgot-password', methods=['POST'])
