@@ -1,501 +1,290 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ôn tập Trắc nghiệm</title>
-    
-    <style>
-        /* ==================================== */
-        /* CSS CHUNG CHO GIAO DIỆN */
-        /* ==================================== */
-        :root {
-            --primary-color: #4CAF50;
-            --secondary-color: #2196F3;
-            --background-light: #e0f2f7;
-            --text-dark: #333;
-            --card-background: #ffffff;
-            --shadow-light: rgba(0, 0, 0, 0.15);
-            --border-light: #e0e0e0;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ôn tập Trắc nghiệm</title>
+  <style>
+    body {
+      font-family: 'Times New Roman', serif;
+      background: #f2f9ff;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #2b6cb0;
+    }
+    .selection-section {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .card {
+      position: relative;
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+      width: 220px;
+      text-align: center;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 1.1em;
+    }
+    /* Nhãn dùng thử */
+    .trial-label {
+      color: red;
+      font-size: 0.85em;
+      font-style: italic;
+      position: absolute;
+      bottom: 5px;
+      right: 8px;
+      display: none;
+    }
+    .trial-label.show { display: block; }
 
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            background: linear-gradient(135deg, var(--background-light) 0%, #c1dce7 100%);
-            margin: 0;
-            padding: 20px;
-            color: var(--text-dark);
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 30px auto;
-            background: var(--card-background);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 0.8s ease-out;
-            position: relative;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h1, h2, h3 {
-            text-align: center;
-            color: var(--secondary-color);
-            margin-bottom: 25px;
-            font-weight: normal;
-        }
-        
-        h1 {
-            font-size: 2.5em;
-        }
-        
-        .selection-section {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .card {
-            background-color: var(--card-background);
-            border-radius: 8px;
-            box-shadow: 0 4px 15px var(--shadow-light);
-            padding: 15px 25px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            width: 200px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border: 2px solid transparent;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px var(--shadow-light);
-        }
-
-        .card.selected {
-            border-color: var(--primary-color);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px var(--shadow-light);
-        }
-        
-        .card h3 {
-            margin: 0;
-            color: var(--text-dark);
-            font-size: 1.1em;
-            font-weight: normal;
-        }
-
-        #subject-selection {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        #topic-section {
-            margin-top: 40px;
-            display: none;
-            border-top: 1px solid var(--border-light);
-            padding-top: 30px;
-            animation: slideIn 0.6s ease-out forwards;
-        }
-
-        #topic-section h2 {
-            color: var(--primary-color);
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); display: block; }
-        }
-
-        #quiz-section {
-            margin-top: 30px;
-            border-top: 1px solid var(--border-light);
-            padding-top: 25px;
-            display: none;
-            position: relative;
-        }
-
-        .question-card {
-            margin-bottom: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #f9f9f9;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .question-card p.question-text {
-            font-weight: normal;
-            margin: 0 0 15px 0;
-            color: var(--primary-color);
-        }
-
-        .answers {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .answer-label {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            background-color: #ffffff;
-            cursor: pointer;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-        }
-
-        .answer-label:hover {
-            background-color: #e8f5e9;
-            border-color: var(--primary-color);
-        }
-
-        .answer-label input[type="checkbox"] {
-            margin-right: 12px;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border: 2px solid var(--primary-color);
-            border-radius: 4px;
-            outline: none;
-            cursor: pointer;
-            position: relative;
-            flex-shrink: 0;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-        }
-        .answer-label input[type="checkbox"]:checked {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        .answer-label input[type="checkbox"]:checked::before {
-            content: '\2713';
-            display: block;
-            color: white;
-            font-size: 14px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        /* Styles for correct/incorrect answers */
-        .answer-label.correct {
-            background-color: #dcedc8;
-            border-color: var(--primary-color);
-        }
-
-        .answer-label.incorrect {
-            background-color: #ffebee;
-            border-color: #f44336;
-        }
-
-        .answer-label.incorrect::after {
-            content: '\2717';
-            color: #f44336;
-            font-size: 14px;
-            margin-left: auto;
-        }
-
-        .answer-label.correct::after {
-            content: '\2713';
-            color: var(--primary-color);
-            font-size: 14px;
-            margin-left: auto;
-        }
-        
-        .question-feedback {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: normal;
-        }
-        .feedback-correct {
-            background-color: #dcedc8;
-            color: var(--primary-color);
-        }
-        .feedback-incorrect {
-            background-color: #ffcdd2;
-            color: #f44336;
-        }
-
-        .quiz-controls {
-            display: flex;
-            justify-content: flex-end; /* Căn phải các nút */
-            margin-top: 20px;
-            gap: 10px; /* Khoảng cách giữa các nút */
-        }
-        
-        .quiz-controls button {
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            transition: background-color 0.3s ease;
-        }
-        
-        #submit-btn {
-            background-color: var(--primary-color);
-        }
-        #submit-btn:hover {
-            background-color: #43a047;
-        }
-        #next-btn {
-            background-color: var(--secondary-color);
-        }
-        #next-btn:hover {
-            background-color: #1e88e5;
-        }
-        
-        #close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 1.2em;
-            cursor: pointer;
-            display: none;
-        }
-        
-        #close-btn:hover {
-            background: #d32f2f;
-        }
-
-        @media (max-width: 768px) {
-            .container { padding: 20px; }
-            .selection-section { flex-direction: column; align-items: stretch; }
-            .card { width: auto; }
-            .quiz-controls { flex-direction: column; gap: 10px; }
-        }
-    </style>
+    /* Quiz section */
+    #quiz-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      display: none;
+    }
+    #question {
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .option {
+      display: block;
+      margin: 8px 0;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .option:hover {
+      background: #f1f1f1;
+    }
+    .option.correct {
+      background: #d4edda;
+      border-color: #28a745;
+    }
+    .option.wrong {
+      background: #f8d7da;
+      border-color: #dc3545;
+    }
+    #note {
+      margin-top: 15px;
+      font-style: italic;
+      color: #555;
+    }
+    .hidden { display: none; }
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    .btn-primary {
+      background: #2b6cb0;
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Ôn tập Trắc nghiệm Hải quan 📚</h1>
 
-    <div class="container">
-        <button id="close-btn">&times;</button>
-        <h1>Ôn tập Trắc nghiệm Hải quan 📚</h1>
-
-        <div id="subject-selection">
-            <h2>Chọn môn thi</h2>
-            <div class="selection-section">
-                <div class="card" data-subject="phap_luat_hai_quan">
-                    <h3>Pháp luật hải quan</h3>
-                </div>
-                <div class="card" data-subject="ky_thuat_nghiep_vu_ngoai_thuong">
-                    <h3>Kỹ thuật nghiệp vụ ngoại thương</h3>
-                </div>
-                <div class="card" data-subject="ky_thuat_nghiep_vu_hai_quan">
-                    <h3>Kỹ thuật nghiệp vụ hải quan</h3>
-                </div>
-            </div>
+    <div id="subject-selection">
+      <h2>Chọn môn thi</h2>
+      <div class="selection-section">
+        <div class="card" data-subject="phap_luat_hai_quan">
+          <h3>Pháp luật hải quan</h3>
+          <span class="trial-label">(dùng thử)</span>
         </div>
-
-        <div id="topic-section">
-            <h2>Chọn lĩnh vực</h2>
-            <div class="selection-section" id="topic-selection">
-                </div>
+        <div class="card" data-subject="ky_thuat_nghiep_vu_ngoai_thuong">
+          <h3>Kỹ thuật nghiệp vụ ngoại thương</h3>
+          <span class="trial-label">(dùng thử)</span>
         </div>
-        
-        <div id="quiz-section">
-            <h2 id="quiz-title"></h2>
-            <div id="quiz-questions">
-                </div>
-            
-            <div class="quiz-controls">
-                <button id="submit-btn">Trả lời</button>
-                <button id="next-btn">Câu tiếp</button>
-            </div>
+        <div class="card" data-subject="ky_thuat_nghiep_vu_hai_quan">
+          <h3>Kỹ thuật nghiệp vụ hải quan</h3>
+          <span class="trial-label">(dùng thử)</span>
         </div>
+      </div>
     </div>
 
-    <script>
-    const subjectCards = document.querySelectorAll('#subject-selection .card');
-    const topicSelectionSection = document.getElementById('topic-selection');
-    const topicSection = document.getElementById('topic-section');
-    const quizSection = document.getElementById('quiz-section');
-    const quizTitle = document.getElementById('quiz-title');
-    const quizQuestionsContainer = document.getElementById('quiz-questions');
-    const submitBtn = document.getElementById('submit-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const closeBtn = document.getElementById('close-btn');
+    <div id="quiz-section">
+      <h2 id="quiz-title">Câu hỏi</h2>
+      <div id="trial-warning" class="hidden"
+           style="color:red; font-weight:bold; margin-bottom:10px;">
+        Bạn đang ở chế độ dùng thử, chỉ có 5 câu hỏi.<br>
+        Hãy Đăng ký/Gia hạn để Ôn tập đầy đủ kèm theo flashcard
+      </div>
+      <div id="question"></div>
+      <div id="options"></div>
+      <div id="note" class="hidden"></div>
+      <button id="next-btn" class="btn btn-primary hidden">Câu tiếp</button>
+      <button id="back-btn" class="btn btn-secondary hidden">Quay lại chọn môn</button>
+    </div>
+  </div>
 
-    const topics = {
-        'phap_luat_hai_quan': ['Pháp luật hải quan', 'Chính sách thuế', 'Vi phạm hành chính'],
-        'ky_thuat_nghiep_vu_ngoai_thuong': ['Giao nhận vận tải', 'Ngoại thương', 'Thanh toán quốc tế'],
-        'ky_thuat_nghiep_vu_hai_quan': ['Thủ tục hải quan', 'Chính sách mặt hàng', 'Trị giá hải quan', 'Xuất xứ hàng hóa', 'Sở hữu trí tuệ', 'Phân loại hàng hóa']
+  <script>
+    const subjectCards = document.querySelectorAll('#subject-selection .card');
+    const subjectSelection = document.getElementById('subject-selection');
+    const quizSection = document.getElementById('quiz-section');
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const noteEl = document.getElementById('note');
+    const nextBtn = document.getElementById('next-btn');
+    const backBtn = document.getElementById('back-btn');
+    const trialWarning = document.getElementById('trial-warning');
+
+    let currentSubject = null;
+    let currentQuestionIndex = 0;
+    let questions = [];
+
+    // Dữ liệu từ server
+    const mon_dang_ky = {{ mon_dang_ky|tojson }};
+    const mon_het_han = {{ mon_het_han|tojson }};
+
+    const subjectMap = {
+      "phap_luat_hai_quan": "1",
+      "ky_thuat_nghiep_vu_ngoai_thuong": "2",
+      "ky_thuat_nghiep_vu_hai_quan": "3"
     };
 
-    let selectedTenMonThi = null;
-    let usedQuestionIds = new Set();
-
-    let currentQuizQuestions = [];
-    let currentQuestionIndex = 0;
-
-    function renderTopicCards(subject) {
-        topicSelectionSection.innerHTML = '';
-        const topicList = topics[subject];
-        topicList.forEach(topic => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.dataset.topic = topic;
-            card.innerHTML = `<h3>${topic}</h3>`;
-            card.addEventListener('click', () => {
-                document.querySelectorAll('#topic-selection .card').forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-
-                // lấy tên môn thi cha theo subject code
-                selectedTenMonThi = getSubjectName(subject);
-                usedQuestionIds.clear(); // reset
-                startQuiz(topic);
-            });
-            topicSelectionSection.appendChild(card);
-        });
-        topicSection.style.display = 'block';
+    // Hàm kiểm tra trial
+    function isTrial(subject) {
+      const monCode = subjectMap[subject];
+      return (!mon_dang_ky.includes(monCode) || mon_het_han.includes(monCode));
     }
 
-    function getSubjectName(subjectCode) {
-        switch (subjectCode) {
-            case 'phap_luat_hai_quan':
-                return 'Pháp luật hải quan';
-            case 'ky_thuat_nghiep_vu_ngoai_thuong':
-                return 'Kỹ thuật nghiệp vụ ngoại thương';
-            case 'ky_thuat_nghiep_vu_hai_quan':
-                return 'Kỹ thuật nghiệp vụ hải quan';
-            default:
-                return '';
-        }
-    }
+    // Hiển thị nhãn (dùng thử) trên card
+    subjectCards.forEach(card => {
+      const subject = card.dataset.subject;
+      const monCode = subjectMap[subject];
+      const trialLabel = card.querySelector('.trial-label');
 
-    async function startQuiz(topic) {
-        await loadNewQuestion(topic);
-    }
+      if (!mon_dang_ky.includes(monCode) || mon_het_han.includes(monCode)) {
+        trialLabel.classList.add('show');
+      } else {
+        trialLabel.classList.remove('show');
+      }
+    });
 
-    async function loadNewQuestion(topic) {
-        try {
-            const res = await fetch("/api/get-question", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ten_mon_thi: topic,
-                    exclude_ids: Array.from(usedQuestionIds)
-                })
-            });
+    // Xử lý chọn môn
+    subjectCards.forEach(card => {
+      card.addEventListener('click', () => {
+        currentSubject = card.dataset.subject;
 
-            const data = await res.json();
-            if (!data.questions || data.questions.length === 0) {
-                quizQuestionsContainer.innerHTML = "<p>Không còn câu hỏi nào cho môn này.</p>";
-                quizSection.style.display = 'block';
-                return;
-            }
-
-            let q = data.questions[0];
-            usedQuestionIds.add(q.id);
-
-            currentQuizQuestions = [q];
-            currentQuestionIndex = 0;
-            quizSection.style.display = 'block';
-
-            quizTitle.textContent = topic;
-            displayCurrentQuestion();
-            updateButtonVisibility();
-            closeBtn.style.display = 'block';
-
-        } catch (err) {
-            console.error("Lỗi khi tải câu hỏi:", err);
-            quizQuestionsContainer.innerHTML = "<p>Lỗi server!</p>";
-        }
-    }
-
-    function displayCurrentQuestion() {
-        if (currentQuizQuestions.length === 0) {
-            quizQuestionsContainer.innerHTML = `<p>Không có câu hỏi nào.</p>`;
-            return;
+        if (isTrial(currentSubject)) {
+          trialWarning.classList.remove("hidden");
+        } else {
+          trialWarning.classList.add("hidden");
         }
 
-        const currentQuestion = currentQuizQuestions[currentQuestionIndex];
-        quizQuestionsContainer.innerHTML = '';
+        startQuiz(currentSubject);
+      });
+    });
 
-        const questionCard = document.createElement('div');
-        questionCard.className = 'question-card';
+    function startQuiz(subject) {
+      subjectSelection.style.display = 'none';
+      quizSection.style.display = 'block';
+      loadQuestions(subject);
+    }
 
-        questionCard.innerHTML = `
-            <p class="question-text">${currentQuestion.question}</p>
-            <div class="answers" id="answers-container"></div>
-        `;
-        quizQuestionsContainer.appendChild(questionCard);
-
-        const answersContainer = questionCard.querySelector('#answers-container');
-        currentQuestion.answers.forEach((answer, ansIndex) => {
-            const label = document.createElement('label');
-            label.className = 'answer-label';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.value = ansIndex;
-
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(answer));
-            answersContainer.appendChild(label);
+    function loadQuestions(subject) {
+      fetch(`/get-question?mon=${subject}`)
+        .then(res => res.json())
+        .then(data => {
+          questions = data.questions;
+          currentQuestionIndex = 0;
+          showQuestion();
         });
     }
 
-    function updateButtonVisibility() {
-        nextBtn.style.display = 'inline-block';
+    function showQuestion() {
+      const q = questions[currentQuestionIndex];
+      questionEl.textContent = q.noi_dung;
+      optionsEl.innerHTML = '';
+      noteEl.classList.add('hidden');
+      nextBtn.classList.add('hidden');
+      backBtn.classList.add('hidden');
+
+      q.dap_an.forEach((opt, i) => {
+        if (!opt) return; // ẩn nếu trống
+        const btn = document.createElement('div');
+        btn.classList.add('option');
+        btn.textContent = opt;
+        btn.addEventListener('click', () => selectAnswer(btn, i, q));
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(btn, index, q) {
+      const correctAnswers = q.dap_an_dung.split('');
+      const isCorrect = correctAnswers.includes(String.fromCharCode(65 + index));
+
+      if (isCorrect) {
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('wrong');
+      }
+
+      Array.from(optionsEl.children).forEach((child, i) => {
+        const ansChar = String.fromCharCode(65 + i);
+        if (correctAnswers.includes(ansChar)) {
+          child.classList.add('correct');
+        }
+        child.style.pointerEvents = 'none';
+      });
+
+      if (q.ghi_chu) {
+        noteEl.textContent = "Ghi chú: " + q.ghi_chu;
+        noteEl.classList.remove('hidden');
+      }
+
+      nextBtn.classList.remove('hidden');
+      backBtn.classList.remove('hidden');
     }
 
     nextBtn.addEventListener('click', () => {
-        if (selectedTenMonThi) {
-            loadNewQuestion(quizTitle.textContent);
-        }
-    });
-
-    closeBtn.addEventListener('click', () => {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        showQuestion();
+      } else {
+        alert("Bạn đã hoàn thành tất cả câu hỏi!");
+        subjectSelection.style.display = 'block';
         quizSection.style.display = 'none';
-        quizQuestionsContainer.innerHTML = '';
-        closeBtn.style.display = 'none';
-        usedQuestionIds.clear();
+      }
     });
 
-    subjectCards.forEach(card => {
-        card.addEventListener('click', () => {
-            subjectCards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-
-            const subject = card.dataset.subject;
-            renderTopicCards(subject);
-
-            quizSection.style.display = 'none';
-            quizQuestionsContainer.innerHTML = '';
-
-            setTimeout(() => {
-                topicSection.scrollIntoView({ behavior: 'smooth' });
-            }, 300);
-        });
+    backBtn.addEventListener('click', () => {
+      subjectSelection.style.display = 'block';
+      quizSection.style.display = 'none';
     });
-</script>
-
+  </script>
 </body>
 </html>
