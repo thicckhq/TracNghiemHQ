@@ -232,24 +232,25 @@
       }
     }
 
-    function displayQuestion(question) {
-      quizQuestionsContainer.innerHTML = '';
-      const questionCard = document.createElement('div');
-      questionCard.className = 'question-card';
-      questionCard.innerHTML = `<p class="question-text">${question.question}</p><div class="answers"></div>`;
-      quizQuestionsContainer.appendChild(questionCard);
-      const answersContainer = questionCard.querySelector('.answers');
+    // Hàm hiển thị câu hỏi và các đáp án
+	function displayQuestion(question) {
+  		quizQuestionsContainer.innerHTML = '';
+  		const questionCard = document.createElement('div');
+  		questionCard.className = 'question-card';
+  		questionCard.innerHTML = `<p class="question-text">${question.question}</p><div class="answers"></div>`;
+  		quizQuestionsContainer.appendChild(questionCard);
+  		const answersContainer = questionCard.querySelector('.answers');
       question.answers.forEach((answer, idx) => {
-        if (answer && answer !== "NaN") {
-          const label = document.createElement('label');
-          label.className = 'answer-label';
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.value = answer;
-          checkbox.addEventListener('change', () => toggleAnswer(answer, checkbox));
-          label.appendChild(checkbox);
-          label.appendChild(document.createTextNode(answer));
-          answersContainer.appendChild(label);
+    if (answer && answer !== "NaN") {
+      const label = document.createElement('label');
+      label.className = 'answer-label';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = answer.text;  // Lưu giá trị đáp án vào checkbox (đảm bảo truy cập đúng thuộc tính)
+      checkbox.addEventListener('change', () => toggleAnswer(answer.text, checkbox)); // Theo dõi sự thay đổi khi người dùng chọn đáp án
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(answer.text));  // Hiển thị đáp án (dùng answer.text)
+      answersContainer.appendChild(label);
         }
       });
     }
