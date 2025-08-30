@@ -64,6 +64,7 @@
         }
 
         .card {
+		position: relative;  /* Thêm dòng này */
             background-color: var(--card-background);
             border-radius: 8px;
             box-shadow: 0 4px 15px var(--shadow-light);
@@ -317,15 +318,15 @@
             <div class="selection-section">
                 <div class="card" data-subject="phap_luat_hai_quan">
                     <h3>Pháp luật hải quan</h3>
-			<span class="trial-label">(dùng thử)</span>
+			<span class="trial-label">Dùng thử</span>
                 </div>
                 <div class="card" data-subject="ky_thuat_nghiep_vu_ngoai_thuong">
                     <h3>Kỹ thuật nghiệp vụ ngoại thương</h3>
-			<span class="trial-label">(dùng thử)</span>
+			<span class="trial-label">Dùng thử</span>
                 </div>
                 <div class="card" data-subject="ky_thuat_nghiep_vu_hai_quan">
                     <h3>Kỹ thuật nghiệp vụ hải quan</h3>
-			<span class="trial-label">(dùng thử)</span>
+			<span class="trial-label">Dùng thử</span>
                 </div>
             </div>
         </div>
@@ -573,24 +574,28 @@ if (currentQuestion.note && currentQuestion.note.trim() !== "" && currentQuestio
     });
 // Dữ liệu truyền từ Flask
     const mon_dang_ky = {{ mon_dang_ky|tojson }};
-    const mon_het_han = {{ mon_het_han|tojson }};
+const mon_het_han = {{ mon_het_han|tojson }};
 
-    // Mapping subject code -> mã môn trong DB
-    const subjectMap = {
-        "phap_luat_hai_quan": "1",
-        "ky_thuat_nghiep_vu_ngoai_thuong": "2",
-        "ky_thuat_nghiep_vu_hai_quan": "3"
-    };
+// mapping mã môn
+const subjectMap = {
+  "phap_luat_hai_quan": "1",
+  "ky_thuat_nghiep_vu_ngoai_thuong": "2",
+  "ky_thuat_nghiep_vu_hai_quan": "3"
+};
 
-    subjectCards.forEach(card => {
-        const subject = card.dataset.subject;
-        const monCode = subjectMap[subject];
-        const trialLabel = card.querySelector('.trial-label');
+// Hiển thị nhãn (dùng thử)
+subjectCards.forEach(card => {
+  const subject = card.dataset.subject;
+  const monCode = subjectMap[subject];
+  const trialLabel = card.querySelector('.trial-label');
 
-        if (!mon_dang_ky.includes(monCode) || mon_het_han.includes(monCode)) {
-            trialLabel.classList.add('show');
-        }
-    });
+  // Điều kiện: không đăng ký hoặc đã hết hạn => hiện dùng thử
+  if (!mon_dang_ky.includes(monCode) || mon_het_han.includes(monCode)) {
+    trialLabel.classList.add('show');
+  } else {
+    trialLabel.classList.remove('show');
+  }
+});
 </script>
 
 </body>

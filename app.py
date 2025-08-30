@@ -318,7 +318,7 @@ from datetime import datetime
 def on_tap():
     username = session.get("username")
     mon_dang_ky = []
-    ngay_het_han = None
+    mon_het_han = []
 
     with engine.connect() as conn:
         user = conn.execute(
@@ -327,18 +327,19 @@ def on_tap():
         ).mappings().first()
 
         if user:
-            # Giả sử cột mon_dang_ky lưu dạng "phap_luat_hai_quan,ky_thuat_nghiep_vu_hai_quan"
-            raw_mon = user.get("mon_dang_ky") or ""
-            mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
+            # Xử lý danh sách môn đăng ký
+            raw_mon = user.get("mon_dang_ky")
+            if raw_mon:
+                mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
 
+            # Lấy ngày hết hạn
             ngay_het_han = user.get("ngay_het_han")
 
-    # Xác định các môn đã hết hạn
-    mon_het_han = []
-    if ngay_het_han and isinstance(ngay_het_han, datetime):
-        if ngay_het_han < datetime.now():
-            # Nếu hết hạn thì tất cả môn trong mon_dang_ky coi như hết hạn
-            mon_het_han = mon_dang_ky
+            # Xác định môn nào hết hạn hoặc không hợp lệ
+            today = datetime.now()
+            for m in mon_dang_ky:
+                if not ngay_het_han or ngay_het_han < today:
+                    mon_het_han.append(m)
 
     return render_template(
         "on_tap.html",
