@@ -548,7 +548,7 @@ def get_question():
 
             # Tăng số lượng câu hỏi đã làm
             conn.execute(
-                text(f"UPDATE TrialUsage SET {ma_mon_thi} = COALESCE({ma_mon_thi}, 0) + 1 WHERE user=:u"),
+                text(f"UPDATE TrialUsage SET {ma_mon_thi} = COALESCE({ma_mon_thi}, 0) + 1 WHERE username=:u"),
                 {"u": username}
             )
 
