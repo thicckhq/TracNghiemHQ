@@ -512,7 +512,9 @@ def get_question():
                 mon_dang_ky = user.get("mon_dang_ky") or ""
                 ds_mon = [m.strip() for m in mon_dang_ky.split(",") if m.strip()]
                 ngay_het_han = user.get("ngay_het_han")
-                if ma_mon_thi[:1] in ds_mon and ngay_het_han and ngay_het_han >= today:
+                
+                # Kiểm tra nếu ma_mon_thi và ngay_het_han không phải là None
+                if ma_mon_thi and ngay_het_han and ma_mon_thi[:1] in ds_mon and ngay_het_han >= today:
                     ban_quyen = True
 
             # Nếu Dùng thử
@@ -603,6 +605,7 @@ def get_question():
         print("API /api/get-question lỗi:", e)
         traceback.print_exc()
         return {"error": str(e)}, 500
+
 
 
 
