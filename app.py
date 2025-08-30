@@ -316,36 +316,41 @@ from datetime import datetime
 @app.route("/on-tap")
 @require_login
 def on_tap():
-    username = session.get("username")
-    mon_dang_ky = []
-    mon_het_han = []
+    from datetime import date, datetime
 
+    username = session["username"]
+
+    # Lấy thông tin user từ DB
     with engine.connect() as conn:
         user = conn.execute(
             text("SELECT mon_dang_ky, ngay_het_han FROM Nguoidung WHERE username=:u"),
             {"u": username}
         ).mappings().first()
 
-        if user:
-            # Xử lý danh sách môn đăng ký
-            raw_mon = user.get("mon_dang_ky")
-            if raw_mon:
-                mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
+    mon_dang_ky = []
+    ngay_het_han = None
 
-            # Lấy ngày hết hạn
-            ngay_het_han = user.get("ngay_het_han")
+    if user:
+        raw_mon = user.get("mon_dang_ky") or ""
+        mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
+        ngay_het_han = user.get("ngay_het_han")
 
-            # Xác định môn nào hết hạn hoặc không hợp lệ
-            today = datetime.now()
-            for m in mon_dang_ky:
-                if not ngay_het_han or ngay_het_han < today:
-                    mon_het_han.append(m)
+    # Xử lý ngày hết hạn an toàn
+    today = date.today()
+    if ngay_het_han:
+        if isinstance(ngay_het_han, datetime):
+            ngay_het_han = ngay_het_han.date()  # ép về date để so sánh
+    else:
+        ngay_het_han = None
 
+    # Truyền vào template để xác định trial
     return render_template(
         "on_tap.html",
         mon_dang_ky=mon_dang_ky,
-        mon_het_han=mon_het_han
+        ngay_het_han=ngay_het_han,
+        today=today
     )
+
 
 #---- Trả lời câu sai -----
 @app.route("/cau-tra-loi-sai")
@@ -652,6 +657,7 @@ def api_get_question():
         print("API /api/get-question lỗi:", e)
         traceback.print_exc()
         return {"error": str(e)}, 500
+
 
 
 
