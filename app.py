@@ -556,7 +556,6 @@ def get_question():
             text("""
                 SELECT * FROM bodethi
                 WHERE ma_mon_thi=:m
-                AND id NOT IN :exclude
                 ORDER BY random() LIMIT 1
             """),
             {"m": ma_mon_thi, "exclude": tuple(exclude_ids) if exclude_ids else tuple([-1])}
@@ -571,31 +570,6 @@ def get_question():
         "answers": [q[a] for a in ["A", "B", "C", "D"] if q[a]]
     }
     return jsonify({"questions": [question]})
-
-
-# Tạo bảng TrialUsage nếu chưa tồn tại
-def init_trial_table():
-    with engine.begin() as conn:
-        conn.execute(text("""
-        CREATE TABLE IF NOT EXISTS TrialUsage (
-            username TEXT PRIMARY KEY,
-            last_date DATE,
-            "11" INTEGER DEFAULT 0,
-            "12" INTEGER DEFAULT 0,
-            "13" INTEGER DEFAULT 0,
-            "21" INTEGER DEFAULT 0,
-            "22" INTEGER DEFAULT 0,
-            "23" INTEGER DEFAULT 0,
-            "31" INTEGER DEFAULT 0,
-            "32" INTEGER DEFAULT 0,
-            "33" INTEGER DEFAULT 0,
-            "34" INTEGER DEFAULT 0,
-            "35" INTEGER DEFAULT 0,
-            "36" INTEGER DEFAULT 0
-        );
-        """))
-
-
 
 
 
