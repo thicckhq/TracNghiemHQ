@@ -494,6 +494,7 @@ def get_question():
         data = request.get_json()
         ma_mon_thi = data.get("ma_mon_thi")
         exclude_ids = data.get("exclude_ids", [])
+        selected_answers = data.get("selected_answers", [])  # Mảng đáp án người dùng chọn
         username = session["username"]
 
         today = date.today()
@@ -525,8 +526,8 @@ def get_question():
                 if not trial:
                     # Nếu chưa có dữ liệu trial, tạo mới
                     conn.execute(
-                    text('INSERT INTO trialusage(username, last_date) VALUES(:u, :d)'),
-                    {"u": username, "d": today}
+                        text('INSERT INTO trialusage(username, last_date) VALUES(:u, :d)'),
+                        {"u": username, "d": today}
                     )
 
                     trial = {"last_date": today}
@@ -566,27 +567,35 @@ def get_question():
 
         if not q:
             return jsonify({"questions": []})
-        correct_answer = q["dap_an_dung"]
 
+        correct_answer = q["dap_an_dung"]  # Đáp án đúng từ cột dap_an_dung
         user_answer = "".join(sorted(selected_answers))  # Sắp xếp đáp án người dùng theo thứ tự
 
-    # So sánh đáp án người dùng và đáp án đúng
+        # So sánh đáp án người dùng và đáp án đúng
         correct = "Đúng" if user_answer == correct_answer else "Sai"
 
-    # Lấy ghi chú nếu có
+        # Lấy ghi chú nếu có và kiểm tra nếu có giá trị NaN hoặc trống
         note = q.get("ghi_chu", "").strip() if q.get("ghi_chu", "").strip() not in ["", "NaN"] else None
-        #for answer in answers:
-         #   if answer["key"] in selected_answers:
-         #       answer["status"] = "incorrect" if correct == "Sai" else "correct"  # Đánh dấu đáp án người dùng chọn là sai hoặc đúng
 
+        # Lọc các đáp án không trống hoặc NaN
+        answers = [
+            {"text": q[a], "key": a} for a in ["dap_an_a", "dap_an_b", "dap_an_c", "dap_an_d"] if q[a] and q[a] != "NaN"
+        ]
+
+        # Đánh dấu các đáp án đúng và sai
+        for answer in answers:
+            if answer["key"] in selected_answers:
+                answer["status"] = "incorrect" if correct == "Sai" else "correct"  # Đánh dấu đáp án người dùng chọn là sai hoặc đúng
+
+        # Trả về dữ liệu câu hỏi và kết quả
         question = {
             "id": q["id"],
             "question": q["cau_hoi"],
-            "answers": [q[a] for a in ["dap_an_a", "dap_an_b", "dap_an_c", "dap_an_d"] if q[a]],
+            "answers": answers,  # Danh sách các đáp án đã lọc và đánh dấu
             "correct_answer": correct_answer,
             "user_answer": selected_answers,
             "result": correct,  # Hiển thị kết quả so sánh
-            "note": note if note else None  # Hiển thị ghi chú nếu có
+            "note": note if note else None  # Hiển thị ghi chú nếu có, nếu không thì None
         }
         return jsonify({"questions": [question]})
     except Exception as e:
@@ -594,6 +603,7 @@ def get_question():
         print("API /api/get-question lỗi:", e)
         traceback.print_exc()
         return {"error": str(e)}, 500
+
 
 
 if __name__ == "__main__":
