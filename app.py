@@ -517,14 +517,14 @@ def get_question():
         if not ban_quyen:
             # Kiểm tra thông tin trial từ bảng TrialUsage
             trial = conn.execute(
-                text("SELECT * FROM TrialUsage WHERE user=:u"),
+                text("SELECT * FROM TrialUsage WHERE username=:u"),
                 {"u": username}
             ).mappings().first()
 
             if not trial:
                 # Nếu chưa có dữ liệu trial, tạo mới
                 conn.execute(
-                text('INSERT INTO TrialUsage("user", last_update) VALUES(:u, :d)'),
+                text('INSERT INTO TrialUsage(username, last_update) VALUES(:u, :d)'),
                 {"u": username, "d": today}
                 )
 
@@ -535,7 +535,7 @@ def get_question():
                 # Reset tất cả các trường lĩnh vực
                 update_columns = ", ".join([f"{col} = 0" for col in range(11, 37)])
                 conn.execute(
-                    text(f"UPDATE TrialUsage SET last_update=:d, {update_columns} WHERE user=:u"),
+                    text(f"UPDATE TrialUsage SET last_update=:d, {update_columns} WHERE username=:u"),
                     {"d": today, "u": username}
                 )
                 count = 0
@@ -557,6 +557,7 @@ def get_question():
             text("""
                 SELECT * FROM bodethi
                 WHERE ma_mon_thi=:m
+                AND id NOT IN :exclude
                 ORDER BY random() LIMIT 1
             """),
             {"m": ma_mon_thi, "exclude": tuple(exclude_ids) if exclude_ids else tuple([-1])}
