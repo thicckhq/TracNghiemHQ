@@ -473,6 +473,11 @@
         label.appendChild(right);
         answersContainer.appendChild(label);
       });
+// ✅ Sau khi render xong câu hỏi, cuộn xuống vùng hiển thị
+  document.getElementById("question-container").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
     }
 
     // Quản lý chọn/bỏ chọn đáp án
