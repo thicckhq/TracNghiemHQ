@@ -229,6 +229,42 @@
       font-weight:700;
       font-size: 1.1rem;
     }
+.answer-result {
+      margin-top: 15px;
+      font-size: 1.1em;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+    }
+    .answer-result.correct {
+      color: #27ae60;
+      animation: bounce 0.6s ease;
+    }
+    .answer-result.incorrect {
+      color: #e74c3c;
+      animation: shake 0.6s ease;
+    }
+    @keyframes bounce {
+      0%,100% { transform: translateY(0);}
+      50% { transform: translateY(-8px);}
+    }
+    @keyframes shake {
+      0%{transform:translateX(0);}
+      25%{transform:translateX(-5px);}
+      50%{transform:translateX(5px);}
+      75%{transform:translateX(-5px);}
+      100%{transform:translateX(0);}
+    }
+    .question-note {
+      margin-top: 10px;
+      font-size: 0.95em;
+      color: #555;
+      background: #f9f9f9;
+      padding: 8px 12px;
+      border-left: 4px solid #3498db;
+      border-radius: 4px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -270,6 +306,8 @@
         <button id="submit-btn">Trả lời</button>
         <button id="next-btn">Câu tiếp</button>
       </div>
+	<div id="answer-result" class="answer-result"></div>
+    	<div id="question-note" class="question-note"></div>
     </div>
   </div>
 
@@ -468,49 +506,44 @@
     // Chấm điểm trên client (không gọi API)
     function handleAnswer() {
       if (!currentQuestion) return;
+      const selectedEls = document.querySelectorAll(".answer.selected");
+      const selectedKeys = Array.from(selectedEls).map(el => el.dataset.key).sort();
+      const userAnswer = selectedKeys.join("");
+      const correctAnswer = currentQuestion.correct_answer;
 
-      const answersContainer = document.querySelector('.answers');
-      if (!answersContainer) return;
-
-      // Tập đáp án đúng
-      const correctSet = new Set((currentQuestion.correct_answer || '').split('').filter(ch => ['A','B','C','D'].includes(ch)));
-
-      // Danh sách key đã chọn
-      const picked = Array.from(answersContainer.querySelectorAll('input:checked')).map(i => i.value);
-
-      // Đánh dấu hiển thị
-      Array.from(answersContainer.children).forEach(label => {
-        const key = label.dataset.key;
-        const rightIcon = label.querySelector('.icon');
-
-        // reset trạng thái
-        label.classList.remove('correct','incorrect');
-        rightIcon.textContent = '';
-        rightIcon.classList.remove('ok','no');
-
-        if (correctSet.has(key)) {
-          // bôi xanh tất cả đáp án đúng
-          label.classList.add('correct');
-          rightIcon.innerHTML = '<i class="fas fa-check"></i>';
-          rightIcon.classList.add('ok');
-        }
-        if (picked.includes(key) && !correctSet.has(key)) {
-          // những đáp án chọn sai -> bôi đỏ
-          label.classList.add('incorrect');
-          rightIcon.innerHTML = '<i class="fas fa-times"></i>';
-          rightIcon.classList.add('no');
-        }
-      });
-
-      // Hiện ghi chú nếu có
-      if (currentQuestion.note && currentQuestion.note.trim() !== '' && currentQuestion.note !== 'NaN') {
-        noteText.textContent = currentQuestion.note;
-        noteWrap.style.display = 'block';
+      // hiển thị kết quả
+      if (userAnswer === correctAnswer) {
+        answerResultDiv.textContent = "🎉 Tuyệt vời! Bạn đã trả lời đúng!";
+        answerResultDiv.className = "answer-result correct";
       } else {
-        noteWrap.style.display = 'none';
-        noteText.textContent = '';
+        answerResultDiv.textContent = "😅 Rất tiếc, chưa chính xác. Cố gắng thêm nhé!";
+        answerResultDiv.className = "answer-result incorrect";
       }
+      answerResultDiv.style.display = "block";
+
+      // hiện ghi chú
+      if (currentQuestion.note) {
+        noteDiv.textContent = "📌 Ghi chú: " + currentQuestion.note;
+        noteDiv.style.display = "block";
+      } else {
+        noteDiv.style.display = "none";
+      }
+
+      // highlight đáp án
+      document.querySelectorAll(".answer").forEach(el => {
+        const key = el.dataset.key;
+        if (correctAnswer.includes(key)) {
+          el.classList.add("correct");
+          el.innerHTML += ' <span class="icon">✔</span>';
+        }
+        if (selectedKeys.includes(key) && !correctAnswer.includes(key)) {
+          el.classList.add("incorrect");
+          el.innerHTML += ' <span class="icon">❌</span>';
+        }
+        el.classList.remove("selected");
+      });
     }
+
 
     // Câu tiếp
     function handleNext() {
