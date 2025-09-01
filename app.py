@@ -348,12 +348,12 @@ def on_tap():
                 "topic_21", "topic_22", "topic_23",
                 "topic_31", "topic_32", "topic_33",
                 "topic_34", "topic_35", "topic_36"
-            ]
-            update_columns = ", ".join([f"{c} = 0" for c in reset_cols])
-            conn.execute(
+                ]
+                update_columns = ", ".join([f"{c} = 0" for c in reset_cols])
+                conn.execute(
                 text(f"UPDATE trialusage SET last_date=:d, {update_columns} WHERE username=:u"),
                 {"d": today, "u": username}
-            )
+                )
         else:
             # Nếu chưa có trialusage, tạo mới
             conn.execute(
