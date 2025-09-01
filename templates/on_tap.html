@@ -132,17 +132,16 @@
     }
     .answer-label{
       display:flex;
-      align-items:left;
-	font-size: 16px;
-      gap:6px;
-      padding:4px 6px;
-      border:none;
-      background:none;
-	box_shadow:none;
-      cursor:pointer;
-      transition:background-color 0.2s, border-color 0.2s, transform 0.1s;
-      font-weight: 600;
-      color: var(--text-dark);
+  	align-items:left;
+  	font-size: 16px;
+  	gap:6px;
+  	padding:4px 6px;
+  	border:none;
+  	background:none;
+  	cursor:pointer;
+  	transition:background-color 0.2s, border-color 0.2s, transform 0.1s;
+  	font-weight: normal; /* bỏ in đậm */
+  	color: var(--text-dark);
     }
     .answer-label:hover {
       background: #f8f9fa;
@@ -275,15 +274,18 @@
 
     <div id="quiz-section"> style="display:none; margin-top:16px;">
 	<!-- Bộ đếm Đúng/Sai -->
-      <div id="score-tracker" style="display:none; margin-bottom:8px; font-size:14px; font-weight:500; text-align:left;">
-        <span id="correct-count" style="color:green;">Đúng 0</span> | 
-        <span id="wrong-count" style="color:red;">0 Sai</span>
-      </div>
+      <h2 id="topic-title" style="margin-bottom:8px; text-align:left;">
+    <span id="topic-name"></span>
+    <span id="score-tracker" style="margin-left: 12px; font-size:14px; font-weight:500;">
+      <span id="correct-count" style="color:green;">Đúng 0</span> | 
+      <span id="wrong-count" style="color:red;">0 Sai</span>
+    	</span>
+  	</h2>
 
+  	<div id="quiz-questions"></div>
 
-      <h2 id="quiz-title"></h2>
-      <div id="quiz-questions"></div>
-      <div id="note-section">
+  	<div id="note-section">
+	
         <h4>Ghi chú</h4>
         <div id="note-text"></div>
       </div>
