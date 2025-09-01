@@ -362,7 +362,7 @@
           usedQuestionIds.clear();
           currentTopic = { code: maMonThi, name: tenLinhVuc };
 	
-      loadNewQuestion();
+      //loadNewQuestion(maMonThi, tenLinhVuc);
           startQuiz(maMonThi, tenLinhVuc);
         });
         topicSelectionSection.appendChild(card);
@@ -382,7 +382,7 @@
       document.getElementById("score-tracker").style.display = "block";
 
       usedQuestionIds.clear();
-      loadNewQuestion();
+      loadNewQuestion(maMonThi, tenLinhVuc);
 
       // cuộn xuống vùng quiz
       document.getElementById("quiz-section").scrollIntoView({
