@@ -436,7 +436,10 @@
       const wrap = document.createElement('div');
       wrap.className = 'question-card';
       wrap.dataset.maMonThi = currentTopic.code || '';
-
+	answerResultDiv.style.display = "none";
+  	answerResultDiv.textContent = "";
+  	noteDiv.style.display = "none";
+  	noteDiv.textContent = "";
       const html = `
         <p class="question-text">${question.question || ''}</p>
         <div class="answers"></div>
