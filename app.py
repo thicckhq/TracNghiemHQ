@@ -331,7 +331,7 @@ def on_tap():
             if raw_mon:
                 mon_dang_ky = [m.strip() for m in raw_mon.split(",") if m.strip()]
             ngay_het_han = user.get("ngay_het_han")
-            
+
     # ✅ Xử lý trialusage nếu là user dùng thử
         today = datetime.now().date()
         trial = conn.execute(
@@ -343,11 +343,17 @@ def on_tap():
             last_date = trial.get("last_date")
             if last_date != today:
                 # Reset toàn bộ topic_11 ... topic_36 về 0
-                update_columns = ", ".join([f"topic_{col} = 0" for col in range(11, 37)])
-                conn.execute(
-                    text(f"UPDATE trialusage SET last_date=:d, {update_columns} WHERE username=:u"),
-                    {"d": today, "u": username}
-                )
+                reset_cols = [
+                "topic_11", "topic_12", "topic_13",
+                "topic_21", "topic_22", "topic_23",
+                "topic_31", "topic_32", "topic_33",
+                "topic_34", "topic_35", "topic_36"
+            ]
+            update_columns = ", ".join([f"{c} = 0" for c in reset_cols])
+            conn.execute(
+                text(f"UPDATE trialusage SET last_date=:d, {update_columns} WHERE username=:u"),
+                {"d": today, "u": username}
+            )
         else:
             # Nếu chưa có trialusage, tạo mới
             conn.execute(
