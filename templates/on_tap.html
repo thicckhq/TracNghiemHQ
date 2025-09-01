@@ -436,10 +436,15 @@
       const wrap = document.createElement('div');
       wrap.className = 'question-card';
       wrap.dataset.maMonThi = currentTopic.code || '';
-	answerResultDiv.style.display = "none";
-  	answerResultDiv.textContent = "";
-  	noteDiv.style.display = "none";
-  	noteDiv.textContent = "";
+	
+	// reset kết quả trước đó
+      const answerResultDiv = document.getElementById("answer-result");
+      const noteDiv = document.getElementById("question-note");
+      answerResultDiv.style.display = "none";
+      answerResultDiv.textContent = "";
+      noteDiv.style.display = "none";
+      noteDiv.textContent = "";
+
       const html = `
         <p class="question-text">${question.question || ''}</p>
         <div class="answers"></div>
@@ -477,9 +482,9 @@
         answersContainer.appendChild(label);
       });
 // ✅ Sau khi render xong câu hỏi, cuộn xuống vùng hiển thị
-  document.getElementById("question-container").scrollIntoView({
-    behavior: "smooth",
-    block: "start"
+  quizSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
   });
     }
 
