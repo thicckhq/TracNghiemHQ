@@ -547,6 +547,10 @@
         card.classList.add('selected');
         const monCode = card.dataset.subject;
         renderTopicCards(monCode);
+	quizSection.style.display = 'none';
+	quizQuestionsContainer.innerHTML = '';
+	usedQuestionIds.clear();
+    	selectedAnswers = [];
         // reset khu vực quiz
         handleClose();
         setTimeout(() => { topicSection.scrollIntoView({ behavior: 'smooth' }); }, 200);
