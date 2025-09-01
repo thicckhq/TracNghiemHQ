@@ -5,16 +5,17 @@
   <title>Ôn tập</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
-    .card { border: 1px solid #ccc; padding: 10px; margin: 5px; cursor: pointer; border-radius: 6px; transition: 0.2s; }
+    .card { position: relative; border: 1px solid #ccc; padding: 12px; margin: 6px; cursor: pointer; border-radius: 6px; display: inline-block; transition: 0.2s; }
     .card:hover { background: #f5f5f5; }
     .card.selected { border: 2px solid green; background: #f0fff0; }
+    .card .tick { position: absolute; bottom: 6px; right: 6px; color: green; font-size: 16px; }
     .question-card { margin-top: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
     .question-text { font-weight: bold; margin-bottom: 10px; }
     .answer-label { display: block; margin: 6px 0; padding: 8px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer; transition: 0.2s; }
     .answer-label:hover { background: #f9f9f9; }
     .answer-label.correct { background: #e6ffe6; border-color: #33cc33; color: #006600; font-weight: bold; }
     .answer-label.incorrect { background: #ffe6e6; border-color: #ff4d4d; color: #cc0000; font-weight: bold; }
-    .icon { margin-left: 8px; font-size: 14px; }
+    .icon { margin-left: 6px; font-size: 14px; }
     .quiz-controls { margin-top: 15px; }
     .quiz-controls button { margin-right: 10px; padding: 8px 14px; border-radius: 6px; cursor: pointer; border: none; }
     #submit-btn { background: #007bff; color: #fff; }
@@ -49,6 +50,10 @@
   </div>
 
   <script>
+    // Biến ban_quyen phải được Flask render ra, ví dụ:
+    // const ban_quyen = {"1": true, "2": false, "3": true};
+    const ban_quyen = {{ ban_quyen|tojson }};
+
     const topics = {
       "1": { "11": "Pháp luật hải quan", "12": "Chính sách thuế", "13": "Vi phạm hành chính" },
       "2": { "21": "Giao nhận vận tải", "22": "Ngoại thương", "23": "Thanh toán quốc tế" },
@@ -67,6 +72,18 @@
     let usedQuestionIds = new Set();
     let selectedAnswers = [];
     let currentTopic = null;
+    let currentCorrect = "";
+
+    // Thêm tick xanh cho môn thi có bản quyền
+    subjectCards.forEach(card => {
+      let subj = card.dataset.subject;
+      if (ban_quyen && ban_quyen[subj]) {
+        let tick = document.createElement("span");
+        tick.className = "tick";
+        tick.textContent = "✅";
+        card.appendChild(tick);
+      }
+    });
 
     function renderTopicCards(monCode) {
       topicSelectionSection.innerHTML = '';
@@ -123,71 +140,54 @@
       const questionCard = document.createElement('div');
       questionCard.className = 'question-card';
       questionCard.dataset.maMonThi = maMonThi;
+      questionCard.dataset.correct = question.correct_answer; // Lưu đáp án đúng
+      currentCorrect = question.correct_answer;
       questionCard.innerHTML = `<p class="question-text">${question.question}</p><div class="answers"></div>`;
       quizQuestionsContainer.appendChild(questionCard);
       const answersContainer = questionCard.querySelector('.answers');
-      question.answers.forEach((answer) => {
+      question.answers.forEach((answer, idx) => {
         if (answer && answer !== "NaN") {
           const label = document.createElement('label');
           label.className = 'answer-label';
           const checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
-          checkbox.value = answer;
-          checkbox.addEventListener('change', () => toggleAnswer(answer, checkbox));
+          checkbox.value = String.fromCharCode(65 + idx); // A, B, C, D
+          checkbox.addEventListener('change', () => toggleAnswer(checkbox.value, checkbox));
           label.appendChild(checkbox);
-          label.appendChild(document.createTextNode(answer));
+          label.appendChild(document.createTextNode(" " + answer));
           answersContainer.appendChild(label);
         }
       });
+      if (question.note) noteSection.dataset.note = question.note; else noteSection.dataset.note = "";
     }
 
-    function toggleAnswer(answer, checkbox) {
+    function toggleAnswer(answerKey, checkbox) {
       if (checkbox.checked) {
-        selectedAnswers.push(answer);
+        selectedAnswers.push(answerKey);
       } else {
-        selectedAnswers = selectedAnswers.filter(item => item !== answer);
+        selectedAnswers = selectedAnswers.filter(item => item !== answerKey);
       }
     }
 
-    async function handleAnswer() {
-      const currentQuestion = document.querySelector('.question-card');
-      if (!currentQuestion) return;
-
-      const res = await fetch("/api/get-question", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ma_mon_thi: currentQuestion.dataset.maMonThi,
-          selected_answers: selectedAnswers
-        })
-      });
-      const data = await res.json();
-
-      if (data.questions && data.questions.length > 0) {
-        const question = data.questions[0];
-        displayAnswersWithResults(question);
-      } else {
-        alert("Không có câu hỏi để hiển thị");
-      }
-    }
-
-    function displayAnswersWithResults(question) {
+    function handleAnswer() {
+      const correctAnswers = currentCorrect.split('');
       const answersContainer = document.querySelector('.answers');
-      const correctAnswers = question.correct_answer.split('');
 
       Array.from(answersContainer.children).forEach(label => {
-        const answerValue = label.querySelector('input').value;
-        if (correctAnswers.includes(answerValue)) {
+        const input = label.querySelector('input');
+        const val = input.value;
+        input.disabled = true;
+        if (correctAnswers.includes(val)) {
           label.classList.add('correct');
           label.innerHTML += ' <span class="icon">✅</span>';
-        } else if (selectedAnswers.includes(answerValue)) {
+        } else if (selectedAnswers.includes(val)) {
           label.classList.add('incorrect');
           label.innerHTML += ' <span class="icon">❌</span>';
         }
       });
 
-      if (question.note) {
-        noteSection.innerHTML = `<p><b>Ghi chú:</b> ${question.note}</p>`;
+      if (noteSection.dataset.note && noteSection.dataset.note !== "NaN") {
+        noteSection.innerHTML = `<p><b>Ghi chú:</b> ${noteSection.dataset.note}</p>`;
         noteSection.style.display = 'block';
       } else {
         noteSection.style.display = 'none';
