@@ -53,8 +53,9 @@
       text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
     }
     h2 { font-size: 1.5em; }
-    h3 { font-size: 1.2em; font-weight: normal; } /* Đã thay đổi font-weight */
 
+    h3 { font-size: 1.2em; font-weight: normal; } /* Đã thay đổi font-weight */
+	
     .selection-section {
       display:flex;
       flex-wrap:wrap;
@@ -272,7 +273,14 @@
       <div class="selection-section" id="topic-selection"></div>
     </div>
 
-    <div id="quiz-section">
+    <div id="quiz-section"> style="display:none; margin-top:16px;">
+	<!-- Bộ đếm Đúng/Sai -->
+      <div id="score-tracker" style="display:none; margin-bottom:8px; font-size:14px; font-weight:500; text-align:left;">
+        <span id="correct-count" style="color:green;">Đúng 0</span> | 
+        <span id="wrong-count" style="color:red;">0 Sai</span>
+      </div>
+
+
       <h2 id="quiz-title"></h2>
       <div id="quiz-questions"></div>
       <div id="note-section">
@@ -286,6 +294,14 @@
 	<div id="answer-result" class="answer-result"></div>
     	<div id="question-note" class="question-note"></div>
     </div>
+<h2 id="topic-title">
+  <span id="topic-name"></span>
+  <span id="score-tracker" style="margin-left: 12px; font-size:14px; font-weight:500;">
+    <span id="correct-count" style="color:green;">Đúng 0</span> | 
+    <span id="wrong-count" style="color:red;">0 Sai</span>
+  </span>
+</h2>
+
   </div>
 
   <script>
@@ -293,8 +309,14 @@
     let selectedAnswers = [];            // Mảng key A/B/C/D đang được chọn
     let usedQuestionIds = new Set();     // Id câu hỏi đã dùng để loại trừ
     let currentQuestion = null;          // Lưu câu hỏi hiện tại (để chấm trên client)
-    let currentTopic = { code: null, name: null };
-
+    let currentTopic = null;
+	let correctCount = 0;
+    let wrongCount = 0;
+	 // Hiển thị bộ đếm
+    function updateScore() {
+      document.getElementById("correct-count").textContent = "Đúng " + correctCount;
+      document.getElementById("wrong-count").textContent = wrongCount + " Sai";
+    }
     // Các phần tử DOM
     const subjectCards = document.querySelectorAll('#subject-selection .card');
     const topicSelectionSection = document.getElementById('topic-selection');
@@ -339,6 +361,8 @@
           card.classList.add('selected');
           usedQuestionIds.clear();
           currentTopic = { code: maMonThi, name: tenLinhVuc };
+	
+      loadNewQuestion();
           startQuiz(maMonThi, tenLinhVuc);
         });
         topicSelectionSection.appendChild(card);
@@ -347,8 +371,25 @@
     }
 
     // Bắt đầu quiz cho một lĩnh vực
-    async function startQuiz(maMonThi, tenLinhVuc) {
-      await loadNewQuestion(maMonThi, tenLinhVuc);
+    function startQuiz(maMonThi, tenLinhVuc) {
+      currentTopic = { code: maMonThi, name: tenLinhVuc };
+      correctCount = 0;
+      wrongCount = 0;
+      updateScore();
+
+      document.getElementById("topic-name").textContent = tenLinhVuc;
+      document.getElementById("quiz-section").style.display = "block";
+      document.getElementById("score-tracker").style.display = "block";
+
+      usedQuestionIds.clear();
+      loadNewQuestion();
+
+      // cuộn xuống vùng quiz
+      document.getElementById("quiz-section").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
     }
 
     // Tải câu hỏi mới từ backend
@@ -472,11 +513,6 @@
         label.appendChild(right);
         answersContainer.appendChild(label);
       });
-// ✅ Sau khi render xong câu hỏi, cuộn xuống vùng hiển thị
-  document.getElementById("question-container").scrollIntoView({
-  behavior: "smooth",
-  block: "start"
-  });
     }
 
     // Quản lý chọn/bỏ chọn đáp án
@@ -575,7 +611,7 @@ const answerResultDiv = document.getElementById("answer-result");
 	quizQuestionsContainer.innerHTML = '';
 	usedQuestionIds.clear();
     	selectedAnswers = [];
-currentQuestion = null;
+	currentQuestion = null;
         // reset khu vực quiz
         //handleClose();
         setTimeout(() => { topicSection.scrollIntoView({ behavior: 'smooth' }); }, 200);
