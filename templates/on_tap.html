@@ -495,6 +495,8 @@
   const selectedKeys = Array.from(selectedEls).map(el => el.value).sort();
   const userAnswer = selectedKeys.join("");
   const correctAnswer = currentQuestion.correct_answer;
+const answerResultDiv = document.getElementById("answer-result");
+  const noteDiv = document.getElementById("question-note");
 
   // Hiển thị kết quả
   if (userAnswer === correctAnswer) {
