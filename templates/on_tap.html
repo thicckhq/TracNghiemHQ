@@ -134,7 +134,7 @@
     const noteText = document.getElementById('note-text');
 
     // Dữ liệu bản quyền render từ backend (nếu không có, mặc định all false để không lỗi)
-    const ban_quyen = (typeof {{ ban_quyen|tojson if ban_quyen is defined else "null" }} !== 'undefined' && {{ ban_quyen|tojson if ban_quyen is defined else "null" }}) || { "1": false, "2": false, "3": false };
+    const ban_quyen =  { "1": false, "2": false, "3": false };
 
     // mapping mã môn -> { mã lĩnh vực: tên lĩnh vực }
     const topics = {
