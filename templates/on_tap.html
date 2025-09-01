@@ -537,11 +537,16 @@ const answerResultDiv = document.getElementById("answer-result");
   if (userAnswer === correctAnswer) {
     answerResultDiv.textContent = "🎉 Tuyệt vời! Bạn đã trả lời đúng!";
     answerResultDiv.className = "answer-result correct";
+	correctCount++;   // tăng số câu đúng
   } else {
     answerResultDiv.textContent = "😅 Rất tiếc, chưa chính xác. Cố gắng thêm nhé!";
     answerResultDiv.className = "answer-result incorrect";
+	wrongCount++;     // tăng số câu sai
   }
   answerResultDiv.style.display = "block";
+
+// Cập nhật bộ đếm
+  updateScore();
 
   // Hiện ghi chú nếu có
   if (currentQuestion.note) {
