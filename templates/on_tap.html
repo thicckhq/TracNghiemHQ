@@ -74,10 +74,14 @@
       border: 3px solid transparent;
       position: relative;
     }
+
+
     .card:hover{
       transform: translateY(-10px);
       box-shadow:var(--shadow-hover);
     }
+
+
     .card.selected{
       border-color: var(--primary-color);
       transform: scale(1.05);
@@ -469,9 +473,9 @@
         answersContainer.appendChild(label);
       });
 // ✅ Sau khi render xong câu hỏi, cuộn xuống vùng hiển thị
-  quizSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+  document.getElementById("question-container").scrollIntoView({
+  behavior: "smooth",
+  block: "start"
   });
     }
 
