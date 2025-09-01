@@ -409,11 +409,21 @@
         try { data = await res.json(); } catch(e) { data = null; }
 
         if (!data || !data.questions || data.questions.length === 0) {
-          quizQuestionsContainer.innerHTML = "<p>Không còn câu hỏi cho lĩnh vực này hoặc lỗi máy chủ.</p>";
-          quizSection.style.display = 'block';
-          document.getElementById("topic-name").textContent = tenLinhVuc || 'Ôn tập';
+  		quizQuestionsContainer.innerHTML = `
+    	<div style="padding:16px; border:1px solid #ddd; border-radius:8px;
+                background:#fff7f7; color:#b30000; font-size:16px; line-height:1.5;">
+      	<strong>Đã hết câu hỏi miễn phí trong ngày.</strong><br>
+      		Hãy quay lại vào ngày mai hoặc gia hạn để sử dụng không giới hạn.
+    	</div>
+  `	;
+  	quizSection.style.display = 'block';
+  	document.getElementById("topic-name").textContent = tenLinhVuc || 'Ôn tập';
 
-          return;
+  	// Ẩn nút Trả lời và Câu tiếp
+  	document.getElementById("submit-btn").style.display = "none";
+  	document.getElementById("next-btn").style.display = "none";
+
+  	return;
         }
 
         const q = data.questions[0];
