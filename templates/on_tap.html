@@ -177,24 +177,7 @@
     #submit-btn:hover { background: #0056b3; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
     #next-btn{ background:var(--secondary-color); }
     #next-btn:hover { background: #1e7e34; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
-    #close-btn{
-      position:absolute;
-      top:20px;
-      right:20px;
-      background:#f44336;
-      color:#fff;
-      border:none;
-      border-radius:50%;
-      width:36px;
-      height:36px;
-      font-size:1.4em;
-      line-height:36px;
-      cursor:pointer;
-      display:none;
-      transition: background-color 0.3s;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    #close-btn:hover { background: #c62828; }
+    
 
     .correct{
       background-color:#e6f3e7;
@@ -269,7 +252,7 @@
 </head>
 <body>
   <div class="container">
-    <button id="close-btn" title="Đóng">&times;</button>
+    
     <h1>Ôn tập Trắc nghiệm Hải quan 📚</h1>
 
     <div id="subject-selection">
@@ -326,7 +309,7 @@
     const quizTitle = document.getElementById('quiz-title');
     const quizQuestionsContainer = document.getElementById('quiz-questions');
     const nextBtn = document.getElementById('next-btn');
-    const closeBtn = document.getElementById('close-btn');
+    //const closeBtn = document.getElementById('close-btn');
     const submitBtn = document.getElementById('submit-btn');
     const noteWrap = document.getElementById('note-section');
     const noteText = document.getElementById('note-text');
@@ -398,7 +381,6 @@
           quizQuestionsContainer.innerHTML = "<p>Không còn câu hỏi cho lĩnh vực này hoặc lỗi máy chủ.</p>";
           quizSection.style.display = 'block';
           quizTitle.textContent = tenLinhVuc || 'Ôn tập';
-          closeBtn.style.display = 'block';
           return;
         }
 
@@ -409,7 +391,6 @@
         quizTitle.textContent = tenLinhVuc || 'Ôn tập';
         displayQuestion(currentQuestion);
         quizSection.style.display = 'block';
-        closeBtn.style.display = 'block';
       } catch (err) {
         console.error("Lỗi khi tải câu hỏi:", err);
         quizQuestionsContainer.innerHTML = "<p>Lỗi server!</p>";
@@ -505,44 +486,48 @@
 
     // Chấm điểm trên client (không gọi API)
     function handleAnswer() {
-      if (!currentQuestion) return;
-      const selectedEls = document.querySelectorAll(".answer.selected");
-      const selectedKeys = Array.from(selectedEls).map(el => el.dataset.key).sort();
-      const userAnswer = selectedKeys.join("");
-      const correctAnswer = currentQuestion.correct_answer;
+  if (!currentQuestion) return;
 
-      // hiển thị kết quả
-      if (userAnswer === correctAnswer) {
-        answerResultDiv.textContent = "🎉 Tuyệt vời! Bạn đã trả lời đúng!";
-        answerResultDiv.className = "answer-result correct";
-      } else {
-        answerResultDiv.textContent = "😅 Rất tiếc, chưa chính xác. Cố gắng thêm nhé!";
-        answerResultDiv.className = "answer-result incorrect";
-      }
-      answerResultDiv.style.display = "block";
+  const selectedEls = document.querySelectorAll(".answer-label input:checked");
+  const selectedKeys = Array.from(selectedEls).map(el => el.value).sort();
+  const userAnswer = selectedKeys.join("");
+  const correctAnswer = currentQuestion.correct_answer;
 
-      // hiện ghi chú
-      if (currentQuestion.note) {
-        noteDiv.textContent = "📌 Ghi chú: " + currentQuestion.note;
-        noteDiv.style.display = "block";
-      } else {
-        noteDiv.style.display = "none";
-      }
+  // Hiển thị kết quả
+  if (userAnswer === correctAnswer) {
+    answerResultDiv.textContent = "🎉 Tuyệt vời! Bạn đã trả lời đúng!";
+    answerResultDiv.className = "answer-result correct";
+  } else {
+    answerResultDiv.textContent = "😅 Rất tiếc, chưa chính xác. Cố gắng thêm nhé!";
+    answerResultDiv.className = "answer-result incorrect";
+  }
+  answerResultDiv.style.display = "block";
 
-      // highlight đáp án
-      document.querySelectorAll(".answer").forEach(el => {
-        const key = el.dataset.key;
-        if (correctAnswer.includes(key)) {
-          el.classList.add("correct");
-          el.innerHTML += ' <span class="icon">✔</span>';
-        }
-        if (selectedKeys.includes(key) && !correctAnswer.includes(key)) {
-          el.classList.add("incorrect");
-          el.innerHTML += ' <span class="icon">❌</span>';
-        }
-        el.classList.remove("selected");
-      });
+  // Hiện ghi chú nếu có
+  if (currentQuestion.note) {
+    noteDiv.textContent = "📌 " + currentQuestion.note;
+    noteDiv.style.display = "block";
+  } else {
+    noteDiv.style.display = "none";
+  }
+
+  // Highlight đáp án
+  document.querySelectorAll(".answer-label").forEach(el => {
+    const key = el.dataset.key;
+    const rightIcon = el.querySelector(".icon");
+    if (correctAnswer.includes(key)) {
+      el.classList.add("correct");
+      rightIcon.textContent = "✔";
+      rightIcon.style.color = "#28a745";
     }
+    if (selectedKeys.includes(key) && !correctAnswer.includes(key)) {
+      el.classList.add("incorrect");
+      rightIcon.textContent = "❌";
+      rightIcon.style.color = "#dc3545";
+    }
+  });
+}
+
 
 
     // Câu tiếp
@@ -572,7 +557,7 @@
     // Gán sự kiện
     submitBtn.addEventListener('click', handleAnswer);
     nextBtn.addEventListener('click', handleNext);
-    closeBtn.addEventListener('click', handleClose);
+    //closeBtn.addEventListener('click', handleClose);
 
     subjectCards.forEach(card => {
       card.addEventListener('click', () => {
