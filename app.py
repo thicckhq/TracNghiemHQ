@@ -334,32 +334,7 @@ def on_tap():
 
     # ✅ Xử lý trialusage nếu là user dùng thử
         today = datetime.now().date()
-        trial = conn.execute(
-            text("SELECT * FROM trialusage WHERE username=:u"),
-            {"u": username}
-        ).mappings().first()
-
-        if trial:
-            last_date = trial.get("last_date")
-            if last_date != today:
-                # Reset toàn bộ topic_11 ... topic_36 về 0
-                reset_cols = [
-                "topic_11", "topic_12", "topic_13",
-                "topic_21", "topic_22", "topic_23",
-                "topic_31", "topic_32", "topic_33",
-                "topic_34", "topic_35", "topic_36"
-                ]
-                update_columns = ", ".join([f"{c} = 0" for c in reset_cols])
-                conn.execute(
-                text(f"UPDATE trialusage SET last_date=:d, {update_columns} WHERE username=:u"),
-                {"d": today, "u": username}
-                )
-        else:
-            # Nếu chưa có trialusage, tạo mới
-            conn.execute(
-                text("INSERT INTO trialusage(username, last_date) VALUES(:u, :d)"),
-                {"u": username, "d": today}
-            )
+        
 
     # ✅ Tính bản quyền cho từng môn
     ban_quyen = {"1": False, "2": False, "3": False}
@@ -565,8 +540,13 @@ def get_question():
 
                 # Reset nếu ngày thay đổi
                 if trial.get("last_date") != today:
-                    # Reset tất cả các trường lĩnh vực
-                    update_columns = ", ".join([f"topic_{col} = 0" for col in range(11, 37)])
+                    reset_cols = [
+                        "topic_11", "topic_12", "topic_13",
+                        "topic_21", "topic_22", "topic_23",
+                        "topic_31", "topic_32", "topic_33",
+                        "topic_34", "topic_35", "topic_36"
+                    ]
+                    update_columns = ", ".join([f"{c} = 0" for c in reset_cols])
                     conn.execute(
                         text(f"UPDATE trialusage SET last_date=:d, {update_columns} WHERE username=:u"),
                         {"d": today, "u": username}
