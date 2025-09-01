@@ -411,7 +411,8 @@
         if (!data || !data.questions || data.questions.length === 0) {
           quizQuestionsContainer.innerHTML = "<p>Không còn câu hỏi cho lĩnh vực này hoặc lỗi máy chủ.</p>";
           quizSection.style.display = 'block';
-          quizTitle.textContent = tenLinhVuc || 'Ôn tập';
+          document.getElementById("topic-name").textContent = tenLinhVuc || 'Ôn tập';
+
           return;
         }
 
@@ -419,7 +420,8 @@
         currentQuestion = normalizeQuestion(q); // Chuẩn hóa keys/text
         usedQuestionIds.add(currentQuestion.id);
 
-        quizTitle.textContent = tenLinhVuc || 'Ôn tập';
+       document.getElementById("topic-name").textContent = tenLinhVuc || 'Ôn tập';
+
         displayQuestion(currentQuestion);
         quizSection.style.display = 'block';
       } catch (err) {
