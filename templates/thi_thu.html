@@ -327,34 +327,49 @@
             const answerMap = ['A', 'B', 'C', 'D'];
 
             // Initialize quiz state
-            function initializeQuiz() {
-                // Clear existing state
-                quizState = [];
-                for (let i = 1; i <= totalQuestions; i++) {
-                    quizState.push({
-                        id: i,
-                        text: `Đây là nội dung câu hỏi số ${i}. Bạn có thể trả lời một hoặc nhiều đáp án.`,
-                        answers: ['Đáp án A', 'Đáp án B', 'Đáp án C', 'Đáp án D'],
-                        selected: [], // Array to store multiple selected answers as letters (e.g., ['A', 'C'])
-                        isFlagged: false,
-                        isAnswered: false,
-                        type: 'checkbox' // Allow multiple answers
-                    });
-                }
+            // ⚠️ XÓA HÀM initializeQuiz() hiện tại
+    // 🟨 THÊM HÀM fetchQuestions
+    async function fetchQuestions(subjectId) {
+        try {
+            const response = await fetch(`/api/get-exam?subject_id=${subjectId}`);
+            const data = await response.json();
+            if (data.success) {
+                quizState = data.questions.map((q, idx) => ({
+                    id: q.id,
+                    text: q.cau_hoi,
+                    answers: [q.dap_an_a, q.dap_an_b, q.dap_an_c, q.dap_an_d],
+                    correct: q.dap_an_dung,   // 🟨 để chấm điểm
+                    selected: [],
+                    isFlagged: false,
+                    isAnswered: false,
+                    type: 'checkbox'
+                }));
+                renderQuestions();
+                startTimer();
+            } else {
+                alert("Không lấy được câu hỏi từ server");
             }
+        } catch (error) {
+            console.error("Lỗi fetchQuestions:", error);
+            alert("Lỗi kết nối server khi lấy đề thi");
+        }
+    }
             
             // Handle start button clicks with custom confirmation
             startButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const subjectTitle = button.getAttribute('data-subject');
-                    confirmMessage.textContent = `Bạn chắc chắn làm bài thi thử môn ${subjectTitle} không?`;
-                    confirmOverlay.classList.remove('hidden');
+        button.addEventListener('click', () => {
+            const subjectTitle = button.getAttribute('data-subject');
+            const subjectId = button.getAttribute('data-subject-id'); // thêm attribute mới
+            confirmMessage.textContent = `Bạn chắc chắn làm bài thi thử môn ${subjectTitle} không?`;
+            confirmOverlay.classList.remove('hidden');
 
-                    const startQuiz = () => {
-                        quizSubjectTitle.textContent = `Môn thi: ${subjectTitle}`;
-                        subjectSelection.classList.add('hidden');
-                        quizContainer.classList.remove('hidden');
-                        
+                   const startQuiz = (subjectTitle, subjectId) => {
+        quizSubjectTitle.textContent = `Môn thi: ${subjectTitle}`;
+        subjectSelection.classList.add('hidden');
+        quizContainer.classList.remove('hidden');
+        fetchQuestions(subjectId);   // 🟨 gọi API thay vì initializeQuiz()
+        confirmOverlay.classList.add('hidden');
+    };
                         // Initial setup for the quiz
                         initializeQuiz();
                         renderQuestions();
@@ -363,7 +378,7 @@
                     };
 
                     const handleYes = () => {
-                        startQuiz();
+                        startQuiz(subjectTitle, subjectId);
                         confirmYesBtn.removeEventListener('click', handleYes);
                         confirmNoBtn.removeEventListener('click', handleNo);
                     };
