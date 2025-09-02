@@ -151,7 +151,8 @@
             <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-between">
                 <h3 class="text-xl font-semibold text-gray-700 text-center mb-2">Môn 1: Pháp luật hải quan</h3>
                 <p class="text-gray-500 mb-4 text-center">80 câu trắc nghiệm / 50 phút</p>
-                <button class="start-btn button bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" data-subject="Pháp luật hải quan">Bắt đầu</button>
+                <button class="start-btn button bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" data-subject="Pháp luật hải quan"
+data-subject-id="1">Bắt đầu</button>
             </div>
             <!-- Subject 2 -->
             <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-between">
@@ -362,7 +363,17 @@
             const subjectId = button.getAttribute('data-subject-id'); // thêm attribute mới
             confirmMessage.textContent = `Bạn chắc chắn làm bài thi thử môn ${subjectTitle} không?`;
             confirmOverlay.classList.remove('hidden');
+	
+	const newHandleYes = () => {
+            startQuiz(subjectTitle, subjectId);
+            confirmYes.removeEventListener('click', newHandleYes);
+        };
+        confirmYes.addEventListener('click', newHandleYes);
 
+        confirmNo.addEventListener('click', () => {
+            confirmOverlay.classList.add('hidden');
+            confirmYes.removeEventListener('click', newHandleYes);
+        });
                    const startQuiz = (subjectTitle, subjectId) => {
         quizSubjectTitle.textContent = `Môn thi: ${subjectTitle}`;
         subjectSelection.classList.add('hidden');
