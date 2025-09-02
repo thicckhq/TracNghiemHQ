@@ -357,54 +357,50 @@ data-subject-id="1">Bắt đầu</button>
     }
             
             // Handle start button clicks with custom confirmation
-            startButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const subjectTitle = button.getAttribute('data-subject');
-            const subjectId = button.getAttribute('data-subject-id'); // thêm attribute mới
-            confirmMessage.textContent = `Bạn chắc chắn làm bài thi thử môn ${subjectTitle} không?`;
-            confirmOverlay.classList.remove('hidden');
-	
-	const newHandleYes = () => {
-            startQuiz(subjectTitle, subjectId);
-            confirmYes.removeEventListener('click', newHandleYes);
-        };
-        confirmYes.addEventListener('click', newHandleYes);
+startButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const subjectTitle = button.getAttribute('data-subject');
 
-        confirmNo.addEventListener('click', () => {
+        // Hiện overlay xác nhận
+        confirmMessage.textContent = `Bạn chắc chắn làm bài thi thử môn ${subjectTitle} không?`;
+        confirmOverlay.classList.remove('hidden');
+
+        // Hàm thực sự bắt đầu bài thi
+        const doStart = () => {
+            quizSubjectTitle.textContent = `Môn thi: ${subjectTitle}`;
+            subjectSelection.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+
+            // Khởi tạo và render
+            initializeQuiz();
+            renderQuestions();
+            startTimer();
+
             confirmOverlay.classList.add('hidden');
-            confirmYes.removeEventListener('click', newHandleYes);
-        });
-                   const startQuiz = (subjectTitle, subjectId) => {
-        quizSubjectTitle.textContent = `Môn thi: ${subjectTitle}`;
-        subjectSelection.classList.add('hidden');
-        quizContainer.classList.remove('hidden');
-        fetchQuestions(subjectId);   // 🟨 gọi API thay vì initializeQuiz()
-        confirmOverlay.classList.add('hidden');
-    };
-                        // Initial setup for the quiz
-                        initializeQuiz();
-                        renderQuestions();
-                        startTimer();
-                        confirmOverlay.classList.add('hidden');
-                    };
+        };
 
-                    const handleYes = () => {
-                        startQuiz(subjectTitle, subjectId);
-                        confirmYesBtn.removeEventListener('click', handleYes);
-                        confirmNoBtn.removeEventListener('click', handleNo);
-                    };
+        // Hàm dọn listener để tránh gắn lặp
+        const cleanup = () => {
+            confirmYesBtn.removeEventListener('click', handleYes);
+            confirmNoBtn.removeEventListener('click', handleNo);
+        };
 
-                    const handleNo = () => {
-                        confirmOverlay.classList.add('hidden');
-                        confirmYesBtn.removeEventListener('click', handleYes);
-                        confirmNoBtn.removeEventListener('click', handleNo);
-                    };
-                    
-                    // Attach event listeners for confirmation buttons
-                    confirmYesBtn.addEventListener('click', handleYes);
-                    confirmNoBtn.addEventListener('click', handleNo);
-                });
-            });
+        const handleYes = () => {
+            doStart();
+            cleanup();
+        };
+
+        const handleNo = () => {
+            confirmOverlay.classList.add('hidden');
+            cleanup();
+        };
+
+        // Gắn listener xác nhận
+        confirmYesBtn.addEventListener('click', handleYes);
+        confirmNoBtn.addEventListener('click', handleNo);
+    });
+});
+
 
             // Render questions for the current page
             function renderQuestions() {
