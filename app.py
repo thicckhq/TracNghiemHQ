@@ -616,6 +616,39 @@ def get_question():
         return {"error": str(e)}, 500
 
 
+@app.route('/api/get-exam', methods=['POST'])
+#@require_login
+def get_exam():
+    data = request.get_json()
+    subject_id = str(data.get("subject_id"))
+
+    question_plan = {
+        '1': {'11': 24, '12': 32, '13': 24},
+        '2': {'21': 24, '22': 32, '23': 24},
+        '3': {'31': 28, '32': 16, '33': 16, '34': 8, '35': 8, '36': 4}
+    }
+
+    if subject_id not in question_plan:
+        return jsonify({"error": "Invalid subject"}), 400
+
+    exam_questions = []
+    for topic_id, num in question_plan[subject_id].items():
+        rows = db.session.execute(
+            text("""
+                SELECT id, ma_mon_thi, cau_hoi, dap_an_a, dap_an_b, dap_an_c, dap_an_d, dap_an_dung, ghi_chu, my_id
+                FROM bodethi
+                WHERE ma_mon_thi = :tid
+                ORDER BY RANDOM()
+                LIMIT :n
+            """),
+            {"tid": topic_id, "n": num}
+        ).fetchall()
+        for r in rows:
+            exam_questions.append(dict(r))
+
+    random.shuffle(exam_questions)
+    return jsonify({"questions": exam_questions})
+
 
 
 if __name__ == "__main__":
