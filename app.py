@@ -616,8 +616,9 @@ def get_question():
         return {"error": str(e)}, 500
 
 
+
 @app.route('/api/get-exam', methods=['POST'])
-#@require_login
+@require_login
 def get_exam():
     data = request.get_json()
     subject_id = str(data.get("subject_id"))
@@ -632,19 +633,26 @@ def get_exam():
         return jsonify({"error": "Invalid subject"}), 400
 
     exam_questions = []
-    for topic_id, num in question_plan[subject_id].items():
-        rows = db.session.execute(
-            text("""
-                SELECT id, ma_mon_thi, cau_hoi, dap_an_a, dap_an_b, dap_an_c, dap_an_d, dap_an_dung, ghi_chu, my_id
-                FROM bodethi
-                WHERE ma_mon_thi = :tid
-                ORDER BY RANDOM()
-                LIMIT :n
-            """),
-            {"tid": topic_id, "n": num}
-        ).fetchall()
-        for r in rows:
-            exam_questions.append(dict(r))
+    with engine.begin() as conn:
+        for topic_id, num in question_plan[subject_id].items():
+            rows = conn.execute(
+                text("""
+                    SELECT id, ma_mon_thi, cau_hoi, dap_an_a, dap_an_b, dap_an_c, dap_an_d,
+                           dap_an_dung, ghi_chu, my_id
+                    FROM bodethi
+                    WHERE ma_mon_thi = :tid
+                    ORDER BY RANDOM()
+                    LIMIT :n
+                """),
+                {"tid": topic_id, "n": num}
+            ).mappings().all()
+
+            for r in rows:
+                exam_questions.append(dict(r))
+
+    random.shuffle(exam_questions)
+    return jsonify({"questions": exam_questions})
+
 
     random.shuffle(exam_questions)
     return jsonify({"questions": exam_questions})
