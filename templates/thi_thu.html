@@ -329,32 +329,7 @@ data-subject-id="1">Bắt đầu</button>
 
             // Initialize quiz state
             // ⚠️ XÓA HÀM initializeQuiz() hiện tại
-    // 🟨 THÊM HÀM fetchQuestions
-    async function fetchQuestions(subjectId) {
-        try {
-            const response = await fetch(`/api/get-exam?subject_id=${subjectId}`);
-            const data = await response.json();
-            if (data.success) {
-                quizState = data.questions.map((q, idx) => ({
-                    id: q.id,
-                    text: q.cau_hoi,
-                    answers: [q.dap_an_a, q.dap_an_b, q.dap_an_c, q.dap_an_d],
-                    correct: q.dap_an_dung,   // 🟨 để chấm điểm
-                    selected: [],
-                    isFlagged: false,
-                    isAnswered: false,
-                    type: 'checkbox'
-                }));
-                renderQuestions();
-                startTimer();
-            } else {
-                alert("Không lấy được câu hỏi từ server");
-            }
-        } catch (error) {
-            console.error("Lỗi fetchQuestions:", error);
-            alert("Lỗi kết nối server khi lấy đề thi");
-        }
-    }
+    
             
            // Handle start button clicks with custom confirmation
 startButtons.forEach(button => {
@@ -398,6 +373,7 @@ async function fetchQuestions(subjectId) {
         const res = await fetch('/api/get-exam', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',   // 🟨 để gửi cookie phiên đăng nhập
             body: JSON.stringify({ subject_id: subjectId })
         });
         const data = await res.json();
