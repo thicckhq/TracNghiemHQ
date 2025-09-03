@@ -356,37 +356,30 @@ data-subject-id="1">Bắt đầu</button>
         }
     }
             
-            // Handle start button clicks with custom confirmation
+           // Handle start button clicks with custom confirmation
 startButtons.forEach(button => {
     button.addEventListener('click', () => {
         const subjectTitle = button.getAttribute('data-subject');
+        const subjectId = button.getAttribute('data-subject-id'); // nhớ thêm trong HTML
 
         // Hiện overlay xác nhận
         confirmMessage.textContent = `Bạn chắc chắn làm bài thi thử môn ${subjectTitle} không?`;
         confirmOverlay.classList.remove('hidden');
 
-        // Hàm thực sự bắt đầu bài thi
-        const doStart = () => {
-            quizSubjectTitle.textContent = `Môn thi: ${subjectTitle}`;
-            subjectSelection.classList.add('hidden');
-            quizContainer.classList.remove('hidden');
-
-            // Khởi tạo và render
-            initializeQuiz();
-            renderQuestions();
-            startTimer();
-
-            confirmOverlay.classList.add('hidden');
-        };
-
-        // Hàm dọn listener để tránh gắn lặp
         const cleanup = () => {
             confirmYesBtn.removeEventListener('click', handleYes);
             confirmNoBtn.removeEventListener('click', handleNo);
         };
 
-        const handleYes = () => {
-            doStart();
+        const handleYes = async () => {
+            quizSubjectTitle.textContent = `Môn thi: ${subjectTitle}`;
+            subjectSelection.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+
+            // 🟨 Gọi API lấy câu hỏi
+            await fetchQuestions(subjectId);
+
+            confirmOverlay.classList.add('hidden');
             cleanup();
         };
 
@@ -395,11 +388,47 @@ startButtons.forEach(button => {
             cleanup();
         };
 
-        // Gắn listener xác nhận
         confirmYesBtn.addEventListener('click', handleYes);
         confirmNoBtn.addEventListener('click', handleNo);
     });
 });
+
+async function fetchQuestions(subjectId) {
+    try {
+        const res = await fetch('/api/get-exam', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subject_id: subjectId })
+        });
+        const data = await res.json();
+
+        if (data.questions && data.questions.length > 0) {
+            quizState = data.questions.map((q, idx) => ({
+                id: q.id,
+                index: idx + 1,
+                topic: q.ma_mon_thi,
+                text: q.cau_hoi,
+                answers: [q.dap_an_a, q.dap_an_b, q.dap_an_c, q.dap_an_d],
+                correct: q.dap_an_dung,
+                note: q.ghi_chu || "",
+                my_id: q.my_id,
+                selected: [],
+                isFlagged: false,
+                isAnswered: false,
+                type: (q.dap_an_dung.length > 1 ? 'checkbox' : 'radio')
+            }));
+
+            renderQuestions();
+            startTimer(); // ⏰ bắt đầu đếm ngược
+        } else {
+            alert("Không lấy được câu hỏi từ server.");
+        }
+    } catch (err) {
+        console.error("fetchQuestions error:", err);
+        alert("Lỗi kết nối server.");
+    }
+}
+
 
 
             // Render questions for the current page
